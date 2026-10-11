@@ -7,6 +7,7 @@ import './site.css'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import { Privacy, Terms } from './pages/Legal'
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string)
 
@@ -15,6 +16,8 @@ const routeTree = rootRoute.addChildren([
   createRoute({ getParentRoute: () => rootRoute, path: '/', component: Home }),
   createRoute({ getParentRoute: () => rootRoute, path: '/login', component: Login }),
   createRoute({ getParentRoute: () => rootRoute, path: '/dashboard', component: Dashboard }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/privacy', component: Privacy }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/terms', component: Terms }),
 ])
 
 const router = createRouter({

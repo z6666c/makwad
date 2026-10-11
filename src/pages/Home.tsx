@@ -6,6 +6,7 @@ import { api } from '@/convex/_generated/api'
 import { Logo } from '@/components/Logo'
 import { CASES, CLIENTS, FAQ, PLANS, QUOTES, SERVICES, STEPS, WHY } from '@/site-content'
 import { useTitle } from '@/useTitle'
+import { WhatsAppButton } from '@/components/WhatsAppButton'
 
 const NAV = [
   ['#services', 'خدماتنا'],
@@ -214,10 +215,11 @@ export default function Home() {
           </div>
           <div className="legal">
             <span>© 2026 سطر لتطوير التطبيقات. جميع الحقوق محفوظة.</span>
-            <span>الأعمال والأرقام وآراء العملاء في هذا الموقع أمثلة توضيحية.</span>
+            <span><Link to="/privacy">سياسة الخصوصية</Link> · <Link to="/terms">الشروط والأحكام</Link></span>
           </div>
         </div>
       </footer>
+      <WhatsAppButton />
     </>
   )
 }
@@ -436,7 +438,10 @@ function ContactForm({ plan, setPlan }: { plan: string; setPlan: (p: string) => 
         </select>
       </div>
       <div className="field full"><label htmlFor="message">نبذة عن الفكرة</label><textarea id="message" name="message" placeholder="ما المشكلة التي يحلها التطبيق، ومن سيستخدمه؟" /></div>
-      <div className="field full"><button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الإرسال…' : 'إرسال الطلب'}</button></div>
+      <div className="field full">
+        <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الإرسال…' : 'إرسال الطلب'}</button>
+        <small className="consent">بإرسال الطلب فإنك توافق على <Link to="/privacy">سياسة الخصوصية</Link> و<Link to="/terms">الشروط والأحكام</Link>.</small>
+      </div>
       {result && <div className={result.ok ? 'sent' : 'sent err'} role="status">{result.text}</div>}
     </form>
   )

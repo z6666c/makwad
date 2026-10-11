@@ -154,6 +154,7 @@ function AuthForms() {
         <input type="hidden" name="flow" value={isUp ? 'signUp' : 'signIn'} />
         {err}
         <button className="btn" type="submit" disabled={busy}>{busy ? 'لحظة…' : isUp ? 'إنشاء الحساب' : 'دخول'}</button>
+        {isUp && <small className="consent">بإنشاء الحساب فإنك توافق على <Link to="/privacy">سياسة الخصوصية</Link> و<Link to="/terms">الشروط والأحكام</Link>.</small>}
         {!isUp && <button className="linkish" type="button" onClick={() => go({ kind: 'forgot' })} style={{ justifySelf: 'start', fontSize: '.88rem' }}>نسيت كلمة المرور؟</button>}
       </form>
       <p className="auth-switch">
