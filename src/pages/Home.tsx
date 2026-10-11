@@ -1,0 +1,443 @@
+import { Link } from '@tanstack/react-router'
+import { useMutation } from 'convex/react'
+import { useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
+import { api } from '@/convex/_generated/api'
+import { Logo } from '@/components/Logo'
+import { CASES, CLIENTS, FAQ, PLANS, QUOTES, SERVICES, STEPS, WHY } from '@/site-content'
+import { useTitle } from '@/useTitle'
+
+const NAV = [
+  ['#services', 'خدماتنا'],
+  ['#process', 'طريقة العمل'],
+  ['#work', 'أعمالنا'],
+  ['#plans', 'الباقات'],
+  ['#faq', 'الأسئلة الشائعة'],
+] as const
+
+const Icon = ({ d, size = 20 }: { d: string; size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    dangerouslySetInnerHTML={{ __html: d }}
+  />
+)
+
+function usePrefersReducedMotion() {
+  const [reduce, setReduce] = useState(false)
+  useEffect(() => {
+    setReduce(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  }, [])
+  return reduce
+}
+
+export default function Home() {
+  useTitle('سطر لتطوير التطبيقات')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [plan, setPlan] = useState('لم أحدد بعد')
+  return (
+    <>
+      <header className="site-header">
+        <nav className="nav wrap" aria-label="القائمة الرئيسية">
+          <Logo />
+          <div className="links">
+            {NAV.map(([h, t]) => (
+              <a key={h} href={h}>{t}</a>
+            ))}
+          </div>
+          <div className="nav-end">
+            <Link className="btn ghost small" to="/login">دخول العملاء</Link>
+            <a className="btn small hide-sm" href="#contact">اطلب عرض سعر</a>
+            <button
+              className="menu-btn"
+              type="button"
+              aria-expanded={menuOpen}
+              aria-controls="mMenu"
+              aria-label="فتح القائمة"
+              onClick={() => setMenuOpen((o) => !o)}
+            >
+              <Icon d='<path d="M4 7h16M4 12h16M4 17h16"/>' />
+            </button>
+          </div>
+        </nav>
+        {menuOpen && (
+          <div className="mobile-menu wrap" id="mMenu">
+            {[...NAV, ['#contact', 'تواصل معنا'] as const].map(([h, t]) => (
+              <a key={h} href={h} onClick={() => setMenuOpen(false)}>{t}</a>
+            ))}
+          </div>
+        )}
+      </header>
+
+      <main id="top">
+        <Hero />
+        <div className="strip">
+          <div className="wrap">
+            <span>شركات وثقت بنا</span>
+            <ul className="clients">
+              {CLIENTS.map((c) => <li key={c}>{c}</li>)}
+            </ul>
+          </div>
+        </div>
+
+        <div className="wrap">
+          <section className="section" id="services">
+            <div className="sec-head">
+              <div><span className="kicker">خدماتنا</span><h2>ماذا نبني</h2></div>
+              <p>نختار التقنية حسب احتياج مشروعك وميزانيته، لا حسب ما نفضّله نحن.</p>
+            </div>
+            <div className="services">
+              {SERVICES.map((s) => (
+                <div className="svc" key={s.title}>
+                  <div className="svc-icon"><Icon d={s.icon} /></div>
+                  <h3>{s.title}</h3>
+                  <p>{s.text}</p>
+                  <div className="tags">{s.tags.map((t) => <span className="tag" key={t}>{t}</span>)}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="section" id="why">
+            <div className="why">
+              <div>
+                <div className="sec-head" style={{ marginBottom: 28 }}>
+                  <div><span className="kicker">لماذا سطر</span><h2>شريك تقني، لا مجرد منفّذ</h2></div>
+                </div>
+                <div>
+                  {WHY.map((w) => (
+                    <div className="why-item" key={w.title}>
+                      <Icon d={w.icon} size={22} />
+                      <h3>{w.title}</h3>
+                      <p>{w.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Testimonials />
+            </div>
+          </section>
+
+          <section className="section" id="process">
+            <div className="sec-head">
+              <div><span className="kicker">طريقة العمل</span><h2>خمس مراحل حتى الإطلاق</h2></div>
+              <p>في نهاية كل أسبوعين نسخة تجريبية تجربها على جوالك.</p>
+            </div>
+            <div className="process">
+              {STEPS.map((s, i) => (
+                <div className="step" key={s.t}>
+                  <div className="dot">{i + 1}</div>
+                  <h3>{s.t}</h3>
+                  <span className="wk">{s.w}</span>
+                  <p>{s.p}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <Work />
+
+          <section className="section" id="plans">
+            <div className="sec-head">
+              <div><span className="kicker">الباقات</span><h2>اختر نقطة البداية</h2></div>
+              <p>أسعار تقديرية تبدأ منها، والعرض النهائي بعد جلسة الاكتشاف المجانية.</p>
+            </div>
+            <div className="plans">
+              {PLANS.map((p) => (
+                <div className={p.feat ? 'plan feat' : 'plan'} key={p.name}>
+                  {p.feat && <span className="badge">الأكثر طلباً</span>}
+                  <h3>{p.name}</h3>
+                  <div className="price">{p.price}<small>{p.small}</small></div>
+                  <ul>{p.items.map((it) => <li key={it}>{it}</li>)}</ul>
+                  <a className={p.feat ? 'btn' : 'btn ghost'} href="#contact" onClick={() => setPlan(p.name)}>{p.cta}</a>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="section" id="faq">
+            <div className="faq">
+              <div>
+                <span className="kicker">الأسئلة الشائعة</span>
+                <h2 className="h2">قبل أن تبدأ</h2>
+                <p className="muted" style={{ marginTop: 12 }}>لم تجد جوابك؟ اسألنا مباشرة من نموذج التواصل.</p>
+              </div>
+              <div>
+                {FAQ.map((f, i) => (
+                  <details key={f.q} open={i === 0}>
+                    <summary>{f.q}</summary>
+                    <p>{f.a}</p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="section" id="contact">
+            <div className="contact">
+              <div className="info">
+                <div><span className="kicker">تواصل معنا</span><h2 className="h2">لنتحدث عن تطبيقك</h2></div>
+                <p className="muted">أرسل لنا فكرتك ونرد عليك خلال يوم عمل واحد بموعد لجلسة اكتشاف مجانية.</p>
+                <CopyRow label="البريد الإلكتروني" value="hello@satr.sa" />
+                <CopyRow label="الهاتف وواتساب" value="+966 13 000 0000" />
+                <div className="row"><div><span>المقر</span><b>طريق الملك فهد، الدمام</b></div></div>
+                <div className="row"><div><span>ساعات العمل</span><b>الأحد – الخميس، 9 ص – 5 م</b></div></div>
+              </div>
+              <ContactForm plan={plan} setPlan={setPlan} />
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer className="site-footer">
+        <div className="wrap">
+          <div className="foot">
+            <div>
+              <Logo />
+              <p>كل تطبيق عظيم يبدأ بسطر. نبني تطبيقات الجوال والويب للشركات في المملكة والخليج.</p>
+            </div>
+            <div>
+              <h4>الشركة</h4>
+              <ul><li><a href="#services">خدماتنا</a></li><li><a href="#work">أعمالنا</a></li><li><a href="#process">طريقة العمل</a></li></ul>
+            </div>
+            <div>
+              <h4>العملاء</h4>
+              <ul><li><Link to="/login">دخول العملاء</Link></li><li><a href="#contact">اطلب عرض سعر</a></li><li><a href="#faq">الأسئلة الشائعة</a></li></ul>
+            </div>
+          </div>
+          <div className="legal">
+            <span>© 2026 سطر لتطوير التطبيقات. جميع الحقوق محفوظة.</span>
+            <span>الأعمال والأرقام وآراء العملاء في هذا الموقع أمثلة توضيحية.</span>
+          </div>
+        </div>
+      </footer>
+    </>
+  )
+}
+
+function Hero() {
+  const [stage, setStage] = useState(0)
+  const [auto, setAuto] = useState(true)
+  const reduce = usePrefersReducedMotion()
+  useEffect(() => {
+    if (!auto || reduce) return
+    const t = setInterval(() => setStage((s) => (s ? 0 : 1)), 3200)
+    return () => clearInterval(t)
+  }, [auto, reduce])
+  const logs = ['wireframe v0.3 · 6 screens', 'build 1.0.0 (42) · ready for review']
+  return (
+    <div className="hero-band">
+      <div className="wrap">
+        <div className="hero">
+          <div>
+            <div className="eyebrow">استوديو تطوير تطبيقات · الدمام والرياض</div>
+            <h1>من فكرة على ورقة<br />إلى تطبيق <em>منشور في المتجر</em></h1>
+            <p className="lead">نصمّم ونبني تطبيقات iOS وأندرويد والويب للشركات الناشئة والمنشآت. فريق واحد يتولى البحث والتصميم والبرمجة والإطلاق، ويبقى معك بعد النشر.</p>
+            <div className="cta-row">
+              <a className="btn" href="#contact">احجز جلسة اكتشاف مجانية</a>
+              <a className="btn ghost" href="#work">شاهد أعمالنا</a>
+            </div>
+            <div className="stats">
+              <div><b>+40</b>تطبيقاً منشوراً</div>
+              <div><b>4.7</b>متوسط التقييم</div>
+              <div><b>12</b>أسبوعاً للإصدار الأول</div>
+            </div>
+          </div>
+          <div className="stage">
+            <div className="phone" aria-hidden="true">
+              <div className="screen">
+                <div className="notch" />
+                <div className={stage === 0 ? 'layer sk' : 'layer sk off'}>
+                  <div className="bar" style={{ width: '55%' }} />
+                  <div className="bar" style={{ width: '35%', height: 8 }} />
+                  <div className="box" style={{ height: 92 }} />
+                  <div className="box" style={{ height: 44 }} />
+                  <div className="box" style={{ height: 44 }} />
+                  <div className="box" style={{ height: 44 }} />
+                  <div className="bar" style={{ marginTop: 'auto', height: 22 }} />
+                </div>
+                <div className={stage === 1 ? 'layer dz' : 'layer dz off'}>
+                  <div className="h">صباح الخير، نورة</div>
+                  <div className="sub">طلبك في الطريق إليك</div>
+                  <div className="card main">
+                    <span style={{ fontSize: '.72rem', opacity: 0.85 }}>الوصول المتوقع</span>
+                    <span className="big">12 min</span>
+                    <span style={{ fontSize: '.7rem', opacity: 0.85 }}>المندوب: سعد · حي الشاطئ</span>
+                  </div>
+                  <div className="card"><span>قهوة مختصة ×2</span><span className="pill">تم التجهيز</span></div>
+                  <div className="card"><span>كرواسون زعتر</span><span className="pill">تم التجهيز</span></div>
+                  <div className="card"><span>نقاط الولاء</span><span className="mono">320</span></div>
+                  <div className="tabbar"><i className="on" /><i /><i /><i /></div>
+                </div>
+              </div>
+            </div>
+            <div className="seg" role="group" aria-label="مراحل بناء التطبيق">
+              {['مخطط أولي', 'التصميم النهائي'].map((t, i) => (
+                <button key={t} type="button" aria-pressed={stage === i} onClick={() => { setAuto(false); setStage(i) }}>{t}</button>
+              ))}
+            </div>
+            <div className="build-log">{logs[stage]}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Testimonials() {
+  const [i, setI] = useState(0)
+  const [auto, setAuto] = useState(true)
+  const reduce = usePrefersReducedMotion()
+  useEffect(() => {
+    if (!auto || reduce) return
+    const t = setInterval(() => setI((x) => (x + 1) % QUOTES.length), 6000)
+    return () => clearInterval(t)
+  }, [auto, reduce])
+  const q = QUOTES[i]
+  return (
+    <div className="quote-card" aria-live="polite">
+      <blockquote>{q.t}</blockquote>
+      <div className="who">
+        <div className="avatar">{q.n.charAt(0)}</div>
+        <div><b>{q.n}</b><span>{q.r}</span></div>
+      </div>
+      <div className="qnav" role="group" aria-label="آراء العملاء">
+        {QUOTES.map((x, k) => (
+          <button key={x.n} type="button" aria-pressed={k === i} aria-label={`رأي ${k + 1}`} onClick={() => { setAuto(false); setI(k) }} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function Work() {
+  const [filter, setFilter] = useState<'all' | 'mobile' | 'web'>('all')
+  const shown = CASES.filter((c) => filter === 'all' || c.kind === filter || c.kind === 'both')
+  return (
+    <section className="section" id="work">
+      <div className="sec-head">
+        <div><span className="kicker">أعمالنا</span><h2>مشاريع أطلقناها</h2></div>
+        <p>في التوصيل والصحة والتجزئة والخدمات.</p>
+      </div>
+      <div className="filters" role="group" aria-label="تصفية الأعمال">
+        {([['all', 'الكل'], ['mobile', 'تطبيقات جوال'], ['web', 'أنظمة ويب']] as const).map(([k, t]) => (
+          <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}>{t}</button>
+        ))}
+      </div>
+      <div className="work">
+        {shown.map((c) => (
+          <article className="case" key={c.title} style={{ ['--pa' as string]: c.pa }}>
+            <div className="case-art" aria-hidden="true" dangerouslySetInnerHTML={{ __html: c.art }} />
+            <div className="case-body">
+              <span className="kind">{c.label}</span>
+              <h3>{c.title}</h3>
+              <p>{c.text}</p>
+              <div className="metrics">
+                {c.metrics.map(([v, l]) => <div key={l}><b>{v}</b>{l}</div>)}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p className="note">الأعمال والأرقام وآراء العملاء في هذه الصفحة أمثلة توضيحية، تُستبدل بمشاريع الشركة الفعلية.</p>
+    </section>
+  )
+}
+
+function CopyRow({ label, value }: { label: string; value: string }) {
+  const [done, setDone] = useState(false)
+  return (
+    <div className="row">
+      <div><span>{label}</span><b className="mono">{value}</b></div>
+      <button
+        className="copy"
+        type="button"
+        onClick={() => {
+          navigator.clipboard?.writeText(value.replace(/\s/g, '')).then(
+            () => { setDone(true); setTimeout(() => setDone(false), 1600) },
+            () => {},
+          )
+        }}
+      >
+        {done ? 'تم النسخ' : 'نسخ'}
+      </button>
+    </div>
+  )
+}
+
+const TYPES = ['تطبيق جوال', 'تطبيق ويب', 'تصميم فقط', 'تطوير تطبيق قائم']
+
+function ContactForm({ plan, setPlan }: { plan: string; setPlan: (p: string) => void }) {
+  const submit = useMutation(api.app.submitLead)
+  const [types, setTypes] = useState<Array<string>>(['تطبيق جوال'])
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null)
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = e.currentTarget
+    const fd = new FormData(form)
+    setBusy(true)
+    setResult(null)
+    try {
+      const r = await submit({
+        name: String(fd.get('name') ?? ''),
+        company: String(fd.get('company') ?? ''),
+        email: String(fd.get('email') ?? ''),
+        types,
+        plan,
+        message: String(fd.get('message') ?? ''),
+      })
+      if (r.ok) {
+        setResult({ ok: true, text: 'وصلنا طلبك. سيتواصل معك فريقنا خلال يوم عمل واحد.' })
+        form.reset()
+      } else {
+        setResult({ ok: false, text: r.error })
+      }
+    } catch {
+      setResult({ ok: false, text: 'تعذّر إرسال الطلب. تحقق من اتصالك وحاول مرة أخرى.' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form className="form" noValidate onSubmit={onSubmit}>
+      <div className="field"><label htmlFor="name">الاسم</label><input id="name" name="name" autoComplete="name" placeholder="مثال: عبدالله السالم" /></div>
+      <div className="field"><label htmlFor="company">الشركة</label><input id="company" name="company" autoComplete="organization" placeholder="اختياري" /></div>
+      <div className="field full"><label htmlFor="email">البريد الإلكتروني</label><input id="email" name="email" type="email" autoComplete="email" dir="ltr" placeholder="name@company.sa" /></div>
+      <div className="field full">
+        <span className="lbl">نوع المشروع</span>
+        <div className="chips">
+          {TYPES.map((t, i) => (
+            <label key={t}>
+              <input
+                type="checkbox"
+                id={`type-${i}`}
+                checked={types.includes(t)}
+                onChange={(e) => setTypes((cur) => (e.target.checked ? [...cur, t] : cur.filter((x) => x !== t)))}
+              />
+              {t}
+            </label>
+          ))}
+        </div>
+      </div>
+      <div className="field full">
+        <label htmlFor="plan">الباقة</label>
+        <select id="plan" value={plan} onChange={(e) => setPlan(e.target.value)}>
+          {['لم أحدد بعد', 'الانطلاقة', 'النمو', 'المنشآت'].map((p) => <option key={p}>{p}</option>)}
+        </select>
+      </div>
+      <div className="field full"><label htmlFor="message">نبذة عن الفكرة</label><textarea id="message" name="message" placeholder="ما المشكلة التي يحلها التطبيق، ومن سيستخدمه؟" /></div>
+      <div className="field full"><button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الإرسال…' : 'إرسال الطلب'}</button></div>
+      {result && <div className={result.ok ? 'sent' : 'sent err'} role="status">{result.text}</div>}
+    </form>
+  )
+}
