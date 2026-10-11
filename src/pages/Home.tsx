@@ -7,6 +7,7 @@ import { Logo } from '@/components/Logo'
 import { CASES, CLIENTS, FAQ, PLANS, QUOTES, SERVICES, STEPS, WHY } from '@/site-content'
 import { useTitle } from '@/useTitle'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
+import { useSettings } from '@/site-config'
 
 const NAV = [
   ['#services', 'خدماتنا'],
@@ -186,10 +187,7 @@ export default function Home() {
               <div className="info">
                 <div><span className="kicker">تواصل معنا</span><h2 className="h2">لنتحدث عن تطبيقك</h2></div>
                 <p className="muted">أرسل لنا فكرتك ونرد عليك خلال يوم عمل واحد بموعد لجلسة اكتشاف مجانية.</p>
-                <CopyRow label="البريد الإلكتروني" value="hello@satr.sa" />
-                <CopyRow label="الهاتف وواتساب" value="+966 13 000 0000" />
-                <div className="row"><div><span>المقر</span><b>طريق الملك فهد، الدمام</b></div></div>
-                <div className="row"><div><span>ساعات العمل</span><b>الأحد – الخميس، 9 ص – 5 م</b></div></div>
+<ContactInfo />
               </div>
               <ContactForm plan={plan} setPlan={setPlan} />
             </div>
@@ -350,6 +348,19 @@ function Work() {
       </div>
       <p className="note">الأعمال والأرقام وآراء العملاء في هذه الصفحة أمثلة توضيحية، تُستبدل بمشاريع الشركة الفعلية.</p>
     </section>
+  )
+}
+
+function ContactInfo() {
+  const s = useSettings()
+  return (
+    <>
+      {s.email && <CopyRow label="البريد الإلكتروني" value={s.email} />}
+      {s.phone && <CopyRow label="الهاتف" value={s.phone} />}
+      <CopyRow label="واتساب" value={'+' + s.whatsapp} />
+      {s.address && <div className="row"><div><span>المقر</span><b>{s.address}</b></div></div>}
+      {s.hours && <div className="row"><div><span>ساعات العمل</span><b>{s.hours}</b></div></div>}
+    </>
   )
 }
 

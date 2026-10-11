@@ -2,11 +2,12 @@ import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { Logo } from '@/components/Logo'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
-import { COMPANY, LEGAL_UPDATED } from '@/site-config'
+import { COMPANY, LEGAL_UPDATED, useSettings } from '@/site-config'
 import { useTitle } from '@/useTitle'
 
 function LegalLayout({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
   useTitle(`${title} | سطر`)
+  const s = useSettings()
   return (
     <>
       <header className="site-header">
@@ -29,8 +30,8 @@ function LegalLayout({ title, intro, children }: { title: string; intro: string;
         <article className="legal-body">{children}</article>
         <div className="legal-contact">
           <h2>للتواصل بخصوص هذه الوثيقة</h2>
-          <p>البريد الإلكتروني: <b className="mono">{COMPANY.email}</b></p>
-          <p>العنوان: {COMPANY.address}</p>
+          <p>البريد الإلكتروني: <b className="mono">{s.email}</b></p>
+          {s.address && <p>العنوان: {s.address}</p>}
         </div>
       </main>
       <footer className="site-footer">
@@ -99,7 +100,7 @@ export function Privacy() {
         <li>طلب إتلاف بياناتك متى انتفت الحاجة إليها.</li>
         <li>الرجوع عن موافقتك على المعالجة.</li>
       </ul>
-      <p>لممارسة أي من هذه الحقوق راسلنا على <b className="mono">{COMPANY.email}</b> ونرد خلال 30 يوماً. ويحق لك تقديم شكوى إلى الجهة المختصة بحماية البيانات في المملكة.</p>
+      <p>لممارسة أي من هذه الحقوق راسلنا عبر البريد الموضح أسفل هذه الصفحة ونرد خلال 30 يوماً. ويحق لك تقديم شكوى إلى الجهة المختصة بحماية البيانات في المملكة.</p>
 
       <h2>7. حماية البيانات</h2>
       <p>نستخدم اتصالاً مشفراً (HTTPS)، ونخزن كلمات المرور مشفّرة، ونحصر الوصول إلى لوحة الإدارة في الفريق المخول. لا يمكن لأي عميل الاطلاع على بيانات عميل آخر.</p>

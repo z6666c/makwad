@@ -1,12 +1,17 @@
 import { Link } from '@tanstack/react-router'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from 'convex/react'
-import { useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '@/convex/_generated/api'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { Logo } from '@/components/Logo'
 import { useTitle } from '@/useTitle'
+import { DEFAULT_SETTINGS, whatsappLink } from '@/site-config'
+import type { SiteSettings } from '@/site-config'
+
+const CanAdmin = createContext(false)
+const ROLE_LABEL: Record<string, string> = { owner: 'المالك', admin: 'مدير', staff: 'موظف', client: 'عميل', blocked: 'موقوف' }
 
 const STAGES = ['الاكتشاف', 'التصميم', 'البرمجة', 'الاختبار', 'الإطلاق']
 type LeadStatus = Doc<'leads'>['status']
@@ -50,14 +55,27 @@ function Dashboard() {
   const me = useQuery(api.app.me)
   const { signOut } = useAuthActions()
   if (me === undefined) return <div className="center-screen">جارٍ التحميل…</div>
+  if (me.status === 'blocked') {
+    return (
+      <div className="center-screen">
+        <div className="empty">
+          <h3>تم إيقاف حسابك</h3>
+          <p>تواصل مع إدارة سطر لإعادة تفعيل الحساب.</p>
+          <button className="btn ghost" type="button" onClick={() => void signOut()}>تسجيل الخروج</button>
+        </div>
+      </div>
+    )
+  }
   if (me.status !== 'ok') return <div className="center-screen"><Link className="btn" to="/login">تسجيل الدخول</Link></div>
+  const team = me.role === 'admin' || me.role === 'staff'
+  const roleLabel = me.isOwner ? ROLE_LABEL.owner : ROLE_LABEL[me.role]
   return (
     <div className="dash">
       <header className="dash-top">
         <div className="wrap">
           <Logo />
           <div className="who-chip">
-            <span className="role-pill">{me.role === 'admin' ? 'الإدارة' : 'عميل'}</span>
+            <span className="role-pill">{roleLabel}</span>
             <div className="avatar">{me.name.charAt(0)}</div>
             <span><b>{me.name}</b><small className="mono">{me.email}</small></span>
             <button className="btn ghost small" type="button" onClick={() => void signOut()}>خروج</button>
@@ -65,7 +83,11 @@ function Dashboard() {
         </div>
       </header>
       <div className="wrap dash-body">
-        {me.role === 'admin' ? <AdminView /> : <ClientView name={me.name} />}
+        {team ? (
+          <CanAdmin.Provider value={me.role === 'admin'}><AdminView /></CanAdmin.Provider>
+        ) : (
+          <ClientView name={me.name} />
+        )}
       </div>
     </div>
   )
@@ -77,7 +99,8 @@ function AdminView() {
   const leadsRes = useQuery(api.app.listLeads)
   const projRes = useQuery(api.app.listProjects)
   const clear = useMutation(api.app.clearExamples)
-  const [tab, setTab] = useState<'leads' | 'projects'>('leads')
+  const canAdmin = useContext(CanAdmin)
+  const [tab, setTab] = useState<'leads' | 'projects' | 'users' | 'settings'>('leads')
 
   if (leadsRes === undefined || projRes === undefined) return <p className="muted">جارٍ تحميل البيانات…</p>
   if (leadsRes.status !== 'ok' || projRes.status !== 'ok') return <p className="muted">لا تملك صلاحية الإدارة.</p>
@@ -91,8 +114,8 @@ function AdminView() {
   return (
     <>
       <div className="dash-head">
-        <div><span className="kicker">لوحة الإدارة</span><h1>أهلاً بك في سطر</h1></div>
-        {hasExamples && (
+        <div><span className="kicker">{canAdmin ? 'لوحة الإدارة' : 'لوحة الفريق'}</span><h1>أهلاً بك في سطر</h1></div>
+        {hasExamples && canAdmin && (
           <button className="btn ghost small" type="button" onClick={() => void clear({})}>حذف البيانات التجريبية</button>
         )}
       </div>
@@ -105,8 +128,13 @@ function AdminView() {
       <div className="tabs" role="tablist">
         <button role="tab" type="button" aria-selected={tab === 'leads'} onClick={() => setTab('leads')}>الطلبات <span className="count">{leads.length}</span></button>
         <button role="tab" type="button" aria-selected={tab === 'projects'} onClick={() => setTab('projects')}>المشاريع <span className="count">{projects.length}</span></button>
+        {canAdmin && <button role="tab" type="button" aria-selected={tab === 'users'} onClick={() => setTab('users')}>المستخدمون والموظفون</button>}
+        {canAdmin && <button role="tab" type="button" aria-selected={tab === 'settings'} onClick={() => setTab('settings')}>الإعدادات</button>}
       </div>
-      {tab === 'leads' ? <LeadsPanel leads={leads} /> : <ProjectsPanel projects={projects} />}
+      {tab === 'leads' && <LeadsPanel leads={leads} />}
+      {tab === 'projects' && <ProjectsPanel projects={projects} />}
+      {tab === 'users' && canAdmin && <UsersPanel />}
+      {tab === 'settings' && canAdmin && <SettingsPanel />}
     </>
   )
 }
@@ -116,6 +144,7 @@ function LeadsPanel({ leads }: { leads: Array<Doc<'leads'>> }) {
   const del = useMutation(api.app.deleteLead)
   const [filter, setFilter] = useState<'all' | LeadStatus>('all')
   const [confirm, setConfirm] = useState<Id<'leads'> | null>(null)
+  const canAdmin = useContext(CanAdmin)
   const shown = leads.filter((l) => filter === 'all' || l.status === filter)
   return (
     <div className="panel">
@@ -151,7 +180,7 @@ function LeadsPanel({ leads }: { leads: Array<Doc<'leads'>> }) {
                 <select aria-label="حالة الطلب" value={l.status} onChange={(e) => void setStatus({ id: l._id, status: e.target.value as LeadStatus })}>
                   {(Object.keys(STATUS) as Array<LeadStatus>).map((k) => <option key={k} value={k}>{STATUS[k]}</option>)}
                 </select>
-                {confirm === l._id ? (
+                {!canAdmin ? null : confirm === l._id ? (
                   <>
                     <button className="btn danger small" type="button" onClick={() => { void del({ id: l._id }); setConfirm(null) }}>تأكيد الحذف</button>
                     <button className="btn ghost small" type="button" onClick={() => setConfirm(null)}>إلغاء</button>
@@ -235,6 +264,7 @@ function AdminProject({ p }: { p: Doc<'projects'> }) {
   const [confirm, setConfirm] = useState(false)
   const [email, setEmail] = useState(p.clientEmail)
   const [err, setErr] = useState<string | null>(null)
+  const canAdmin = useContext(CanAdmin)
 
   return (
     <article className="proj">
@@ -281,7 +311,7 @@ function AdminProject({ p }: { p: Doc<'projects'> }) {
       {err && <div className="sent err">{err}</div>}
       <div className="toolbar">
         <button className="btn ghost small" type="button" onClick={() => setOpen((o) => !o)}>{open ? 'إخفاء التحديثات' : 'التحديثات والرسائل'}</button>
-        {confirm ? (
+        {!canAdmin ? null : confirm ? (
           <span style={{ display: 'flex', gap: 6 }}>
             <button className="btn danger small" type="button" onClick={() => void del({ id: p._id })}>تأكيد حذف المشروع</button>
             <button className="btn ghost small" type="button" onClick={() => setConfirm(false)}>إلغاء</button>
@@ -409,6 +439,226 @@ function NewRequest() {
       </div>
       <div className="field"><label htmlFor="rq-message">التفاصيل</label><textarea id="rq-message" name="message" required placeholder="اشرح طلبك باختصار" /></div>
       <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الإرسال…' : 'إرسال الطلب'}</button>
+      {state && <div className={state.ok ? 'sent' : 'sent err'} role="status">{state.text}</div>}
+    </form>
+  )
+}
+
+/* =================== USERS & STAFF (admins) =================== */
+
+type UserRow = {
+  key: string
+  userId: string | null
+  email: string
+  name: string
+  role: 'owner' | 'admin' | 'staff' | 'client' | 'blocked'
+  joined: number | null
+  pending: boolean
+}
+
+function UsersPanel() {
+  const res = useQuery(api.users.listUsers) as { status: 'ok'; rows: Array<UserRow>; me: string } | { status: 'forbidden' } | undefined
+  const [filter, setFilter] = useState<'all' | 'team' | 'client' | 'blocked'>('all')
+  const [q, setQ] = useState('')
+  const [adding, setAdding] = useState(false)
+  if (res === undefined) return <p className="muted">جارٍ تحميل المستخدمين…</p>
+  if (res.status !== 'ok') return <p className="muted">إدارة المستخدمين للمدراء فقط.</p>
+  const rows = res.rows.filter((r) => {
+    if (filter === 'team' && !['owner', 'admin', 'staff'].includes(r.role)) return false
+    if (filter === 'client' && r.role !== 'client') return false
+    if (filter === 'blocked' && r.role !== 'blocked') return false
+    const t = q.trim().toLowerCase()
+    return !t || r.email.includes(t) || r.name.toLowerCase().includes(t)
+  })
+  const teamCount = res.rows.filter((r) => ['owner', 'admin', 'staff'].includes(r.role)).length
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="roles-guide">
+        <div><b>مدير</b><span>كل الصلاحيات: الطلبات والمشاريع والمستخدمين والإعدادات وحذف البيانات.</span></div>
+        <div><b>موظف</b><span>متابعة الطلبات وتغيير حالتها، وإدارة المشاريع والرد على العملاء. لا يحذف ولا يدير المستخدمين.</span></div>
+        <div><b>عميل</b><span>يرى مشاريعه المسجلة ببريده فقط ويرسل الطلبات.</span></div>
+        <div><b>موقوف</b><span>لا يستطيع الدخول إلى أي بيانات.</span></div>
+      </div>
+
+      <div className="toolbar">
+        <div className="filters" style={{ margin: 0 }}>
+          {([['all', 'الكل'], ['team', `الفريق (${teamCount})`], ['client', 'العملاء'], ['blocked', 'الموقوفون']] as const).map(([k, t]) => (
+            <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}>{t}</button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input className="input search" placeholder="بحث بالاسم أو البريد" value={q} onChange={(e) => setQ(e.target.value)} aria-label="بحث" />
+          <button className="btn small" type="button" onClick={() => setAdding((a) => !a)}>{adding ? 'إغلاق' : '+ إضافة موظف'}</button>
+        </div>
+      </div>
+
+      {adding && <InviteForm onDone={() => setAdding(false)} />}
+
+      <div className="panel table-wrap">
+        <table className="users-table">
+          <thead>
+            <tr><th>المستخدم</th><th>الصلاحية</th><th>تاريخ التسجيل</th><th></th></tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr><td colSpan={4} className="muted" style={{ textAlign: 'center', padding: 32 }}>لا يوجد مستخدمون مطابقون.</td></tr>
+            ) : rows.map((r) => <UserRowView key={r.key} r={r} me={res.me} />)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function UserRowView({ r, me }: { r: UserRow; me: string }) {
+  const setRole = useMutation(api.users.setRole)
+  const rename = useMutation(api.users.renameUser)
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState(r.name)
+  const [err, setErr] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
+  const locked = r.role === 'owner' || r.email === me
+
+  async function changeRole(role: 'admin' | 'staff' | 'client' | 'blocked') {
+    setErr(null)
+    const res = await setRole({ email: r.email, role })
+    if (!res.ok) setErr(res.error)
+    else { setSaved(true); setTimeout(() => setSaved(false), 1500) }
+  }
+
+  return (
+    <tr>
+      <td>
+        {editing && r.userId ? (
+          <span className="inline-edit">
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} aria-label="الاسم" />
+            <button className="btn small" type="button" onClick={async () => {
+              const res = await rename({ userId: r.userId as Id<'users'>, name })
+              if (res.ok) { setEditing(false); setErr(null) } else setErr(res.error)
+            }}>حفظ</button>
+            <button className="btn ghost small" type="button" onClick={() => { setEditing(false); setName(r.name) }}>إلغاء</button>
+          </span>
+        ) : (
+          <div className="user-cell">
+            <div className="avatar">{r.name.charAt(0)}</div>
+            <span>
+              <b>{r.name}</b> {r.pending && <span className="ex">بانتظار التسجيل</span>}
+              <small className="mono">{r.email}</small>
+            </span>
+          </div>
+        )}
+        {err && <div className="row-err">{err}</div>}
+      </td>
+      <td>
+        {locked ? (
+          <span className="role-pill">{ROLE_LABEL[r.role]}{r.email === me && r.role !== 'owner' ? ' (أنت)' : ''}</span>
+        ) : (
+          <select className="select" value={r.role} aria-label={`صلاحية ${r.name}`} onChange={(e) => void changeRole(e.target.value as 'admin' | 'staff' | 'client' | 'blocked')}>
+            <option value="client">عميل</option>
+            <option value="staff">موظف</option>
+            <option value="admin">مدير</option>
+            <option value="blocked">موقوف</option>
+          </select>
+        )}
+        {saved && <small className="ok-note"> تم الحفظ</small>}
+      </td>
+      <td className="muted">{r.joined ? fmtDate(r.joined) : '—'}</td>
+      <td>
+        {r.userId && !editing && <button className="linkish" type="button" onClick={() => setEditing(true)}>تعديل الاسم</button>}
+        {r.pending && <button className="linkish" style={{ color: 'var(--danger)' }} type="button" onClick={() => void changeRole('client')}>إلغاء الدعوة</button>}
+      </td>
+    </tr>
+  )
+}
+
+function InviteForm({ onDone }: { onDone: () => void }) {
+  const invite = useMutation(api.users.inviteMember)
+  const [err, setErr] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  return (
+    <form className="form" onSubmit={async (e) => {
+      e.preventDefault()
+      const fd = new FormData(e.currentTarget)
+      setBusy(true)
+      setErr(null)
+      const r = await invite({
+        name: String(fd.get('name') ?? ''),
+        email: String(fd.get('email') ?? ''),
+        role: (String(fd.get('role')) === 'admin' ? 'admin' : 'staff') as 'admin' | 'staff',
+      })
+      setBusy(false)
+      if (r.ok) onDone()
+      else setErr(r.error)
+    }}>
+      <div className="field"><label htmlFor="iv-name">اسم الموظف</label><input id="iv-name" name="name" required /></div>
+      <div className="field"><label htmlFor="iv-email">بريد الموظف</label><input id="iv-email" name="email" type="email" required dir="ltr" placeholder="name@company.sa" /></div>
+      <div className="field"><label htmlFor="iv-role">الصلاحية</label>
+        <select id="iv-role" name="role" defaultValue="staff"><option value="staff">موظف</option><option value="admin">مدير</option></select>
+      </div>
+      <div className="field" style={{ justifyContent: 'end' }}><button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الإضافة…' : 'إضافة'}</button></div>
+      <p className="muted field full" style={{ fontSize: '.85rem' }}>بعد الإضافة، يسجّل الموظف من صفحة الدخول بنفس البريد ويؤكده بالرمز، وتُفعَّل صلاحياته تلقائياً. إذا كان لديه حساب مسبقاً تتغير صلاحيته فوراً.</p>
+      {err && <div className="sent err">{err}</div>}
+    </form>
+  )
+}
+
+/* =================== SITE SETTINGS (admins) =================== */
+
+function SettingsPanel() {
+  const current = useQuery(api.settings.get) as SiteSettings | undefined
+  const save = useMutation(api.settings.update)
+  const [form, setForm] = useState<SiteSettings>(DEFAULT_SETTINGS)
+  const [loaded, setLoaded] = useState(false)
+  const [state, setState] = useState<{ ok: boolean; text: string } | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (current && !loaded) { setForm(current); setLoaded(true) }
+  }, [current, loaded])
+
+  if (!current) return <p className="muted">جارٍ تحميل الإعدادات…</p>
+  const set = (k: keyof SiteSettings) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  return (
+    <form className="form" onSubmit={async (e) => {
+      e.preventDefault()
+      setBusy(true)
+      setState(null)
+      const r = await save(form)
+      setBusy(false)
+      if (r.ok) { setForm((f) => ({ ...f, whatsapp: r.whatsapp })); setState({ ok: true, text: 'تم حفظ الإعدادات، وتظهر في الموقع مباشرة.' }) }
+      else setState({ ok: false, text: r.error })
+    }}>
+      <div className="field full"><h3 style={{ fontSize: '1.1rem' }}>بيانات التواصل في الموقع</h3><p className="muted" style={{ fontSize: '.88rem' }}>تظهر في قسم التواصل وزر واتساب والصفحات القانونية.</p></div>
+      <div className="field">
+        <label htmlFor="st-wa">رقم الواتساب</label>
+        <input id="st-wa" dir="ltr" inputMode="tel" value={form.whatsapp} onChange={set('whatsapp')} placeholder="9665XXXXXXXX" required />
+        <small className="muted">بالصيغة الدولية بدون + أو أصفار، مثل 966512345678. ويُقبل 05XXXXXXXX.</small>
+      </div>
+      <div className="field">
+        <label htmlFor="st-phone">رقم الهاتف المعروض</label>
+        <input id="st-phone" dir="ltr" value={form.phone} onChange={set('phone')} placeholder="+966 13 000 0000" />
+      </div>
+      <div className="field full">
+        <label htmlFor="st-msg">رسالة واتساب الجاهزة</label>
+        <input id="st-msg" value={form.whatsappMessage} onChange={set('whatsappMessage')} />
+      </div>
+      <div className="field">
+        <label htmlFor="st-email">البريد الإلكتروني</label>
+        <input id="st-email" dir="ltr" type="email" value={form.email} onChange={set('email')} />
+      </div>
+      <div className="field">
+        <label htmlFor="st-hours">ساعات العمل</label>
+        <input id="st-hours" value={form.hours} onChange={set('hours')} />
+      </div>
+      <div className="field full">
+        <label htmlFor="st-address">العنوان</label>
+        <input id="st-address" value={form.address} onChange={set('address')} />
+      </div>
+      <div className="field full settings-actions">
+        <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الحفظ…' : 'حفظ الإعدادات'}</button>
+        <a className="btn ghost" href={whatsappLink(form)} target="_blank" rel="noopener noreferrer">تجربة رابط واتساب</a>
+      </div>
       {state && <div className={state.ok ? 'sent' : 'sent err'} role="status">{state.text}</div>}
     </form>
   )
