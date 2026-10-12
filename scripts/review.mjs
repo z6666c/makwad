@@ -19,7 +19,7 @@ const step = async (name, fn) => { try { await fn() } catch (e) { logs.push(`[st
 
 // Dashboard (sample data)
 const d = await page({ width: 1440, height: 900 })
-for (const tab of ['overview', 'finance', 'channels', 'asclient']) {
+for (const tab of ['overview', 'finance']) {
   await step(tab, async () => {
     await d.goto(`${BASE}/preview?tab=${tab}`, { waitUntil: 'networkidle' }); await settle(d)
     await shot(d, `dash-${tab}`, { fullPage: tab !== 'leads' && tab !== 'projects' })

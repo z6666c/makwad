@@ -124,6 +124,67 @@ const SECTIONS: Array<{ key: Section; label: string; admin?: boolean }> = [
   { key: 'settings', label: 'الإعدادات', admin: true },
 ]
 
+const GROUPS: Array<{ key: string; label: string; items: Array<Section> }> = [
+  { key: 'home', label: '', items: ['overview'] },
+  { key: 'sales', label: 'المبيعات والعملاء', items: ['leads', 'quotes', 'projects'] },
+  { key: 'money', label: 'المالية', items: ['finance', 'channels'] },
+  { key: 'site', label: 'الموقع', items: ['pricing', 'content', 'asclient'] },
+  { key: 'admin', label: 'الإدارة', items: ['users', 'settings'] },
+]
+
+function SideNav({ sections, cur, counts, go }: { sections: Array<{ key: Section; label: string }>; cur: Section; counts: Partial<Record<Section, number>>; go: (s: Section) => void }) {
+  const [open, setOpen] = useState<Record<string, boolean>>(() => {
+    try { return JSON.parse(localStorage.getItem('makwad-nav') ?? '{}') as Record<string, boolean> } catch { return {} }
+  })
+  const toggle = (k: string, v: boolean) => setOpen((o) => {
+    const n = { ...o, [k]: v }
+    try { localStorage.setItem('makwad-nav', JSON.stringify(n)) } catch { /* ignore */ }
+    return n
+  })
+  const label = (k: Section) => sections.find((x) => x.key === k)?.label ?? ''
+  const groups = GROUPS.map((g) => ({ ...g, items: g.items.filter((k) => sections.some((x) => x.key === k)) })).filter((g) => g.items.length)
+  return (
+    <>
+      <nav className="side-nav">
+        {groups.map((g) => {
+          if (!g.label) return g.items.map((k) => <NavItem key={k} k={k} label={label(k)} cur={cur} count={counts[k]} go={go} />)
+          const hasCur = g.items.includes(cur)
+          const isOpen = open[g.key] ?? true
+          const total = g.items.reduce((n, k) => n + (counts[k] ?? 0), 0)
+          return (
+            <div className="side-group" key={g.key}>
+              <button type="button" className={hasCur ? 'side-gh cur' : 'side-gh'} aria-expanded={isOpen} onClick={() => toggle(g.key, !isOpen)}>
+                <span>{g.label}</span>
+                {!isOpen && total > 0 && <em>{total}</em>}
+                <i aria-hidden="true">▾</i>
+              </button>
+              {isOpen && <div className="side-items">{g.items.map((k) => <NavItem key={k} k={k} label={label(k)} cur={cur} count={counts[k]} go={go} />)}</div>}
+            </div>
+          )
+        })}
+      </nav>
+      <label className="side-select">
+        <span className="sr-only">القسم</span>
+        <select value={cur} onChange={(e) => go(e.target.value as Section)} aria-label="أقسام لوحة التحكم">
+          {groups.map((g) => g.label ? (
+            <optgroup key={g.key} label={g.label}>{g.items.map((k) => <option key={k} value={k}>{label(k)}{counts[k] ? ` (${counts[k]})` : ''}</option>)}</optgroup>
+          ) : g.items.map((k) => <option key={k} value={k}>{label(k)}</option>))}
+        </select>
+      </label>
+    </>
+  )
+}
+
+function NavItem({ k, label, cur, count, go }: { k: Section; label: string; cur: Section; count?: number; go: (s: Section) => void }) {
+  return (
+    <button type="button" aria-current={cur === k ? 'page' : undefined} onClick={() => go(k)}>
+      <Icon d={ICONS[k]} />
+      <span>{label}</span>
+      {!!count && <em>{count}</em>}
+    </button>
+  )
+}
+
 function initialSection(): Section {
   const q = new URLSearchParams(window.location.search).get('tab')
   return SECTIONS.some((x) => x.key === q) ? (q as Section) : 'overview'
@@ -163,15 +224,7 @@ function AdminView() {
       <div className="admin wrap">
         <aside className="side" aria-label="أقسام لوحة التحكم">
           <span className="side-cap">{canAdmin ? 'لوحة الإدارة' : 'لوحة الفريق'}</span>
-          <nav>
-            {sections.map((x) => (
-              <button key={x.key} type="button" aria-current={cur.key === x.key ? 'page' : undefined} onClick={() => go(x.key)}>
-                <Icon d={ICONS[x.key]} />
-                <span>{x.label}</span>
-                {!!counts[x.key] && <em>{counts[x.key]}</em>}
-              </button>
-            ))}
-          </nav>
+          <SideNav sections={sections} cur={cur.key} counts={counts} go={go} />
           <a className="side-link" href="/makwad/" target="_blank" rel="noopener noreferrer">معاينة الموقع ↗</a>
         </aside>
         <main className="admin-main">

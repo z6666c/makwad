@@ -668,6 +668,17 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .side { position: sticky; top: 76px; display: flex; flex-direction: column; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 10px; }
 .side-cap { font-size: .74rem; font-weight: 600; color: var(--muted); padding: 2px 10px 6px; }
 .side nav { display: flex; flex-direction: column; gap: 2px; }
+.side-group { display: flex; flex-direction: column; margin-top: 6px; }
+.side-gh { font: inherit; display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px 6px; border: 0; background: none; cursor: pointer; color: var(--muted); font-size: .76rem; font-weight: 700; letter-spacing: .02em; text-align: start; border-radius: 8px; }
+.side-gh span { flex: 1; }
+.side-gh:hover { color: var(--ink); background: var(--bg); }
+.side-gh.cur { color: var(--accent); }
+.side-gh i { font-style: normal; font-size: .8rem; transition: transform .18s; }
+.side-gh[aria-expanded="false"] i { transform: rotate(90deg); }
+.side-gh em { font-style: normal; font-size: .7rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--accent); color: #fff; font-family: var(--f-mono); }
+.side-items { display: flex; flex-direction: column; gap: 2px; }
+.side-select { display: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .side nav button { font: inherit; font-size: .93rem; display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 10px; background: none; color: var(--muted); cursor: pointer; text-align: start; }
 .side nav button:hover { background: var(--bg); color: var(--ink); }
 .side nav button[aria-current="page"] { background: var(--soft); color: var(--accent); font-weight: 600; }
@@ -684,11 +695,10 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .danger-link { color: var(--danger) !important; font-size: .85rem; }
 @media (max-width: 960px) {
   .admin { grid-template-columns: 1fr; gap: 16px; padding-top: 12px; }
-  .side { position: static; flex-direction: row; padding: 6px; overflow-x: auto; scrollbar-width: none; }
-  .side-cap, .side-link { display: none; }
-  .side nav { flex-direction: row; }
-  .side nav button { white-space: nowrap; padding: 8px 12px; }
-  .side nav button svg { display: none; }
+  .side { position: static; padding: 8px; }
+  .side-cap, .side-link, .side-nav { display: none; }
+  .side-select { display: block; }
+  .side-select select { width: 100%; font: inherit; font-size: 1rem; font-weight: 600; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
 }
 
 /* overview */
