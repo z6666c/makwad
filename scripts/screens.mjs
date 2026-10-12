@@ -52,5 +52,15 @@ await m.screenshot({ path: 'shots/10-mobile-estimator.png' })
 await m.locator('#work').scrollIntoViewIfNeeded(); await m.waitForTimeout(600)
 await m.screenshot({ path: 'shots/11-mobile-work.png' })
 
+// Brand files: render each SVG with the web fonts loaded
+import { readdirSync, readFileSync } from 'node:fs'
+const bp = await page({ width: 1600, height: 1200 })
+for (const f of readdirSync('brand').filter((n) => n.endsWith('.svg'))) {
+  const svg = readFileSync('brand/' + f, 'utf8').replace(/<style>@import[^<]*<\/style>/, '')
+  await bp.setContent(`<html><head><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@800&family=Readex+Pro:wght@400&display=swap"></head><body style="margin:0;background:transparent">${svg}</body></html>`, { waitUntil: 'networkidle' })
+  await bp.evaluate(() => document.fonts.ready); await bp.waitForTimeout(500)
+  await bp.locator('svg').first().screenshot({ path: 'shots/brand-' + f.replace('.svg', '.png'), omitBackground: true })
+}
+
 await browser.close()
 console.log('done')

@@ -6,18 +6,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
 
 :root {
-  --bg: #F2F4F1;
+  --bg: #F3F5F8;
   --surface: #FFFFFF;
-  --ink: #10201B;
-  --muted: #56655F;
-  --line: #D7DDD8;
-  --accent: #0B7A5A;
+  --ink: #0E1730;
+  --muted: #5A6478;
+  --line: #DCE1EA;
+  --accent: #1F6F8B;
   --accent-ink: #FFFFFF;
-  --sand: #E2A93B;
-  --soft: #E3ECE7;
+  --sand: #D99A2B;
+  --soft: #E4EEF3;
   --clay: #B4613A;
-  --sky: #2C6CB0;
+  --sky: #2A4A8C;
   --danger: #B23A3A;
+  --grad-a: #2A4A8C;
+  --grad-b: #4FB3B8;
   --f-display: "Alexandria", "Readex Pro", Tahoma, sans-serif;
   --f-body: "Readex Pro", Tahoma, "Segoe UI", sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
@@ -25,15 +27,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0D1613; --surface: #14201C; --ink: #E6EEEA; --muted: #9AABA4; --line: #26352F;
-    --accent: #3FC79C; --accent-ink: #06130F; --sand: #F0BE5A; --soft: #1A2A24;
-    --clay: #E38C61; --sky: #6EA7E3; --danger: #F07A7A; color-scheme: dark;
+    --bg: #0B1220; --surface: #121B2E; --ink: #E6ECF5; --muted: #94A0B8; --line: #233049;
+    --accent: #5CC2C4; --accent-ink: #061017; --sand: #F0BE5A; --soft: #16233A;
+    --clay: #E38C61; --sky: #7A9CE0; --danger: #F07A7A; --grad-a: #4A6FC0; --grad-b: #66CCCA; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0D1613; --surface: #14201C; --ink: #E6EEEA; --muted: #9AABA4; --line: #26352F;
-  --accent: #3FC79C; --accent-ink: #06130F; --sand: #F0BE5A; --soft: #1A2A24;
-  --clay: #E38C61; --sky: #6EA7E3; --danger: #F07A7A; color-scheme: dark;
+  --bg: #0B1220; --surface: #121B2E; --ink: #E6ECF5; --muted: #94A0B8; --line: #233049;
+    --accent: #5CC2C4; --accent-ink: #061017; --sand: #F0BE5A; --soft: #16233A;
+    --clay: #E38C61; --sky: #7A9CE0; --danger: #F07A7A; --grad-a: #4A6FC0; --grad-b: #66CCCA; color-scheme: dark;
 }
 
 html { scroll-behavior: smooth; scroll-padding-top: 80px; }
@@ -55,7 +57,7 @@ a { color: inherit; }
 .logo-mark { flex: none; display: block; }
 .logo-text { display: flex; flex-direction: column; line-height: 1; }
 .logo-text b { font-family: var(--f-display); font-size: 1.45rem; font-weight: 800; }
-.logo-text small { font-size: .68rem; color: var(--accent); margin-bottom: 5px; letter-spacing: .06em; font-weight: 600; }
+.logo-text small { font-family: var(--f-body); font-size: .56rem; color: var(--muted); margin-top: 6px; letter-spacing: .32em; font-weight: 500; direction: ltr; }
 @keyframes blink { 0%, 55% { opacity: 1 } 56%, 100% { opacity: 0 } }
 .logo:hover .cur { animation: blink 1.1s steps(1) infinite; }
 
