@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<title>Makwad banner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;800&family=Readex+Pro:wght@400&display=swap" />
+<style>
+  html, body { margin: 0; background: #070C17; }
+  .b { position: relative; overflow: hidden; color: #E6ECF5;
+    background:
+      radial-gradient(40% 70% at 50% 45%, rgba(79,179,184,.22), transparent 70%),
+      radial-gradient(30% 60% at 38% 55%, rgba(74,111,192,.30), transparent 70%),
+      radial-gradient(120% 120% at 50% 50%, #0E1730 0%, #070C17 70%); }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .mark { filter: drop-shadow(0 0 14px rgba(102,204,202,.55)) drop-shadow(0 0 40px rgba(74,111,192,.45)); }
+  .name { font-family: "Alexandria", Tahoma, sans-serif; font-weight: 800; line-height: 1; text-shadow: 0 0 24px rgba(102,204,202,.35); }
+  .lat { font-family: "Readex Pro", sans-serif; letter-spacing: .42em; color: rgba(230,236,245,.72); direction: ltr; padding-left: .42em; }
+  .tag { font-family: "Alexandria", sans-serif; font-weight: 500; color: #66CCCA; }
+</style>
+</head>
+<body>
+<div class="b" id="b"><canvas id="c"></canvas>
+  <div class="center" id="center">
+    <svg class="mark" id="mark" viewBox="0 0 64 64">
+      <defs>
+        <linearGradient id="g" x1="8" y1="58" x2="58" y2="10" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4A6FC0"/><stop offset="1" stop-color="#7BE0DA"/></linearGradient>
+        <mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><g fill="none" stroke-linejoin="round">
+          <g stroke="#fff" stroke-width="8"><path d="M10 56 V20 Q10 11 18 11 Q22.5 11 24.5 15.5 L32 31 L40 11 V56"/><path d="M57 11 L44.5 31.5"/><path d="M44.5 37 L57 56"/></g>
+          <g stroke="#000" stroke-width="2.6"><path d="M10 53.3 V20 Q10 11 18 11 Q22.5 11 24.5 15.5 L32 31 L40 11 V53.3"/><path d="M55.5 13.4 L45.6 29.6"/><path d="M46.1 39.5 L55.5 53.6"/></g></g></mask>
+      </defs>
+      <rect width="64" height="64" fill="url(#g)" mask="url(#m)"/>
+    </svg>
+    <div class="name" id="name">مكود</div>
+    <div class="lat" id="lat">MAKWAD STUDIO</div>
+    <div class="tag" id="tag">حيث تُصنع التطبيقات</div>
+  </div>
+</div>
+<script>
+  const q = new URLSearchParams(location.search)
+  const W = +q.get('w') || 1500, H = +q.get('h') || 500
+  const b = document.getElementById('b'); b.style.width = W + 'px'; b.style.height = H + 'px'
+  const s = Math.min(W, H)
+  const tall = H > W * 1.2, wide = W > H * 2.6
+  const markSize = tall ? W * .42 : wide ? H * .42 : s * (W > H ? .40 : .38)
+  const mark = document.getElementById('mark'); mark.style.width = mark.style.height = markSize + 'px'
+  const name = document.getElementById('name'); name.style.fontSize = markSize * .42 + 'px'; name.style.marginTop = markSize * .12 + 'px'
+  const lat = document.getElementById('lat'); lat.style.fontSize = markSize * .085 + 'px'; lat.style.marginTop = markSize * .1 + 'px'
+  const tag = document.getElementById('tag'); tag.style.fontSize = markSize * .11 + 'px'; tag.style.marginTop = markSize * .12 + 'px'
+  if (wide) tag.style.display = 'none'
+
+  // Circuit traces: deterministic pseudo-random so every render matches.
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647
+  const c = document.getElementById('c'); const dpr = 1
+  c.width = W * dpr; c.height = H * dpr
+  const x = c.getContext('2d'); x.scale(dpr, dpr)
+  const cx = W / 2, cy = H / 2
+  const clearW = (tall ? W * .55 : markSize * (wide ? 2.6 : 1.9)) / 2
+  const clearH = tall ? H * .3 : H * .5
+  x.lineWidth = Math.max(1.4, s / 360); x.lineCap = 'round'; x.lineJoin = 'round'
+  const lines = tall ? 26 : 14
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < lines; i++) {
+      const spread = tall ? H * .86 : H * .78
+      let py = cy + (i - (lines - 1) / 2) * (spread / lines)
+      let px = cx + side * (clearW + rnd() * 24)
+      const pts = [[px, py]]
+      const total = (tall ? W * .5 : (W / 2 - clearW)) * (.45 + rnd() * .5)
+      let run = 0
+      while (run < total) {
+        const seg = total * (.18 + rnd() * .3)
+        px += side * seg; run += seg; pts.push([px, py])
+        if (run < total * .8 && rnd() > .45) {
+          const d = (rnd() > .5 ? 1 : -1) * (spread / lines) * (1 + Math.floor(rnd() * 2))
+          px += side * Math.abs(d); py += d; run += Math.abs(d); pts.push([px, py])
+        }
+      }
+      const [sx, sy] = pts[0], [ex, ey] = pts[pts.length - 1]
+      const g = x.createLinearGradient(sx, sy, ex, ey)
+      g.addColorStop(0, 'rgba(123,224,218,.85)'); g.addColorStop(.6, 'rgba(111,147,230,.45)'); g.addColorStop(1, 'rgba(111,147,230,.12)')
+      x.strokeStyle = g; x.globalAlpha = .55 + rnd() * .45
+      x.beginPath(); pts.forEach(([a, b2], j) => j ? x.lineTo(a, b2) : x.moveTo(a, b2)); x.stroke()
+      x.globalAlpha = 1
+      if (rnd() > .25) {
+        x.shadowBlur = 14; x.shadowColor = '#66CCCA'
+        const col = rnd() > .45 ? '#7BE0DA' : '#7F9FEA'; const r = Math.max(2.4, s / 150)
+        x.beginPath(); x.arc(ex, ey, r, 0, Math.PI * 2)
+        if (rnd() > .5) { x.fillStyle = col; x.fill() } else { x.strokeStyle = col; x.lineWidth = Math.max(1.4, s / 360); x.stroke() }
+        x.shadowBlur = 0
+      }
+    }
+  }
+  // particles
+  for (let i = 0; i < (tall ? 260 : 200); i++) {
+    const ang = rnd() * Math.PI * 2, rad = s * (.25 + rnd() * .9)
+    const px = cx + Math.cos(ang) * rad * (W / s) * .6, py = cy + Math.sin(ang) * rad * .55
+    if (Math.abs(px - cx) < clearW * .8 && Math.abs(py - cy) < clearH * .7) continue
+    x.globalAlpha = .15 + rnd() * .6; x.fillStyle = rnd() > .7 ? '#6F93E6' : '#7BE0DA'
+    x.beginPath(); x.arc(px, py, rnd() * 1.6 + .4, 0, Math.PI * 2); x.fill()
+  }
+  x.globalAlpha = 1
+</script>
+</body>
+</html>

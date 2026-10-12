@@ -62,5 +62,15 @@ for (const f of readdirSync('brand').filter((n) => n.endsWith('.svg'))) {
   await bp.locator('svg').first().screenshot({ path: 'shots/brand-' + f.replace('.svg', '.png'), omitBackground: true })
 }
 
+// Social banners
+import { pathToFileURL } from 'node:url'
+import { resolve } from 'node:path'
+for (const [w, h, n] of [[1500, 500, 'x-header'], [1584, 396, 'linkedin-cover'], [1080, 1080, 'instagram-post'], [1080, 1920, 'story'], [1920, 1080, 'presentation']]) {
+  const pg = await page({ width: w, height: h })
+  await pg.goto(pathToFileURL(resolve('brand/banner.html')).href + `?w=${w}&h=${h}`, { waitUntil: 'networkidle' })
+  await pg.evaluate(() => document.fonts.ready); await pg.waitForTimeout(600)
+  await pg.locator('#b').screenshot({ path: `shots/banner-${n}.png` })
+}
+
 await browser.close()
 console.log('done')
