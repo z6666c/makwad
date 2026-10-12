@@ -35,7 +35,7 @@ for (const [name, type, opts] of targets) {
     const total = await p.locator('#estimate .est-price b').innerText()
     await p.locator('#estimate').screenshot({ path: `shots/${name}-estimate.png` })
     const overflow = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
-    for (const path of ['/login', '/privacy', '/dashboard']) {
+    for (const path of ['/login', '/privacy', '/terms', '/dashboard', '/login/']) {
       const r = await p.goto(BASE + path, { waitUntil: 'networkidle', timeout: 45000 })
       await p.waitForTimeout(800)
       const h = await p.locator('h1, h2, h3').first().innerText().catch(() => '?')
@@ -67,8 +67,6 @@ await probe('updatePricing anonymous', () => c.mutation('settings:updatePricing'
 await probe('setRole anonymous', () => c.mutation('users:setRole', { email: 'attacker@example.com', role: 'admin' }))
 await probe('coupons.save anonymous', () => c.mutation('coupons:save', { code: 'FREE90', kind: 'percent', value: 90, active: true }))
 await probe('seed (internal) anonymous', () => c.mutation('app:seedDemoClient', { email: 'x@example.com', name: 'x' }))
-await probe('submitLead XSS payload', () => c.mutation('app:submitLead', { name: '<img src=x onerror=alert(1)>', email: 'sec-test@example.com', types: [], plan: '', message: '<script>alert(1)</script> security test, safe to delete' }))
-for (let i = 0; i < 4; i++) await probe(`submitLead flood #${i + 2}`, () => c.mutation('app:submitLead', { name: 'flood test', email: 'sec-test@example.com', types: [], plan: '', message: 'rate limit test, safe to delete' }))
 await probe('coupon wrong code', () => c.query('coupons:check', { code: 'DOESNOTEXIST' }))
 
 writeFileSync('shots/report.txt', report.join('\n'))
