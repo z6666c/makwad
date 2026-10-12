@@ -12,7 +12,7 @@ import type { ServiceKey } from '@/estimate'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { useTitle } from '@/useTitle'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
-import { useSettings } from '@/site-config'
+import { usePricing, useSettings } from '@/site-config'
 
 const NAV = [
   ['#services', 'خدماتنا'],
@@ -62,7 +62,10 @@ export default function Home() {
     | { works: Array<Doc<'works'>>; testimonials: Array<Doc<'testimonials'>> }
     | undefined
   const clients = settings.clients ?? []
-  const useEstimate = (summary: string, p: string, t: Array<string>) => {
+  const catalog = usePricing()
+  const [amount, setAmount] = useState<number | undefined>(undefined)
+  const useEstimate = (summary: string, p: string, t: Array<string>, total: number) => {
+    setAmount(total)
     setMessage(summary)
     setPlan(p)
     setTypes(t)
@@ -120,17 +123,17 @@ export default function Home() {
           <section className="section" id="services">
             <div className="sec-head">
               <div><span className="kicker">خدماتنا</span><h2>ماذا نبني</h2></div>
-              <p>ثماني خدمات بأسعار واضحة تبدأ من 1,500 ريال. اضغط «احسب السعر» لترى التكلفة بالتفصيل.</p>
+              <p>خدمات بأسعار واضحة تبدأ من 1,500 ريال. اضغط «احسب السعر» لترى التكلفة بالتفصيل.</p>
             </div>
             <div className="services">
-              {SERVICES.map((s) => (
+              {SERVICES.filter((s) => catalog.some((c) => c.key === s.key)).map((s) => (
                 <div className="svc" key={s.title}>
                   <div className="svc-icon"><Icon d={s.icon} /></div>
                   <h3>{s.title}</h3>
                   <p>{s.text}</p>
                   <div className="tags">{s.tags.map((t) => <span className="tag" key={t}>{t}</span>)}</div>
                   <div className="svc-foot">
-                    <span className="svc-price"><small>يبدأ من</small><b className="mono">{fmtSAR(getService(s.key).from)}</b><small>ريال{getService(s.key).monthly ? ' / شهرياً' : ''}</small></span>
+                    <span className="svc-price"><small>يبدأ من</small><b className="mono">{fmtSAR(getService(s.key, catalog).from)}</b><small>ريال{getService(s.key, catalog).monthly ? ' / شهرياً' : ''}</small></span>
                     <button className="linkish" type="button" onClick={() => priceOf(s.key)}>احسب السعر ←</button>
                   </div>
                 </div>
@@ -228,7 +231,7 @@ export default function Home() {
                 <p className="muted">أرسل لنا فكرتك ونرد عليك خلال يوم عمل واحد بموعد لجلسة اكتشاف مجانية.</p>
 <ContactInfo />
               </div>
-              <ContactForm plan={plan} setPlan={setPlan} types={types} setTypes={setTypes} message={message} setMessage={setMessage} />
+              <ContactForm plan={plan} setPlan={setPlan} types={types} setTypes={setTypes} message={message} setMessage={(m) => { setMessage(m); if (!m) setAmount(undefined) }} amount={amount} />
             </div>
           </section>
         </div>
@@ -446,9 +449,10 @@ type FormProps = {
   setTypes: (f: (cur: Array<string>) => Array<string>) => void
   message: string
   setMessage: (m: string) => void
+  amount?: number
 }
 
-function ContactForm({ plan, setPlan, types, setTypes, message, setMessage }: FormProps) {
+function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amount }: FormProps) {
   const submit = useMutation(api.app.submitLead)
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null)
@@ -467,6 +471,7 @@ function ContactForm({ plan, setPlan, types, setTypes, message, setMessage }: Fo
         types,
         plan,
         message,
+        ...(amount ? { amount } : {}),
       })
       if (r.ok) {
         setResult({ ok: true, text: 'وصلنا طلبك. سيتواصل معك فريقنا خلال يوم عمل واحد.' })

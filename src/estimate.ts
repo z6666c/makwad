@@ -14,6 +14,7 @@ export type Service = {
   tiers: Array<Option>
   addons: Array<Option>
   note?: string
+  hidden?: boolean
 }
 
 export const SERVICE_PRICING: Array<Service> = [
@@ -186,10 +187,13 @@ export type Estimate = {
   plan: string
 }
 
-export const getService = (k: ServiceKey) => SERVICE_PRICING.find((s) => s.key === k) ?? SERVICE_PRICING[0]
+export type Catalog = Array<Service>
 
-export function defaultInput(k: ServiceKey): EstimateInput {
-  const s = getService(k)
+export const getService = (k: ServiceKey, catalog: Catalog = SERVICE_PRICING) =>
+  catalog.find((s) => s.key === k) ?? catalog[0] ?? SERVICE_PRICING[0]
+
+export function defaultInput(k: ServiceKey, catalog: Catalog = SERVICE_PRICING): EstimateInput {
+  const s = getService(k, catalog)
   return { service: k, tier: s.tiers[0].key, addons: [], urgent: false, months: 1 }
 }
 
@@ -199,8 +203,8 @@ export function planFor(total: number): string {
   return 'المنشآت'
 }
 
-export function estimate(input: EstimateInput): Estimate {
-  const s = getService(input.service)
+export function estimate(input: EstimateInput, catalog: Catalog = SERVICE_PRICING): Estimate {
+  const s = getService(input.service, catalog)
   const tier = s.tiers.find((t) => t.key === input.tier) ?? s.tiers[0]
   const addons = s.addons.filter((a) => input.addons.includes(a.key))
   const lines: Array<Line> = [{ label: tier.label, amount: tier.price }, ...addons.map((a) => ({ label: a.label, amount: a.price }))]
@@ -234,8 +238,8 @@ export function fmtDays(a: number, b: number): string {
   return `${Math.max(1, Math.round(a / 5))}–${Math.max(2, Math.round(b / 5))} أسابيع`
 }
 
-export function estimateSummary(input: EstimateInput, e: Estimate): string {
-  const s = getService(input.service)
+export function estimateSummary(input: EstimateInput, e: Estimate, catalog: Catalog = SERVICE_PRICING): string {
+  const s = getService(input.service, catalog)
   const out = ['من حاسبة الأسعار في الموقع:', `• الخدمة: ${s.label}`]
   for (const l of e.lines) out.push(`• ${l.label}: ${l.amount < 0 ? '−' : ''}${fmtSAR(Math.abs(l.amount))} ريال`)
   out.push(`• الإجمالي: ${fmtSAR(e.total)} ريال${s.monthly ? '' : `، المدة ${fmtDays(e.daysLow, e.daysHigh)}`}`, '', 'نبذة عن الفكرة: ')

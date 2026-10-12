@@ -1,20 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
-import { DEPOSIT_RATE, DURATIONS, SERVICE_PRICING, defaultInput, estimate, estimateSummary, fmtDays, fmtSAR, getService } from '@/estimate'
+import { DEPOSIT_RATE, DURATIONS, defaultInput, estimate, estimateSummary, fmtDays, fmtSAR, getService } from '@/estimate'
 import type { EstimateInput, ServiceKey } from '@/estimate'
+import { usePricing } from '@/site-config'
 
 type Props = {
   service: ServiceKey
   onService: (k: ServiceKey) => void
-  onUse: (summary: string, plan: string, types: Array<string>) => void
+  onUse: (summary: string, plan: string, types: Array<string>, amount: number) => void
 }
 
 export function Estimator({ service, onService, onUse }: Props) {
-  const [input, setInput] = useState<EstimateInput>(() => defaultInput(service))
+  const catalog = usePricing()
+  const [input, setInput] = useState<EstimateInput>(() => defaultInput(service, catalog))
   useEffect(() => {
-    setInput((cur) => (cur.service === service ? cur : defaultInput(service)))
-  }, [service])
-  const s = getService(input.service)
-  const e = useMemo(() => estimate(input), [input])
+    setInput((cur) => (cur.service === service ? cur : defaultInput(service, catalog)))
+  }, [service, catalog])
+  const s = getService(input.service, catalog)
+  const e = useMemo(() => estimate(input, catalog), [input, catalog])
   const toggle = (k: string) =>
     setInput((v) => ({ ...v, addons: v.addons.includes(k) ? v.addons.filter((a) => a !== k) : [...v.addons, k] }))
 
@@ -24,10 +26,10 @@ export function Estimator({ service, onService, onUse }: Props) {
         <fieldset className="est-group">
           <legend>الخدمة</legend>
           <div className="est-seg">
-            {SERVICE_PRICING.map((x) => (
+            {catalog.map((x) => (
               <label key={x.key} className={input.service === x.key ? 'on' : ''}>
                 <input type="radio" name="est-service" value={x.key} checked={input.service === x.key}
-                  onChange={() => { onService(x.key); setInput(defaultInput(x.key)) }} />
+                  onChange={() => { onService(x.key); setInput(defaultInput(x.key, catalog)) }} />
                 {x.label}
               </label>
             ))}
@@ -98,7 +100,7 @@ export function Estimator({ service, onService, onUse }: Props) {
           </>
         )}
         <div className="est-row"><span>الباقة المناسبة</span><b>{e.plan}</b></div>
-        <button className="btn" type="button" onClick={() => onUse(estimateSummary(input, e), e.plan, [s.type])}>اطلب عرضاً بهذه التفاصيل</button>
+        <button className="btn" type="button" onClick={() => onUse(estimateSummary(input, e, catalog), e.plan, [s.type], e.total)}>اطلب عرضاً بهذه التفاصيل</button>
         <p className="est-note">الأسعار بالريال السعودي ولا تشمل ضريبة القيمة المضافة إن وُجدت. {s.note ?? ''} السعر النهائي يُعتمد بعد جلسة الاكتشاف المجانية.</p>
       </aside>
     </div>

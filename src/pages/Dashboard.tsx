@@ -10,9 +10,14 @@ import { useTitle } from '@/useTitle'
 import { DEFAULT_SETTINGS, whatsappLink } from '@/site-config'
 import type { SiteSettings } from '@/site-config'
 import { WorkCard } from '@/pages/Home'
+import { ICONS, Icon, Overview, PricingPanel, QuotesPanel, draftFromLead } from '@/pages/AdminExtras'
+import type { Quote, Section } from '@/pages/AdminExtras'
+import { fmtSAR } from '@/estimate'
+import { usePricing } from '@/site-config'
 import { ARTS, COLORS } from '@/mockups'
 
 const CanAdmin = createContext(false)
+const MakeQuote = createContext<(l: Doc<'leads'>) => void>(() => {})
 const ROLE_LABEL: Record<string, string> = { owner: 'المالك', admin: 'مدير', staff: 'موظف', client: 'عميل', blocked: 'موقوف' }
 
 const STAGES = ['الاكتشاف', 'التصميم', 'البرمجة', 'الاختبار', 'الإطلاق']
@@ -54,8 +59,13 @@ export default function DashboardPage() {
 }
 
 function Dashboard() {
-  const me = useQuery(api.app.me)
   const { signOut } = useAuthActions()
+  return <DashFrame onSignOut={() => void signOut()} />
+}
+
+export function DashFrame({ onSignOut }: { onSignOut: () => void }) {
+  const me = useQuery(api.app.me)
+  const signOut = onSignOut
   if (me === undefined) return <div className="center-screen">جارٍ التحميل…</div>
   if (me.status === 'blocked') {
     return (
@@ -63,7 +73,7 @@ function Dashboard() {
         <div className="empty">
           <h3>تم إيقاف حسابك</h3>
           <p>تواصل مع إدارة استوديو مكود لإعادة تفعيل الحساب.</p>
-          <button className="btn ghost" type="button" onClick={() => void signOut()}>تسجيل الخروج</button>
+          <button className="btn ghost" type="button" onClick={signOut}>تسجيل الخروج</button>
         </div>
       </div>
     )
@@ -80,67 +90,99 @@ function Dashboard() {
             <span className="role-pill">{roleLabel}</span>
             <div className="avatar">{me.name.charAt(0)}</div>
             <span><b>{me.name}</b><small className="mono">{me.email}</small></span>
-            <button className="btn ghost small" type="button" onClick={() => void signOut()}>خروج</button>
+            <button className="btn ghost small" type="button" onClick={signOut}>خروج</button>
           </div>
         </div>
       </header>
-      <div className="wrap dash-body">
-        {team ? (
-          <CanAdmin.Provider value={me.role === 'admin'}><AdminView /></CanAdmin.Provider>
-        ) : (
-          <ClientView name={me.name} />
-        )}
-      </div>
+      {team ? (
+        <CanAdmin.Provider value={me.role === 'admin'}><AdminView /></CanAdmin.Provider>
+      ) : (
+        <div className="wrap dash-body"><ClientView name={me.name} /></div>
+      )}
     </div>
   )
 }
 
 /* =================== ADMIN =================== */
 
+const SECTIONS: Array<{ key: Section; label: string; admin?: boolean }> = [
+  { key: 'overview', label: 'نظرة عامة' },
+  { key: 'leads', label: 'الطلبات' },
+  { key: 'projects', label: 'المشاريع' },
+  { key: 'quotes', label: 'عروض الأسعار' },
+  { key: 'pricing', label: 'الأسعار والخدمات', admin: true },
+  { key: 'content', label: 'محتوى الموقع', admin: true },
+  { key: 'users', label: 'المستخدمون والموظفون', admin: true },
+  { key: 'settings', label: 'الإعدادات', admin: true },
+]
+
+function initialSection(): Section {
+  const q = new URLSearchParams(window.location.search).get('tab')
+  return SECTIONS.some((x) => x.key === q) ? (q as Section) : 'overview'
+}
+
 function AdminView() {
   const leadsRes = useQuery(api.app.listLeads)
   const projRes = useQuery(api.app.listProjects)
+  const quotesRes = useQuery(api.quotes.list) as { status: 'ok'; quotes: Array<Quote> } | { status: 'forbidden' } | undefined
   const clear = useMutation(api.app.clearExamples)
   const canAdmin = useContext(CanAdmin)
-  const [tab, setTab] = useState<'leads' | 'projects' | 'content' | 'users' | 'settings'>('leads')
+  const catalog = usePricing()
+  const [tab, setTab] = useState<Section>(initialSection)
+  const [seed, setSeed] = useState<ReturnType<typeof draftFromLead> | null>(null)
+  const go = (s: Section) => { setTab(s); window.scrollTo({ top: 0 }) }
 
-  if (leadsRes === undefined || projRes === undefined) return <p className="muted">جارٍ تحميل البيانات…</p>
-  if (leadsRes.status !== 'ok' || projRes.status !== 'ok') return <p className="muted">لا تملك صلاحية الإدارة.</p>
+  if (leadsRes === undefined || projRes === undefined) return <p className="muted wrap dash-body">جارٍ تحميل البيانات…</p>
+  if (leadsRes.status !== 'ok' || projRes.status !== 'ok') return <p className="muted wrap dash-body">لا تملك صلاحية الإدارة.</p>
 
   const leads = leadsRes.leads
   const projects = projRes.projects
-  const newCount = leads.filter((l) => l.status === 'new').length
-  const active = projects.filter((p) => p.stage < 4).length
+  const quotes = quotesRes?.status === 'ok' ? quotesRes.quotes : []
   const hasExamples = leads.some((l) => l.isExample) || projects.some((p) => p.isExample)
+  const counts: Partial<Record<Section, number>> = {
+    leads: leads.filter((l) => l.status === 'new').length,
+    projects: projects.filter((p) => p.stage < 4).length,
+    quotes: quotes.filter((q) => q.status === 'draft' || q.status === 'sent').length,
+  }
+  const sections = SECTIONS.filter((x) => !x.admin || canAdmin)
+  const cur = sections.find((x) => x.key === tab) ?? sections[0]
+  const today = new Intl.DateTimeFormat('ar-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' }).format(Date.now())
 
   return (
-    <>
-      <div className="dash-head">
-        <div><span className="kicker">{canAdmin ? 'لوحة الإدارة' : 'لوحة الفريق'}</span><h1>أهلاً بك في استوديو مكود</h1></div>
-        {hasExamples && canAdmin && (
-          <button className="btn ghost small" type="button" onClick={() => void clear({})}>حذف البيانات التجريبية</button>
-        )}
+    <MakeQuote.Provider value={(l) => { setSeed(draftFromLead(l)); go('quotes') }}>
+      <div className="admin wrap">
+        <aside className="side" aria-label="أقسام لوحة التحكم">
+          <span className="side-cap">{canAdmin ? 'لوحة الإدارة' : 'لوحة الفريق'}</span>
+          <nav>
+            {sections.map((x) => (
+              <button key={x.key} type="button" aria-current={cur.key === x.key ? 'page' : undefined} onClick={() => go(x.key)}>
+                <Icon d={ICONS[x.key]} />
+                <span>{x.label}</span>
+                {!!counts[x.key] && <em>{counts[x.key]}</em>}
+              </button>
+            ))}
+          </nav>
+          <a className="side-link" href="/makwad/" target="_blank" rel="noopener noreferrer">معاينة الموقع ↗</a>
+        </aside>
+        <main className="admin-main">
+          <div className="dash-head">
+            <div><span className="kicker">{today}</span><h1>{cur.key === 'overview' ? 'أهلاً بك في استوديو مكود' : cur.label}</h1></div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {hasExamples && canAdmin && <button className="btn ghost small" type="button" onClick={() => void clear({})}>حذف البيانات التجريبية</button>}
+              {cur.key !== 'quotes' && <button className="btn small" type="button" onClick={() => { setSeed(null); go('quotes') }}>+ عرض سعر</button>}
+            </div>
+          </div>
+          {cur.key === 'overview' && <><Overview leads={leads} projects={projects} quotes={quotes} go={go} /><LeadsChart leads={leads} /></>}
+          {cur.key === 'leads' && <LeadsPanel leads={leads} />}
+          {cur.key === 'projects' && <ProjectsPanel projects={projects} />}
+          {cur.key === 'quotes' && <QuotesPanel quotes={quotes} leads={leads} catalog={catalog} seed={seed} onSeedUsed={() => setSeed(null)} canAdmin={canAdmin} />}
+          {cur.key === 'pricing' && canAdmin && <PricingPanel />}
+          {cur.key === 'content' && canAdmin && <ContentPanel />}
+          {cur.key === 'users' && canAdmin && <UsersPanel />}
+          {cur.key === 'settings' && canAdmin && <SettingsPanel />}
+        </main>
       </div>
-      <div className="kpis">
-        <div className="kpi"><small>طلبات جديدة</small><b>{newCount}</b></div>
-        <div className="kpi"><small>كل الطلبات</small><b>{leads.length}</b></div>
-        <div className="kpi"><small>مشاريع نشطة</small><b>{active}</b></div>
-        <div className="kpi"><small>نسبة التحويل</small><b>{leads.length ? Math.round((leads.filter((l) => l.status === 'won').length / leads.length) * 100) : 0}%</b></div>
-      </div>
-      <LeadsChart leads={leads} />
-      <div className="tabs" role="tablist">
-        <button role="tab" type="button" aria-selected={tab === 'leads'} onClick={() => setTab('leads')}>الطلبات <span className="count">{leads.length}</span></button>
-        <button role="tab" type="button" aria-selected={tab === 'projects'} onClick={() => setTab('projects')}>المشاريع <span className="count">{projects.length}</span></button>
-        {canAdmin && <button role="tab" type="button" aria-selected={tab === 'content'} onClick={() => setTab('content')}>محتوى الموقع</button>}
-        {canAdmin && <button role="tab" type="button" aria-selected={tab === 'users'} onClick={() => setTab('users')}>المستخدمون والموظفون</button>}
-        {canAdmin && <button role="tab" type="button" aria-selected={tab === 'settings'} onClick={() => setTab('settings')}>الإعدادات</button>}
-      </div>
-      {tab === 'leads' && <LeadsPanel leads={leads} />}
-      {tab === 'projects' && <ProjectsPanel projects={projects} />}
-      {tab === 'content' && canAdmin && <ContentPanel />}
-      {tab === 'users' && canAdmin && <UsersPanel />}
-      {tab === 'settings' && canAdmin && <SettingsPanel />}
-    </>
+    </MakeQuote.Provider>
   )
 }
 
@@ -216,7 +258,7 @@ function LeadsPanel({ leads }: { leads: Array<Doc<'leads'>> }) {
         </div>
       </div>
       {shown.length === 0 ? (
-        <div className="empty"><h3>لا توجد طلبات هنا</h3><p>تصل الطلبات من نموذج التواصل وحاسبة التكلفة في الموقع ومن حسابات العملاء.</p></div>
+        <div className="empty"><h3>لا توجد طلبات هنا</h3><p>تصل الطلبات من نموذج التواصل وحاسبة الأسعار في الموقع ومن حسابات العملاء.</p></div>
       ) : (
         <div className="lead-list">
           {shown.map((l) => <LeadRow key={l._id} l={l} />)}
@@ -232,6 +274,7 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
   const saveNotes = useMutation(api.app.setLeadNotes)
   const create = useMutation(api.app.createProject)
   const canAdmin = useContext(CanAdmin)
+  const makeQuote = useContext(MakeQuote)
   const [confirm, setConfirm] = useState(false)
   const [open, setOpen] = useState(false)
   const [notes, setNotes] = useState(l.notes ?? '')
@@ -254,6 +297,7 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
           {l.company && <span>{l.company}</span>}
           <span>{l.types.join('، ')}</span>
           <span>الباقة: {l.plan}</span>
+          {l.amount ? <span className="amt">القيمة التقديرية: <b className="mono">{fmtSAR(l.amount)}</b> ريال</span> : null}
           <span>{fmtDate(l._creationTime)}</span>
         </div>
       </div>
@@ -279,7 +323,8 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
               <button className="btn small" type="button" disabled={converting} onClick={async () => {
                 setConverting(true)
                 setErr(null)
-                const platform = l.types.includes('تطبيق ويب') && l.types.includes('تطبيق جوال') ? 'جوال وويب' : l.types.includes('تطبيق ويب') ? 'ويب' : 'iOS وأندرويد'
+                const web = l.types.some((x) => x.includes('ويب')); const app = l.types.includes('تطبيق جوال')
+                const platform = web && app ? 'جوال وويب' : web ? 'ويب' : app ? 'iOS وأندرويد' : (l.types[0] ?? '—')
                 const r = await create({
                   title: `مشروع ${l.company || l.name}`, clientName: l.name, clientEmail: l.email, platform,
                   leadId: l._id, notifyClient: true,
@@ -288,6 +333,7 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
                 if (!r.ok) setErr(r.error)
               }}>{converting ? 'جارٍ التحويل…' : 'تحويل إلى مشروع ودعوة العميل'}</button>
             )}
+            <button className="btn ghost small" type="button" onClick={() => makeQuote(l)}>إنشاء عرض سعر</button>
             <a className="btn ghost small" href={`mailto:${l.email}?subject=${encodeURIComponent('بخصوص طلبك لدى استوديو مكود')}`}>مراسلة بالبريد</a>
             {canAdmin && (confirm ? (
               <>

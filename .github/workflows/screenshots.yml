@@ -15,8 +15,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: VITE_PREVIEW=1 npm run build
       - run: npm install --no-save --no-audit --no-fund playwright-core@1.47.2
-      - run: node scripts/screens.mjs
+      - name: Render review build
+        run: |
+          npx vite preview --port 4173 --strictPort > /tmp/preview.log 2>&1 &
+          sleep 5
+          node scripts/review.mjs
       - name: Publish to screenshots-out branch
         run: |
           cd shots

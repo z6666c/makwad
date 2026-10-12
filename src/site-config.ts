@@ -1,5 +1,7 @@
 import { useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
+import { SERVICE_PRICING } from '@/estimate'
+import type { Catalog } from '@/estimate'
 
 // Fallback company details. The live values are edited from the dashboard (الإعدادات).
 export const COMPANY = {
@@ -17,6 +19,7 @@ export type SiteSettings = {
   stats?: Array<{ value: string; label: string }>
   clients?: Array<string>
   showExampleNote?: boolean
+  pricing?: Catalog | null
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -40,3 +43,10 @@ export const whatsappLink = (s: SiteSettings) =>
   `https://wa.me/${s.whatsapp}?text=${encodeURIComponent(s.whatsappMessage)}`
 
 export const LEGAL_UPDATED = '11 أكتوبر 2026'
+
+// Price catalog: the one saved from the dashboard, or the built-in prices.
+export function usePricing(): Catalog {
+  const s = useSettings()
+  const list = Array.isArray(s.pricing) && s.pricing.length ? s.pricing : SERVICE_PRICING
+  return list.filter((x) => !x.hidden)
+}

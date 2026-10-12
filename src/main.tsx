@@ -40,7 +40,11 @@ declare module '@tanstack/react-router' {
   }
 }
 
-createRoot(document.getElementById('root')!).render(
+const rootEl = document.getElementById('root')!
+if (import.meta.env.VITE_PREVIEW === '1' && window.location.pathname.endsWith('/preview')) {
+  // Review build only: the dashboard with sample data, no sign-in. Never part of the production build.
+  void import('./preview').then((m) => m.mount(rootEl))
+} else createRoot(rootEl).render(
   <StrictMode>
     <ConvexAuthProvider client={convex}>
       <RouterProvider router={router} />

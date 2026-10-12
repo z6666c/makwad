@@ -5,7 +5,7 @@ type Tables = {
   leads: Base & {
     name: string; company?: string; email: string; types: string[]; plan: string; message: string;
     source: "website" | "client"; status: "new" | "contacted" | "won" | "lost";
-    notes?: string; projectId?: string; isExample?: boolean;
+    notes?: string; projectId?: string; amount?: number; isExample?: boolean;
   };
   projects: Base & {
     title: string; clientName: string; clientEmail: string; platform: string;
@@ -18,6 +18,11 @@ type Tables = {
   works: Base & {
     title: string; label: string; text: string; kind: "mobile" | "web" | "both"; art: string; color: string;
     metrics: Metric[]; url?: string; order: number; visible: boolean;
+  };
+  quotes: Base & {
+    number: string; clientName: string; clientEmail: string; company?: string; title: string; leadId?: string;
+    items: Array<{ label: string; qty: number; price: number }>; discount: number; vat: boolean; validDays: number;
+    notes?: string; status: "draft" | "sent" | "accepted" | "rejected"; projectId?: string; createdBy: string;
   };
   testimonials: Base & { text: string; name: string; role: string; order: number; visible: boolean };
 };
