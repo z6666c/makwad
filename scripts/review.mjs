@@ -19,7 +19,7 @@ const step = async (name, fn) => { try { await fn() } catch (e) { logs.push(`[st
 
 // Dashboard (sample data)
 const d = await page({ width: 1440, height: 900 })
-for (const tab of ['overview', 'leads', 'projects', 'quotes', 'pricing', 'asclient', 'settings']) {
+for (const tab of ['overview', 'finance', 'channels', 'asclient']) {
   await step(tab, async () => {
     await d.goto(`${BASE}/preview?tab=${tab}`, { waitUntil: 'networkidle' }); await settle(d)
     await shot(d, `dash-${tab}`, { fullPage: tab !== 'leads' && tab !== 'projects' })
@@ -53,6 +53,20 @@ await step('lead-open', async () => {
   await d.goto(`${BASE}/preview?tab=leads`, { waitUntil: 'networkidle' }); await settle(d)
   await d.getByRole('button', { name: 'التفاصيل' }).first().click(); await d.waitForTimeout(400)
   await shot(d, 'dash-lead-open')
+})
+await step('finance-tabs', async () => {
+  await d.goto(`${BASE}/preview?tab=finance`, { waitUntil: 'networkidle' }); await settle(d)
+  await d.getByRole('tab', { name: 'الفواتير والدفعات' }).click(); await d.waitForTimeout(400)
+  await d.locator('.fin .panel').last().screenshot({ path: 'shots/dash-finance-invoices.png' })
+  await d.getByRole('tab', { name: 'ربحية المشاريع' }).click(); await d.waitForTimeout(400)
+  await d.locator('.fin .panel').last().screenshot({ path: 'shots/dash-finance-profit.png' })
+  await d.getByRole('button', { name: '+ مصروف' }).click(); await d.waitForTimeout(300)
+  await d.locator('.fin .cp').screenshot({ path: 'shots/dash-finance-form.png' })
+})
+await step('mobile-finance', async () => {
+  const mm = await page({ width: 390, height: 844 }, true)
+  await mm.goto(`${BASE}/preview?tab=finance`, { waitUntil: 'networkidle' }); await settle(mm)
+  await mm.screenshot({ path: 'shots/dash-mobile-finance.png', fullPage: true })
 })
 await step('invoice', async () => {
   await d.goto(`${BASE}/preview?tab=projects`, { waitUntil: 'networkidle' }); await settle(d)

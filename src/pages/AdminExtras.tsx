@@ -5,12 +5,13 @@ import type React from 'react'
 import { api } from '@/convex/_generated/api'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { LogoMark } from '@/components/Logo'
+import { PayMethodsBox } from '@/components/PayMethods'
 import { SERVICE_PRICING, fmtSAR } from '@/estimate'
 import type { Catalog, Option, Service } from '@/estimate'
 import { COMPANY, DEFAULT_SETTINGS } from '@/site-config'
 import type { SiteSettings } from '@/site-config'
 
-export type Section = 'overview' | 'leads' | 'projects' | 'quotes' | 'pricing' | 'asclient' | 'content' | 'users' | 'settings'
+export type Section = 'overview' | 'leads' | 'projects' | 'quotes' | 'finance' | 'channels' | 'pricing' | 'asclient' | 'content' | 'users' | 'settings'
 export type Quote = Doc<'quotes'>
 type Lead = Doc<'leads'>
 type Project = Doc<'projects'>
@@ -25,6 +26,8 @@ export const ICONS: Record<Section, string> = {
   leads: '<path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/>',
   projects: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   quotes: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h4"/>',
+  finance: '<path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/><circle cx="18" cy="8" r="1.2"/>',
+  channels: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
   pricing: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="8" r="1.5"/>',
   asclient: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   content: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 20V9"/>',
@@ -431,7 +434,7 @@ export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => v
             {q.notes && <li>{q.notes}</li>}
           </ul>
         </div>
-        {s.iban && <BankBox s={s} />}
+        <PayMethodsBox s={s} />
         <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">{s.email}</span></footer>
       </article>
     </div>
@@ -638,19 +641,9 @@ export function CouponsPanel() {
   )
 }
 
-function BankBox({ s }: { s: SiteSettings }) {
-  return (
-    <div className="sheet-bank">
-      <small>بيانات التحويل البنكي</small>
-      <span>{s.bankName || 'الحساب البنكي'} · باسم {COMPANY.name}</span>
-      <b className="mono">{s.iban?.replace(/(.{4})/g, '$1 ').trim()}</b>
-    </div>
-  )
-}
-
 /* =================== INVOICES =================== */
 
-type Pay = { title: string; amount: number; status: 'pending' | 'due' | 'paid' }
+type Pay = { title: string; amount: number; status: 'pending' | 'due' | 'paid'; paidAt?: string; method?: string }
 
 export function InvoicePrint({ p, index, onClose }: { p: Project; index: number; onClose: () => void }) {
   const s = (useQuery(api.settings.get) as SiteSettings | undefined) ?? DEFAULT_SETTINGS
@@ -693,7 +686,7 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
           {vatOn && <div><span>ضريبة القيمة المضافة 15%</span><b className="mono">{fmtSAR(vat)}</b></div>}
           <div className="grand"><span>الإجمالي المستحق (ريال)</span><b className="mono">{fmtSAR(pay.amount)}</b></div>
         </div>
-        {s.iban && pay.status !== 'paid' && <BankBox s={s} />}
+        {pay.status !== 'paid' && <PayMethodsBox s={s} />}
         {!vatOn && <p className="sheet-note">المنشأة غير مسجلة في ضريبة القيمة المضافة.</p>}
         <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">{s.email}</span></footer>
       </article>

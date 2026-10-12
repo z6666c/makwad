@@ -24,6 +24,7 @@ export type SiteSettings = {
   crNumber?: string
   bankName?: string
   iban?: string
+  payMethods?: Array<{ key: string; label: string; enabled: boolean; link?: string; account?: string; note?: string }>
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {

@@ -11,7 +11,7 @@ type Tables = {
     title: string; clientName: string; clientEmail: string; platform: string;
     stage: number; progress: number; dueDate?: string;
     links?: Array<{ label: string; url: string }>;
-    payments?: Array<{ title: string; amount: number; status: "pending" | "due" | "paid" }>;
+    payments?: Array<{ title: string; amount: number; status: "pending" | "due" | "paid"; paidAt?: string; method?: string }>;
     isExample?: boolean;
   };
   updates: Base & { projectId: string; text: string; author: "admin" | "client"; authorName: string };
@@ -24,6 +24,7 @@ type Tables = {
     items: Array<{ label: string; qty: number; price: number }>; discount: number; vat: boolean; validDays: number;
     notes?: string; status: "draft" | "sent" | "accepted" | "rejected"; projectId?: string; createdBy: string;
   };
+  transactions: Base & { kind: 'income' | 'expense'; date: string; category: string; description: string; amount: number; vat?: number; projectId?: string; method?: string; recurring?: 'monthly' | 'yearly' };
   coupons: Base & { code: string; kind: 'percent' | 'fixed'; value: number; active: boolean; expires?: string; maxUses?: number; uses: number; minTotal?: number; note?: string };
   activity: Base & { actor: string; kind: string; text: string };
   testimonials: Base & { text: string; name: string; role: string; order: number; visible: boolean };

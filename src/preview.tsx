@@ -28,9 +28,9 @@ const leads = [
 
 const projects = [
   { _id: 'p1', _creationTime: d(30), title: 'نظام مستودعات مجموعة رواء', clientName: 'ماجد الحربي', clientEmail: 'majed@rawa.sa', platform: 'ويب', stage: 2, progress: 55, dueDate: iso(9),
-    payments: [{ title: 'دفعة أولى (40%)', amount: 15400, status: 'paid' }, { title: 'اعتماد التصميم (30%)', amount: 11550, status: 'due' }, { title: 'التسليم (30%)', amount: 11550, status: 'pending' }] },
+    payments: [{ title: 'دفعة أولى (40%)', amount: 15400, status: 'paid', paidAt: iso(-28), method: 'تحويل بنكي' }, { title: 'اعتماد التصميم (30%)', amount: 11550, status: 'due' }, { title: 'التسليم (30%)', amount: 11550, status: 'pending' }] },
   { _id: 'p2', _creationTime: d(36), title: 'منصة الدانة العقارية', clientName: 'خالد الغامدي', clientEmail: 'khaled@aldana.sa', platform: 'ويب', stage: 3, progress: 85, dueDate: iso(4),
-    payments: [{ title: 'دفعة أولى (40%)', amount: 8800, status: 'paid' }, { title: 'اعتماد التصميم (30%)', amount: 6600, status: 'paid' }, { title: 'التسليم (30%)', amount: 6600, status: 'pending' }] },
+    payments: [{ title: 'دفعة أولى (40%)', amount: 8800, status: 'paid', paidAt: iso(-60) }, { title: 'اعتماد التصميم (30%)', amount: 6600, status: 'paid', paidAt: iso(-20), method: 'ميسّر Moyasar' }, { title: 'التسليم (30%)', amount: 6600, status: 'pending' }] },
   { _id: 'p3', _creationTime: d(3), title: 'وثيقة متطلبات نظام القضايا', clientName: 'عبدالله السالم', clientEmail: 'abdullah@salem.law', platform: 'تحليل', stage: 0, progress: 20, dueDate: iso(6),
     payments: [{ title: 'دفعة كاملة', amount: 3500, status: 'paid' }] },
   { _id: 'p4', _creationTime: d(25), title: 'صيانة موقع بيت الخبرة', clientName: 'هيفاء العنزي', clientEmail: 'haifa@khebra.sa', platform: 'ويب', stage: 2, progress: 40,
@@ -69,6 +69,14 @@ const coupons = [
 const DATA: Record<string, unknown> = {
   'app:teamMembers': { status: 'ok', me: 'alrashidi7amad@gmail.com', rows: [{ email: 'alrashidi7amad@gmail.com', name: 'أحمد الرشيدي' }, { email: 'sultan@makwad.com', name: 'سلطان' }] },
   'app:listActivity': { status: 'ok', items: activity },
+  'finance:list': { status: 'ok', transactions: [
+    { _id: 't1', _creationTime: d(40), kind: 'expense', date: iso(-40), category: 'اشتراكات وبرامج', description: 'اشتراك Figma', amount: 56, recurring: 'monthly' },
+    { _id: 't2', _creationTime: d(40), kind: 'expense', date: iso(-70), category: 'استضافة وخوادم', description: 'خادم سحابي', amount: 190, recurring: 'monthly' },
+    { _id: 't3', _creationTime: d(12), kind: 'expense', date: iso(-12), category: 'مستقلون ومقاولون', description: 'مصمم مستقل — منصة الدانة', amount: 3500, projectId: 'p2' },
+    { _id: 't4', _creationTime: d(5), kind: 'expense', date: iso(-5), category: 'تسويق وإعلانات', description: 'إعلانات سناب شات', amount: 1200 },
+    { _id: 't5', _creationTime: d(8), kind: 'income', date: iso(-8), category: 'استشارة', description: 'جلسة استشارية لمتجر', amount: 750 },
+    { _id: 't6', _creationTime: d(100), kind: 'expense', date: iso(-100), category: 'رسوم حكومية', description: 'وثيقة العمل الحر', amount: 100, recurring: 'yearly' },
+  ] },
   'app:exportAll': { status: 'ok', exportedAt: now, data: { leads, projects, quotes, coupons, updates: [], works: [], testimonials: [], members: [], settings: [], activity } },
   'coupons:list': { status: 'ok', coupons },
   'coupons:check': { ok: true, code: 'MAKWAD10', kind: 'percent', value: 10, minTotal: 0 },
@@ -78,7 +86,7 @@ const DATA: Record<string, unknown> = {
   'app:listProjects': { status: 'ok', projects },
   'app:listUpdates': { status: 'ok', updates: [] },
   'quotes:list': { status: 'ok', quotes },
-  'settings:get': { ...DEFAULT_SETTINGS, crNumber: 'FL-123456789', bankName: 'مصرف الراجحي', iban: 'SA0380000000608010167519' },
+  'settings:get': { ...DEFAULT_SETTINGS, crNumber: 'FL-123456789', bankName: 'مصرف الراجحي', iban: 'SA0380000000608010167519', payMethods: [{ key: 'bank', label: 'تحويل بنكي', enabled: true }, { key: 'stcpay', label: 'STC Pay', enabled: true, account: '0551234567' }, { key: 'moyasar', label: 'ميسّر Moyasar', enabled: true, link: 'https://checkout.moyasar.com/example' }] },
   'users:listUsers': { status: 'ok', rows: users, me: 'alrashidi7amad@gmail.com' },
   'content:adminContent': { status: 'ok', works: [], testimonials: [] },
   'content:publicContent': { works: [], testimonials: [] },

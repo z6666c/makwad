@@ -13,6 +13,8 @@ import { WorkCard } from '@/pages/Home'
 import { BackupButton, ClientQuotes, ICONS, Icon, InvoicePrint, LaunchChecklist, Overview, PricingPanel, QuotesPanel, draftFromLead } from '@/pages/AdminExtras'
 import type { Quote, Section } from '@/pages/AdminExtras'
 import { fmtSAR } from '@/estimate'
+import { FinancePanel, PaymentChannelsPanel } from '@/pages/Finance'
+import { PayMethodsBox, activeMethods } from '@/components/PayMethods'
 import { usePricing } from '@/site-config'
 import { ARTS, COLORS } from '@/mockups'
 
@@ -113,6 +115,8 @@ const SECTIONS: Array<{ key: Section; label: string; admin?: boolean }> = [
   { key: 'leads', label: 'الطلبات' },
   { key: 'projects', label: 'المشاريع' },
   { key: 'quotes', label: 'عروض الأسعار' },
+  { key: 'finance', label: 'المالية والمحاسبة', admin: true },
+  { key: 'channels', label: 'قنوات الدفع', admin: true },
   { key: 'pricing', label: 'الخدمات والأسعار والخصومات', admin: true },
   { key: 'asclient', label: 'معاينة كعميل', admin: true },
   { key: 'content', label: 'محتوى الموقع', admin: true },
@@ -182,6 +186,8 @@ function AdminView() {
           {cur.key === 'leads' && <LeadsPanel leads={leads} />}
           {cur.key === 'projects' && <ProjectsPanel projects={projects} />}
           {cur.key === 'quotes' && <QuotesPanel quotes={quotes} leads={leads} catalog={catalog} seed={seed} onSeedUsed={() => setSeed(null)} canAdmin={canAdmin} />}
+          {cur.key === 'finance' && canAdmin && <FinancePanel projects={projects} />}
+          {cur.key === 'channels' && canAdmin && <PaymentChannelsPanel />}
           {cur.key === 'pricing' && canAdmin && <PricingPanel />}
           {cur.key === 'asclient' && canAdmin && <AsClient projects={projects} />}
           {cur.key === 'content' && canAdmin && <ContentPanel />}
@@ -639,8 +645,38 @@ function ClientProject({ p }: { p: Doc<'projects'> }) {
         </div>
       )}
       <PaymentsSummary payments={p.payments} detailed />
+      <PayNow p={p} />
       <Feed projectId={p._id} placeholder="اكتب ملاحظة أو سؤالاً لفريق استوديو مكود…" />
     </article>
+  )
+}
+
+function PayNow({ p }: { p: Doc<'projects'> }) {
+  const s = (useQuery(api.settings.get) as SiteSettings | undefined) ?? DEFAULT_SETTINGS
+  const report = useMutation(api.app.reportPayment)
+  const dueIdx = (p.payments ?? []).findIndex((x) => x.status === 'due')
+  const methods = activeMethods(s)
+  const [open, setOpen] = useState(false)
+  const [method, setMethod] = useState(methods[0]?.label ?? 'تحويل بنكي')
+  const [note, setNote] = useState('')
+  const [msg, setMsg] = useState<string | null>(null)
+  if (dueIdx < 0) return null
+  const due = (p.payments ?? [])[dueIdx]
+  return (
+    <div className="paynow">
+      <div className="paynow-head"><span>مستحق الآن: <b>{due.title}</b></span><b className="mono">{fmtSAR(due.amount)} ريال</b></div>
+      <PayMethodsBox s={s} compact />
+      {msg ? <div className="sent">{msg}</div> : open ? (
+        <div className="paynow-form">
+          <select className="input" value={method} onChange={(e) => setMethod(e.target.value)} aria-label="طريقة الدفع">{(methods.length ? methods.map((m) => m.label) : ['تحويل بنكي']).map((m) => <option key={m}>{m}</option>)}</select>
+          <input className="input" value={note} onChange={(e) => setNote(e.target.value)} placeholder="رقم العملية أو ملاحظة (اختياري)" />
+          <button className="btn small" type="button" onClick={async () => {
+            const r = await report({ projectId: p._id, index: dueIdx, method, note })
+            setMsg(r.ok ? 'شكراً! وصل إشعار السداد لفريقنا، وبنأكد الاستلام قريباً.' : r.error)
+          }}>إرسال</button>
+        </div>
+      ) : <button className="btn ghost small" type="button" onClick={() => setOpen(true)}>دفعت؟ أبلغنا بالسداد</button>}
+    </div>
   )
 }
 
