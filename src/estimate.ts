@@ -131,6 +131,23 @@ export const SERVICE_PRICING: Array<Service> = [
     ],
   },
   {
+    key: 'cloud', label: 'الاستضافة والحلول السحابية', type: 'استضافة وسحابة', from: 1500, tierLabel: 'نوع الخدمة',
+    tiers: [
+      { key: 'setup', label: 'إطلاق موقعك على الدومين', hint: 'ربط الدومين وCloudflare وSSL وإدارة سنة', price: 1500, days: 2 },
+      { key: 'migrate', label: 'نقل موقع أو نظام قائم', hint: 'إلى استضافة سحابية أسرع وأكثر أماناً', price: 2500, days: 4 },
+      { key: 'server', label: 'خادم سحابي لتطبيق أو نظام', hint: 'قاعدة بيانات وتوسعة تلقائية', price: 4500, days: 6 },
+      { key: 'infra', label: 'بنية سحابية متكاملة', hint: 'بيئات تشغيل واختبار ونسخ ومراقبة', price: 9000, days: 12 },
+    ],
+    addons: [
+      { key: 'mail', label: 'إيميل رسمي على الدومين', hint: 'إعداد وربط وتوثيق', price: 600, days: 1 },
+      { key: 'backup', label: 'نسخ احتياطي يومي', hint: 'مع استرجاع عند الحاجة', price: 800, days: 1 },
+      { key: 'monitor', label: 'مراقبة وتنبيهات', hint: 'تعرف فوراً إذا توقف الموقع', price: 700, days: 1 },
+      { key: 'waf', label: 'حماية متقدمة', hint: 'قواعد جدار حماية مخصصة وحماية من البوتات', price: 900, days: 2 },
+      { key: 'speed', label: 'تسريع الأداء', hint: 'تخزين مؤقت وضغط الصور', price: 500, days: 1 },
+    ],
+    note: 'رسوم الدومين والخوادم السحابية الشهرية (إن وجدت) تُدفع لمزودها مباشرة باسمك.',
+  },
+  {
     key: 'integration', label: 'الدفع والربط', type: 'ربط وتكامل', from: 2000, tierLabel: 'نوع الربط',
     tiers: [
       { key: 'gateway', label: 'ربط بوابة دفع', hint: 'مدى، Apple Pay، STC Pay، تابي', price: 2000, days: 4 },

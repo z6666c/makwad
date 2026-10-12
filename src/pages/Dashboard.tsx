@@ -10,7 +10,7 @@ import { useTitle } from '@/useTitle'
 import { DEFAULT_SETTINGS, whatsappLink } from '@/site-config'
 import type { SiteSettings } from '@/site-config'
 import { WorkCard } from '@/pages/Home'
-import { ClientQuotes, ICONS, Icon, InvoicePrint, Overview, PricingPanel, QuotesPanel, draftFromLead } from '@/pages/AdminExtras'
+import { BackupButton, ClientQuotes, ICONS, Icon, InvoicePrint, LaunchChecklist, Overview, PricingPanel, QuotesPanel, draftFromLead } from '@/pages/AdminExtras'
 import type { Quote, Section } from '@/pages/AdminExtras'
 import { fmtSAR } from '@/estimate'
 import { usePricing } from '@/site-config'
@@ -178,7 +178,7 @@ function AdminView() {
               {cur.key !== 'quotes' && <button className="btn small" type="button" onClick={() => { setSeed(null); go('quotes') }}>+ عرض سعر</button>}
             </div>
           </div>
-          {cur.key === 'overview' && <><Overview leads={leads} projects={projects} quotes={quotes} go={go} /><LeadsChart leads={leads} /></>}
+          {cur.key === 'overview' && <>{canAdmin && <LaunchChecklist leads={leads} projects={projects} go={go} />}<Overview leads={leads} projects={projects} quotes={quotes} go={go} /><LeadsChart leads={leads} /></>}
           {cur.key === 'leads' && <LeadsPanel leads={leads} />}
           {cur.key === 'projects' && <ProjectsPanel projects={projects} />}
           {cur.key === 'quotes' && <QuotesPanel quotes={quotes} leads={leads} catalog={catalog} seed={seed} onSeedUsed={() => setSeed(null)} canAdmin={canAdmin} />}
@@ -186,7 +186,7 @@ function AdminView() {
           {cur.key === 'asclient' && canAdmin && <AsClient projects={projects} />}
           {cur.key === 'content' && canAdmin && <ContentPanel />}
           {cur.key === 'users' && canAdmin && <UsersPanel />}
-          {cur.key === 'settings' && canAdmin && <><SettingsPanel /><BusinessForm /></>}
+          {cur.key === 'settings' && canAdmin && <><SettingsPanel /><BusinessForm /><BackupButton /></>}
         </main>
       </div>
     </MakeQuote.Provider></Team.Provider>

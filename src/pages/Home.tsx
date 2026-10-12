@@ -445,7 +445,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-const TYPES = ['موقع أو تطبيق ويب', 'تطبيق جوال', 'برنامج أو نظام', 'أداة ذكاء اصطناعي', 'تحليل مشروع', 'تصميم', 'ربط وتكامل', 'صيانة']
+const TYPES = ['موقع أو تطبيق ويب', 'تطبيق جوال', 'برنامج أو نظام', 'أداة ذكاء اصطناعي', 'تحليل مشروع', 'تصميم', 'استضافة وسحابة', 'ربط وتكامل', 'صيانة']
 
 type FormProps = {
   plan: string
@@ -480,6 +480,7 @@ function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amou
         ...(amount ? { amount } : {}),
         ...(coupon ? { coupon } : {}),
         phone: String(fd.get('phone') ?? ''),
+        website: String(fd.get('website') ?? ''),
       })
       if (r.ok) {
         setResult({ ok: true, text: 'وصلنا طلبك. سيتواصل معك فريقنا خلال يوم عمل واحد.' })
@@ -500,6 +501,7 @@ function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amou
       <div className="field"><label htmlFor="name">الاسم</label><input id="name" name="name" autoComplete="name" placeholder="مثال: عبدالله السالم" /></div>
       <div className="field"><label htmlFor="company">الشركة</label><input id="company" name="company" autoComplete="organization" placeholder="اختياري" /></div>
       <div className="field"><label htmlFor="email">البريد الإلكتروني</label><input id="email" name="email" type="email" autoComplete="email" dir="ltr" placeholder="name@company.sa" /></div>
+      <div className="hp" aria-hidden="true"><label htmlFor="website">الموقع</label><input id="website" name="website" tabIndex={-1} autoComplete="off" /></div>
       <div className="field"><label htmlFor="phone">رقم الجوال (واتساب)</label><input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="05XXXXXXXX" /></div>
       <div className="field full">
         <span className="lbl">نوع المشروع</span>

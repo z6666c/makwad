@@ -738,3 +738,61 @@ export function ClientQuotes({ asEmail }: { asEmail?: string }) {
     </div>
   )
 }
+
+/* =================== LAUNCH CHECKLIST =================== */
+
+export function LaunchChecklist({ leads, projects, go }: { leads: Array<Lead>; projects: Array<Project>; go: (s: Section) => void }) {
+  const s = useQuery(api.settings.get) as SiteSettings | undefined
+  const [hidden, setHidden] = useState(() => { try { return localStorage.getItem('makwad-launch-hidden') === '1' } catch { return false } })
+  if (!s || hidden) return null
+  const onGithub = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io')
+  const items: Array<{ ok: boolean; label: string; hint: string; to?: Section }> = [
+    { ok: s.whatsapp !== '966500000000', label: 'رقم الواتساب الحقيقي', hint: 'الزر العائم ما زال على رقم افتراضي', to: 'settings' },
+    { ok: !!s.phone && !s.phone.includes('000 0000'), label: 'رقم الهاتف المعروض', hint: 'يظهر في قسم التواصل', to: 'settings' },
+    { ok: !(s.stats ?? []).some((x) => x.value === '+40' || x.value === '4.7'), label: 'أرقام الصفحة الرئيسية', hint: 'الأرقام الحالية أمثلة، استبدلها بأرقامك أو احذفها', to: 'content' },
+    { ok: !(s.clients ?? []).includes('الدانة العقارية'), label: 'شريط «شركات وثقت بنا»', hint: 'الأسماء الحالية أمثلة، ضع عملاءك الفعليين أو اتركه فارغاً', to: 'content' },
+    { ok: s.showExampleNote === false, label: 'معرض الأعمال والآراء', hint: 'أضف أعمالك الحقيقية ثم أوقف ملاحظة «أمثلة توضيحية»', to: 'content' },
+    { ok: !leads.some((l) => l.isExample) && !projects.some((p) => p.isExample), label: 'حذف البيانات التجريبية', hint: 'طلبات ومشاريع الأمثلة في اللوحة', to: 'overview' },
+    { ok: !!s.crNumber, label: 'بيانات المنشأة', hint: 'السجل أو وثيقة العمل الحر والآيبان للعروض والفواتير', to: 'settings' },
+    { ok: !onGithub, label: 'الدومين الرسمي makwad.com', hint: 'اشترِه من Cloudflare وأنا أربطه' },
+  ]
+  const done = items.filter((x) => x.ok).length
+  return (
+    <div className="panel launch">
+      <div className="ov-card-head">
+        <span><b>جاهزية الإطلاق الرسمي</b> <span className="muted">{done} من {items.length}</span></span>
+        <button className="linkish" type="button" onClick={() => { setHidden(true); try { localStorage.setItem('makwad-launch-hidden', '1') } catch { /* ignore */ } }}>إخفاء</button>
+      </div>
+      <div className="pay-track"><i style={{ width: `${(done / items.length) * 100}%` }} /></div>
+      <ul className="launch-list">
+        {items.map((x) => (
+          <li key={x.label} className={x.ok ? 'ok' : ''}>
+            <span className="tick" aria-hidden="true">{x.ok ? '✓' : ''}</span>
+            <span><b>{x.label}</b>{!x.ok && <small className="muted">{x.hint}</small>}</span>
+            {!x.ok && x.to && <button className="linkish" type="button" onClick={() => go(x.to!)}>إصلاح</button>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+export function BackupButton() {
+  const res = useQuery(api.app.exportAll) as { status: 'ok'; exportedAt: number; data: unknown } | { status: 'forbidden' } | undefined
+  if (!res || res.status !== 'ok') return null
+  const download = () => {
+    const blob = new Blob([JSON.stringify(res, null, 2)], { type: 'application/json' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `makwad-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+  }
+  const d = res.data as Record<string, Array<unknown>>
+  return (
+    <div className="panel panel-pad pr-head">
+      <div><h3>نسخة احتياطية</h3><p className="muted">ملف واحد فيه كل بياناتك: {d.leads.length} طلب، {d.projects.length} مشروع، {d.quotes.length} عرض سعر، {d.coupons.length} كود خصم، والمحتوى والإعدادات. احفظه شهرياً في مكان آمن.</p></div>
+      <button className="btn small" type="button" onClick={download}>تنزيل النسخة الاحتياطية</button>
+    </div>
+  )
+}

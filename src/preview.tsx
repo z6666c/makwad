@@ -69,6 +69,7 @@ const coupons = [
 const DATA: Record<string, unknown> = {
   'app:teamMembers': { status: 'ok', me: 'alrashidi7amad@gmail.com', rows: [{ email: 'alrashidi7amad@gmail.com', name: 'أحمد الرشيدي' }, { email: 'sultan@makwad.com', name: 'سلطان' }] },
   'app:listActivity': { status: 'ok', items: activity },
+  'app:exportAll': { status: 'ok', exportedAt: now, data: { leads, projects, quotes, coupons, updates: [], works: [], testimonials: [], members: [], settings: [], activity } },
   'coupons:list': { status: 'ok', coupons },
   'coupons:check': { ok: true, code: 'MAKWAD10', kind: 'percent', value: 10, minTotal: 0 },
   'quotes:mine': { status: 'ok', quotes: [{ ...quotes[0], clientEmail: 'majed@rawa.sa', status: 'sent' }, quotes[2]] },
