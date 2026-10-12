@@ -919,3 +919,7 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .sheet-bank b { font-size: 1rem; letter-spacing: .03em; }
 .sheet-note { font-size: .8rem; color: var(--muted); }
 .sheet .badge-s { margin-top: 4px; }
+.as-client .split { grid-template-columns: 1fr; }
+.as-client .proj-grid, .as-client .split > div { min-width: 0; }
+.cq-row > span:first-child b { line-height: 1.4; }
+@media (min-width: 561px) { .cq-row { grid-template-columns: minmax(180px, 1fr) auto auto auto; } }
