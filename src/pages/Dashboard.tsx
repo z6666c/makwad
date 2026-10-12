@@ -149,7 +149,7 @@ function SideNav({ sections, cur, counts, go }: { sections: Array<{ key: Section
         {groups.map((g) => {
           if (!g.label) return g.items.map((k) => <NavItem key={k} k={k} label={label(k)} cur={cur} count={counts[k]} go={go} />)
           const hasCur = g.items.includes(cur)
-          const isOpen = open[g.key] ?? true
+          const isOpen = hasCur || (open[g.key] ?? false)
           const total = g.items.reduce((n, k) => n + (counts[k] ?? 0), 0)
           return (
             <div className="side-group" key={g.key}>
