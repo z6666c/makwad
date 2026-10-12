@@ -27,15 +27,7 @@
 <body>
 <div class="b" id="b"><canvas id="c"></canvas>
   <div class="center" id="center">
-    <svg class="mark" id="mark" viewBox="0 0 64 64">
-      <defs>
-        <linearGradient id="g" x1="8" y1="58" x2="58" y2="10" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4A6FC0"/><stop offset="1" stop-color="#7BE0DA"/></linearGradient>
-        <mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><g fill="none" stroke-linejoin="round">
-          <g stroke="#fff" stroke-width="8"><path d="M10 56 V20 Q10 11 18 11 Q22.5 11 24.5 15.5 L32 31 L40 11 V56"/><path d="M57 11 L44.5 31.5"/><path d="M44.5 37 L57 56"/></g>
-          <g stroke="#000" stroke-width="2.6"><path d="M10 53.3 V20 Q10 11 18 11 Q22.5 11 24.5 15.5 L32 31 L40 11 V53.3"/><path d="M55.5 13.4 L45.6 29.6"/><path d="M46.1 39.5 L55.5 53.6"/></g></g></mask>
-      </defs>
-      <rect width="64" height="64" fill="url(#g)" mask="url(#m)"/>
-    </svg>
+    <svg class="mark" id="mark" viewBox="-1 -1 102 64.6"><defs><linearGradient id="gbn" x1="0" y1="62" x2="100" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3D62C2"/><stop offset=".55" stop-color="#2E86B5"/><stop offset="1" stop-color="#39DCEB"/></linearGradient><clipPath id="cobn"><rect x="-5" y="0" width="110" height="62.6"/></clipPath><clipPath id="cibn"><rect x="-5" y="5.7" width="110" height="51.2"/></clipPath><mask id="mbn" maskUnits="userSpaceOnUse" x="-5" y="-5" width="110" height="75"><g clip-path="url(#cobn)" fill="none" stroke="#fff" stroke-width="15"><path d="M7.5 72 V17 Q7.5 7.5 17 7.5 H20 L35 41 L64 -4" stroke-linejoin="round" stroke-miterlimit="6"/><path d="M69 -4 L58.5 30 Q56.8 36 56.8 42 V72" stroke-linejoin="round" stroke-miterlimit="6"/><path d="M99 -6 L66 33 L99 72" stroke-linejoin="miter" stroke-miterlimit="6"/></g><g clip-path="url(#cibn)" fill="none" stroke="#000" stroke-width="3.6"><path d="M7.5 72 V17 Q7.5 7.5 17 7.5 H20 L35 41 L64 -4" stroke-linejoin="round" stroke-miterlimit="6"/><path d="M69 -4 L58.5 30 Q56.8 36 56.8 42 V72" stroke-linejoin="round" stroke-miterlimit="6"/><path d="M99 -6 L66 33 L99 72" stroke-linejoin="miter" stroke-miterlimit="6"/></g></mask></defs><rect x="-5" y="-5" width="110" height="75" fill="url(#gbn)" mask="url(#mbn)"/></svg>
     <div class="name" id="name">مكود</div>
     <div class="lat" id="lat">MAKWAD STUDIO</div>
     <div class="tag" id="tag">حيث تُصنع التطبيقات</div>
@@ -48,7 +40,7 @@
   const s = Math.min(W, H)
   const tall = H > W * 1.2, wide = W > H * 2.6
   const markSize = tall ? W * .42 : wide ? H * .42 : s * (W > H ? .40 : .38)
-  const mark = document.getElementById('mark'); mark.style.width = mark.style.height = markSize + 'px'
+  const mark = document.getElementById('mark'); mark.style.height = markSize * .7 + 'px'; mark.style.width = markSize * .7 * 102 / 64.6 + 'px'
   const name = document.getElementById('name'); name.style.fontSize = markSize * .4 + 'px'; name.style.marginTop = markSize * .1 + 'px'
   const lat = document.getElementById('lat'); lat.style.fontSize = markSize * .12 + 'px'; lat.style.marginTop = markSize * .06 + 'px'
   const tag = document.getElementById('tag'); tag.style.fontSize = markSize * .11 + 'px'; tag.style.marginTop = markSize * .12 + 'px'

@@ -1,42 +1,45 @@
 import { Link } from '@tanstack/react-router'
 import { useId } from 'react'
 
-// MK monogram for Makwad: outlined bands with a navy-to-teal gradient.
-const M_OUT = 'M10 56 V20 Q10 11 18 11 Q22.5 11 24.5 15.5 L32 31 L40 11 V56'
-const M_IN = 'M10 53.3 V20 Q10 11 18 11 Q22.5 11 24.5 15.5 L32 31 L40 11 V53.3'
-const A_OUT = 'M57 11 L44.5 31.5'
-const A_IN = 'M55.5 13.4 L45.6 29.6'
-const L_OUT = 'M44.5 37 L57 56'
-const L_IN = 'M46.1 39.5 L55.5 53.6'
+// MK monogram for Makwad Studio: outlined bands, navy-to-cyan gradient.
+const M = 'M7.5 72 V17 Q7.5 7.5 17 7.5 H20 L35 41 L64 -4'
+const KS = 'M69 -4 L58.5 30 Q56.8 36 56.8 42 V72'
+const KA = 'M99 -6 L66 33 L99 72'
+const W = 15
+const HOLE = 3.6
+const WALL = (W - HOLE) / 2
 
-export function LogoMark({ size = 40, solid = false }: { size?: number; solid?: boolean }) {
+export function LogoMark({ height = 34, solid = false }: { height?: number; solid?: boolean }) {
   const id = useId().replace(/:/g, '')
+  const width = (height * 102) / 64.6
+  const paths = (
+    <>
+      <path d={M} strokeLinejoin="round" />
+      <path d={KS} strokeLinejoin="round" />
+      <path d={KA} strokeLinejoin="miter" strokeMiterlimit={6} />
+    </>
+  )
   return (
-    <svg className="logo-mark" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+    <svg className="logo-mark" width={width} height={height} viewBox="-1 -1 102 64.6" aria-hidden="true">
       <defs>
-        <linearGradient id={`g${id}`} x1="8" y1="58" x2="58" y2="10" gradientUnits="userSpaceOnUse">
+        <linearGradient id={`g${id}`} x1="0" y1="62" x2="100" y2="0" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor="var(--grad-a)" />
+          <stop offset=".55" stopColor="var(--grad-m)" />
           <stop offset="1" stopColor="var(--grad-b)" />
         </linearGradient>
+        <clipPath id={`co${id}`}><rect x="-5" y="0" width="110" height="62.6" /></clipPath>
+        <clipPath id={`ci${id}`}><rect x="-5" y={WALL} width="110" height={62.6 - 2 * WALL} /></clipPath>
         {!solid && (
-          <mask id={`m${id}`} maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
-            <g fill="none" strokeLinejoin="round">
-              <g stroke="#fff" strokeWidth="8">
-                <path d={M_OUT} /><path d={A_OUT} /><path d={L_OUT} />
-              </g>
-              <g stroke="#000" strokeWidth="2.6">
-                <path d={M_IN} /><path d={A_IN} /><path d={L_IN} />
-              </g>
-            </g>
+          <mask id={`m${id}`} maskUnits="userSpaceOnUse" x="-5" y="-5" width="110" height="75">
+            <g clipPath={`url(#co${id})`} fill="none" stroke="#fff" strokeWidth={W}>{paths}</g>
+            <g clipPath={`url(#ci${id})`} fill="none" stroke="#000" strokeWidth={HOLE}>{paths}</g>
           </mask>
         )}
       </defs>
       {solid ? (
-        <g fill="none" stroke={`url(#g${id})`} strokeWidth="8" strokeLinejoin="round">
-          <path d={M_OUT} /><path d="M57 11 L40 39" /><path d="M41 32.5 L57 56" />
-        </g>
+        <g clipPath={`url(#co${id})`} fill="none" stroke={`url(#g${id})`} strokeWidth={W}>{paths}</g>
       ) : (
-        <rect width="64" height="64" fill={`url(#g${id})`} mask={`url(#m${id})`} />
+        <rect x="-5" y="-5" width="110" height="75" fill={`url(#g${id})`} mask={`url(#m${id})`} />
       )}
     </svg>
   )

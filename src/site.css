@@ -18,8 +18,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   --clay: #B4613A;
   --sky: #2A4A8C;
   --danger: #B23A3A;
-  --grad-a: #2A4A8C;
-  --grad-b: #4FB3B8;
+  --grad-a: #24418A;
+  --grad-m: #2E86B5;
+  --grad-b: #22B8CF;
   --f-display: "Alexandria", "Readex Pro", Tahoma, sans-serif;
   --f-body: "Readex Pro", Tahoma, "Segoe UI", sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
@@ -29,13 +30,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
   :root:not([data-theme="light"]) {
     --bg: #0B1220; --surface: #121B2E; --ink: #E6ECF5; --muted: #94A0B8; --line: #233049;
     --accent: #5CC2C4; --accent-ink: #061017; --sand: #F0BE5A; --soft: #16233A;
-    --clay: #E38C61; --sky: #7A9CE0; --danger: #F07A7A; --grad-a: #4A6FC0; --grad-b: #66CCCA; color-scheme: dark;
+    --clay: #E38C61; --sky: #7A9CE0; --danger: #F07A7A; --grad-a: #3D62C2; --grad-m: #3399C8; --grad-b: #39DCEB; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0B1220; --surface: #121B2E; --ink: #E6ECF5; --muted: #94A0B8; --line: #233049;
     --accent: #5CC2C4; --accent-ink: #061017; --sand: #F0BE5A; --soft: #16233A;
-    --clay: #E38C61; --sky: #7A9CE0; --danger: #F07A7A; --grad-a: #4A6FC0; --grad-b: #66CCCA; color-scheme: dark;
+    --clay: #E38C61; --sky: #7A9CE0; --danger: #F07A7A; --grad-a: #3D62C2; --grad-m: #3399C8; --grad-b: #39DCEB; color-scheme: dark;
 }
 
 html { scroll-behavior: smooth; scroll-padding-top: 80px; }
