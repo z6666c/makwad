@@ -718,7 +718,13 @@ function PayNow({ p }: { p: Doc<'projects'> }) {
   return (
     <div className="paynow">
       <div className="paynow-head"><span>مستحق الآن: <b>{due.title}</b></span><b className="mono">{fmtSAR(due.amount)} ريال</b></div>
-      <PayMethodsBox s={s} compact />
+      {methods.length ? <PayMethodsBox s={s} compact /> : (
+        <div className="paybox compact">
+          <small>طرق الدفع</small>
+          <span>للسداد تواصل معنا ونرسل لك بيانات الدفع مباشرة.</span>
+          <a className="btn wa small" style={{ alignSelf: 'flex-start' }} href={whatsappLink(s)} target="_blank" rel="noopener noreferrer">تواصل عبر واتساب</a>
+        </div>
+      )}
       {msg ? <div className="sent">{msg}</div> : open ? (
         <div className="paynow-form">
           <select className="input" value={method} onChange={(e) => setMethod(e.target.value)} aria-label="طريقة الدفع">{(methods.length ? methods.map((m) => m.label) : ['تحويل بنكي']).map((m) => <option key={m}>{m}</option>)}</select>
