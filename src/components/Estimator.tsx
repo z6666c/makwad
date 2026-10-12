@@ -92,11 +92,11 @@ export function Estimator({ service, onService, onUse }: Props) {
         </ul>
         <div className="est-price"><span>الإجمالي</span><b className="mono">{fmtSAR(e.total)} <small>ريال</small></b></div>
         {s.monthly ? (
-          <div className="est-row"><span>يعادل شهرياً</span><b className="mono">{fmtSAR(e.monthly ?? 0)} ريال</b></div>
+          <div className="est-row"><span>يعادل شهرياً</span><b><span className="mono">{fmtSAR(e.monthly ?? 0)}</span> ريال</b></div>
         ) : (
           <>
             <div className="est-row"><span>المدة المتوقعة</span><b>{fmtDays(e.daysLow, e.daysHigh)}</b></div>
-            <div className="est-row"><span>الدفعة الأولى ({DEPOSIT_RATE * 100}%)</span><b className="mono">{fmtSAR(e.deposit)} ريال</b></div>
+            <div className="est-row"><span>الدفعة الأولى ({DEPOSIT_RATE * 100}%)</span><b><span className="mono">{fmtSAR(e.deposit)}</span> ريال</b></div>
           </>
         )}
         <div className="est-row"><span>الباقة المناسبة</span><b>{e.plan}</b></div>
