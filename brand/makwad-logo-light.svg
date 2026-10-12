@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="1600" height="1200">
-<style>@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@800&amp;family=Readex+Pro:wght@400&amp;display=swap');</style>
+<style>@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@800&amp;family=Montserrat:wght@500&amp;display=swap');</style>
+<defs><linearGradient id="tl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2A4A8C"/><stop offset=".55" stop-color="#2F6F9A"/><stop offset="1" stop-color="#3FA3A8"/></linearGradient><linearGradient id="ta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16244A"/><stop offset="1" stop-color="#0E1730"/></linearGradient></defs>
 <rect width="400" height="300" fill="#F3F5F8"/>
 <g transform="translate(152 40) scale(1.5)"><defs><linearGradient id="gl" x1="8" y1="58" x2="58" y2="10" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2A4A8C"/><stop offset="1" stop-color="#4FB3B8"/></linearGradient><mask id="ml" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><g fill="none" stroke-linejoin="round"><g stroke="#fff" stroke-width="8"><path d="M10 56 V20 Q10 11 18 11 Q22.5 11 24.5 15.5 L32 31 L40 11 V56"/><path d="M57 11 L44.5 31.5"/><path d="M44.5 37 L57 56"/></g><g stroke="#000" stroke-width="2.6"><path d="M10 53.3 V20 Q10 11 18 11 Q22.5 11 24.5 15.5 L32 31 L40 11 V53.3"/><path d="M55.5 13.4 L45.6 29.6"/><path d="M46.1 39.5 L55.5 53.6"/></g></g></mask></defs><rect width="64" height="64" fill="url(#gl)" mask="url(#ml)"/></g>
-<text x="200" y="200" text-anchor="middle" font-family="'Alexandria',Tahoma,sans-serif" font-weight="800" font-size="40" fill="#0E1730">مكود</text>
-<text x="200" y="236" text-anchor="middle" font-family="'Readex Pro',Tahoma,sans-serif" font-size="14" letter-spacing="7" fill="#5A6478">MAKWAD STUDIO</text>
+<text x="200" y="200" text-anchor="middle" font-family="'Alexandria',Tahoma,sans-serif" font-weight="800" font-size="40" fill="url(#ta)">مكود</text>
+<text x="200" y="236" text-anchor="middle" font-family="'Montserrat',sans-serif" font-weight="500" font-size="18" letter-spacing="6" fill="url(#tl)">MAKWAD STUDIO</text>
 </svg>
