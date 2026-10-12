@@ -41,6 +41,12 @@ declare module '@tanstack/react-router' {
 }
 
 const rootEl = document.getElementById('root')!
+// Refuse to render inside someone else's frame (clickjacking); GitHub Pages cannot send frame headers.
+const framed = (() => { try { return window.top !== window.self } catch { return true } })()
+if (framed && !import.meta.env.VITE_PREVIEW) {
+  rootEl.innerHTML = '<p style="padding:24px;font-family:sans-serif">افتح الموقع مباشرة: <a href="https://z6666c.github.io/makwad/" target="_top">z6666c.github.io/makwad</a></p>'
+  throw new Error('framed')
+}
 if (import.meta.env.VITE_PREVIEW === '1' && window.location.pathname.endsWith('/preview')) {
   // Review build only: the dashboard with sample data, no sign-in. Never part of the production build.
   void import('./preview').then((m) => m.mount(rootEl))
