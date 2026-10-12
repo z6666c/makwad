@@ -6,7 +6,7 @@ import { COMPANY, LEGAL_UPDATED, useSettings } from '@/site-config'
 import { useTitle } from '@/useTitle'
 
 function LegalLayout({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
-  useTitle(`${title} | استوديو سطر`)
+  useTitle(`${title} | استوديو مكود`)
   const s = useSettings()
   return (
     <>

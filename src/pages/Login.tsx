@@ -15,13 +15,13 @@ function GoToDashboard() {
 }
 
 export default function Login() {
-  useTitle('تسجيل الدخول | استوديو سطر')
+  useTitle('تسجيل الدخول | استوديو مكود')
   return (
     <div className="auth-page">
       <aside className="auth-side">
         <Logo />
         <div>
-          <h2>بوابة عملاء استوديو سطر</h2>
+          <h2>بوابة عملاء استوديو مكود</h2>
           <p>تابع مرحلة مشروعك ونسبة الإنجاز، واطّلع على آخر التحديثات، وتواصل مع فريقك من مكان واحد.</p>
         </div>
         <ul className="auth-points">
@@ -138,7 +138,7 @@ function AuthForms() {
     <>
       <div>
         <h1>{isUp ? 'إنشاء حساب' : 'تسجيل الدخول'}</h1>
-        <p className="muted">{isUp ? 'سجّل بالبريد الذي تتواصل به مع فريق استوديو سطر لترى مشاريعك.' : 'ادخل لمتابعة مشروعك أو لإدارة الطلبات.'}</p>
+        <p className="muted">{isUp ? 'سجّل بالبريد الذي تتواصل به مع فريق استوديو مكود لترى مشاريعك.' : 'ادخل لمتابعة مشروعك أو لإدارة الطلبات.'}</p>
       </div>
       <form className="form" onSubmit={(e) => run(e, async (fd) => {
         const r = await signIn('password', fd)

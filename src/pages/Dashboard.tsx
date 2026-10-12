@@ -35,7 +35,7 @@ const fmtDue = (s?: string) => {
 }
 
 export default function DashboardPage() {
-  useTitle('لوحة التحكم | استوديو سطر')
+  useTitle('لوحة التحكم | استوديو مكود')
   return (
     <>
       <AuthLoading><div className="center-screen">جارٍ التحميل…</div></AuthLoading>
@@ -62,7 +62,7 @@ function Dashboard() {
       <div className="center-screen">
         <div className="empty">
           <h3>تم إيقاف حسابك</h3>
-          <p>تواصل مع إدارة استوديو سطر لإعادة تفعيل الحساب.</p>
+          <p>تواصل مع إدارة استوديو مكود لإعادة تفعيل الحساب.</p>
           <button className="btn ghost" type="button" onClick={() => void signOut()}>تسجيل الخروج</button>
         </div>
       </div>
@@ -116,7 +116,7 @@ function AdminView() {
   return (
     <>
       <div className="dash-head">
-        <div><span className="kicker">{canAdmin ? 'لوحة الإدارة' : 'لوحة الفريق'}</span><h1>أهلاً بك في استوديو سطر</h1></div>
+        <div><span className="kicker">{canAdmin ? 'لوحة الإدارة' : 'لوحة الفريق'}</span><h1>أهلاً بك في استوديو مكود</h1></div>
         {hasExamples && canAdmin && (
           <button className="btn ghost small" type="button" onClick={() => void clear({})}>حذف البيانات التجريبية</button>
         )}
@@ -154,7 +154,7 @@ function downloadCsv(leads: Array<Doc<'leads'>>) {
   const blob = new Blob(['\ufeff' + [head.map(esc).join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `satr-leads-${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `makwad-leads-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
 }
@@ -288,7 +288,7 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
                 if (!r.ok) setErr(r.error)
               }}>{converting ? 'جارٍ التحويل…' : 'تحويل إلى مشروع ودعوة العميل'}</button>
             )}
-            <a className="btn ghost small" href={`mailto:${l.email}?subject=${encodeURIComponent('بخصوص طلبك لدى استوديو سطر')}`}>مراسلة بالبريد</a>
+            <a className="btn ghost small" href={`mailto:${l.email}?subject=${encodeURIComponent('بخصوص طلبك لدى استوديو مكود')}`}>مراسلة بالبريد</a>
             {canAdmin && (confirm ? (
               <>
                 <button className="btn danger small" type="button" onClick={() => void del({ id: l._id })}>تأكيد الحذف</button>
@@ -532,7 +532,7 @@ function ClientProject({ p }: { p: Doc<'projects'> }) {
         </div>
       )}
       <PaymentsSummary payments={p.payments} detailed />
-      <Feed projectId={p._id} placeholder="اكتب ملاحظة أو سؤالاً لفريق استوديو سطر…" />
+      <Feed projectId={p._id} placeholder="اكتب ملاحظة أو سؤالاً لفريق استوديو مكود…" />
     </article>
   )
 }
@@ -549,7 +549,7 @@ function NewRequest() {
       setBusy(true)
       const r = await send({ subject: String(fd.get('subject') ?? ''), message: String(fd.get('message') ?? '') })
       setBusy(false)
-      if (r.ok) { setState({ ok: true, text: 'وصل طلبك إلى فريق استوديو سطر وسنرد عليك قريباً.' }); form.reset() }
+      if (r.ok) { setState({ ok: true, text: 'وصل طلبك إلى فريق استوديو مكود وسنرد عليك قريباً.' }); form.reset() }
       else setState({ ok: false, text: r.error })
     }}>
       <div><h3 style={{ fontSize: '1.1rem' }}>طلب جديد</h3><p className="muted" style={{ fontSize: '.88rem' }}>ميزة إضافية، مشروع جديد، أو دعم فني.</p></div>
@@ -1028,7 +1028,7 @@ function QuotesEditor({ items }: { items: Array<Doc<'testimonials'>> }) {
   return (
     <div className="panel">
       <div className="panel-pad toolbar">
-        <p className="muted" style={{ fontSize: '.9rem' }}>تتبدل الآراء تلقائياً في قسم «لماذا استوديو سطر». عند حذفها كلها يُخفى المربع.</p>
+        <p className="muted" style={{ fontSize: '.9rem' }}>تتبدل الآراء تلقائياً في قسم «لماذا استوديو مكود». عند حذفها كلها يُخفى المربع.</p>
         {!editing && <button className="btn small" type="button" onClick={() => setEditing({ text: '', name: '', role: '', visible: true })}>+ إضافة رأي</button>}
       </div>
       {editing && (

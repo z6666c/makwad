@@ -45,7 +45,7 @@ function usePrefersReducedMotion() {
 }
 
 export default function Home() {
-  useTitle('استوديو سطر | تصميم وتطوير التطبيقات')
+  useTitle('استوديو مكود | حيث تُصنع التطبيقات')
   const [menuOpen, setMenuOpen] = useState(false)
   const [plan, setPlan] = useState('لم أحدد بعد')
   const [types, setTypes] = useState<Array<string>>(['تطبيق جوال'])
@@ -131,7 +131,7 @@ export default function Home() {
             <div className={content && content.testimonials.length === 0 ? 'why single' : 'why'}>
               <div>
                 <div className="sec-head" style={{ marginBottom: 28 }}>
-                  <div><span className="kicker">لماذا استوديو سطر</span><h2>شريك تقني، لا مجرد منفّذ</h2></div>
+                  <div><span className="kicker">لماذا استوديو مكود</span><h2>شريك تقني، لا مجرد منفّذ</h2></div>
                 </div>
                 <div>
                   {WHY.map((w) => (
@@ -228,7 +228,7 @@ export default function Home() {
           <div className="foot">
             <div>
               <Logo />
-              <p>كل تطبيق عظيم يبدأ بسطر. نبني تطبيقات الجوال والويب للشركات في المملكة والخليج.</p>
+              <p>مَكْوَد: حيث تُصنع التطبيقات. نبني تطبيقات الجوال والويب للشركات في المملكة والخليج.</p>
             </div>
             <div>
               <h4>الشركة</h4>
@@ -240,7 +240,7 @@ export default function Home() {
             </div>
           </div>
           <div className="legal">
-            <span>© 2026 استوديو سطر. جميع الحقوق محفوظة.</span>
+            <span>© 2026 استوديو مكود. جميع الحقوق محفوظة.</span>
             <span><Link to="/privacy">سياسة الخصوصية</Link> · <Link to="/terms">الشروط والأحكام</Link></span>
           </div>
         </div>
