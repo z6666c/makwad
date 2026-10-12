@@ -12,12 +12,14 @@ async function page(viewport, mobile = false) {
 }
 async function settle(p) {
   await p.evaluate(() => document.fonts.ready)
+  await p.addStyleTag({ content: '.shot-clean .site-header{position:static!important}' })
   await p.waitForTimeout(1500)
 }
 
 const d = await page({ width: 1366, height: 860 })
 await d.goto(BASE + '/', { waitUntil: 'networkidle' }); await settle(d)
 await d.screenshot({ path: 'shots/01-hero.png' })
+await d.evaluate(() => document.documentElement.classList.add('shot-clean'))
 for (const [id, name] of [['estimate', '02-estimator'], ['work', '03-work'], ['why', '04-why'], ['contact', '06-contact']]) {
   const el = d.locator('#' + id)
   await el.scrollIntoViewIfNeeded(); await d.waitForTimeout(600)
@@ -43,6 +45,8 @@ await l.screenshot({ path: 'shots/08-privacy.png' })
 const m = await page({ width: 390, height: 844 }, true)
 await m.goto(BASE + '/', { waitUntil: 'networkidle' }); await settle(m)
 await m.screenshot({ path: 'shots/09-mobile-hero.png' })
+await m.evaluate(() => window.scrollTo(0, 700)); await m.waitForTimeout(500)
+await m.screenshot({ path: 'shots/09b-mobile-hero-2.png' })
 await m.locator('#estimate').scrollIntoViewIfNeeded(); await m.waitForTimeout(600)
 await m.screenshot({ path: 'shots/10-mobile-estimator.png' })
 await m.locator('#work').scrollIntoViewIfNeeded(); await m.waitForTimeout(600)

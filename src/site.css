@@ -141,7 +141,7 @@ a { color: inherit; }
 .seg button { font: inherit; background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .build-log { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); direction: ltr; min-height: 1.4em; text-align: center; }
-@media (max-width: 860px) { .hero { grid-template-columns: 1fr; padding-block: 44px; gap: 40px; } .stage { order: -1; } }
+@media (max-width: 860px) { .hero { grid-template-columns: 1fr; padding-block: 36px 44px; gap: 36px; } .phone { width: min(230px, 70vw); } }
 
 /* clients strip */
 .strip { border-block: 1px solid var(--line); background: var(--surface); }
