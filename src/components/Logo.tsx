@@ -17,7 +17,7 @@ export function Logo() {
       <LogoMark />
       <span className="logo-text">
         <small>استوديو</small>
-        <b>مَكْوَد</b>
+        <b>مكود</b>
       </span>
     </Link>
   )

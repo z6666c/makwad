@@ -55,7 +55,7 @@ a { color: inherit; }
 .logo-mark { flex: none; display: block; }
 .logo-text { display: flex; flex-direction: column; line-height: 1; }
 .logo-text b { font-family: var(--f-display); font-size: 1.45rem; font-weight: 800; }
-.logo-text small { font-size: .68rem; color: var(--accent); margin-bottom: 9px; letter-spacing: .06em; font-weight: 600; }
+.logo-text small { font-size: .68rem; color: var(--accent); margin-bottom: 5px; letter-spacing: .06em; font-weight: 600; }
 @keyframes blink { 0%, 55% { opacity: 1 } 56%, 100% { opacity: 0 } }
 .logo:hover .cur { animation: blink 1.1s steps(1) infinite; }
 
