@@ -952,7 +952,7 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .fin-collect .warn { color: var(--clay); }
 .fin-tabs { padding: 0 12px; }
 .ledger { display: flex; flex-direction: column; }
-.led-row { display: grid; grid-template-columns: 100px 70px minmax(0, 1fr) 120px auto; gap: 12px; align-items: center; padding: 10px 20px; border-top: 1px solid var(--line); font-size: .88rem; }
+.led-row { display: grid; grid-template-columns: 100px 70px minmax(0, 1fr) 120px 100px; gap: 12px; align-items: center; padding: 10px 20px; border-top: 1px solid var(--line); font-size: .88rem; }
 .led-date { font-size: .8rem; color: var(--muted); }
 .led-kind { font-size: .74rem; font-weight: 600; border-radius: 999px; padding: 2px 8px; text-align: center; }
 .led-kind.income { background: var(--soft); color: var(--accent); }
@@ -963,7 +963,7 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .led-amt { text-align: end; font-weight: 500; }
 .led-amt.income, .prof-row .income { color: var(--accent); }
 .led-amt.expense, .prof-row .expense { color: var(--clay); }
-.inv-row { grid-template-columns: 80px minmax(0, 1fr) 110px auto; }
+.inv-row { grid-template-columns: 80px minmax(0, 1fr) 110px minmax(250px, auto); }
 .prof-row { grid-template-columns: minmax(0, 1.5fr) 1fr 1fr 1fr 1fr; }
 @media (max-width: 760px) {
   .led-row { grid-template-columns: auto 1fr auto; padding: 10px 14px; }
