@@ -1,10 +1,13 @@
 import { Link } from '@tanstack/react-router'
-import { useMutation } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '@/convex/_generated/api'
 import { Logo } from '@/components/Logo'
-import { CASES, CLIENTS, FAQ, PLANS, QUOTES, SERVICES, STEPS, WHY } from '@/site-content'
+import { FAQ, PLANS, SERVICES, STEPS, WHY } from '@/site-content'
+import { ARTS, COLORS } from '@/mockups'
+import { Estimator } from '@/components/Estimator'
+import type { Doc } from '@/convex/_generated/dataModel'
 import { useTitle } from '@/useTitle'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
 import { useSettings } from '@/site-config'
@@ -14,6 +17,7 @@ const NAV = [
   ['#process', 'طريقة العمل'],
   ['#work', 'أعمالنا'],
   ['#plans', 'الباقات'],
+  ['#estimate', 'احسب التكلفة'],
   ['#faq', 'الأسئلة الشائعة'],
 ] as const
 
@@ -41,9 +45,23 @@ function usePrefersReducedMotion() {
 }
 
 export default function Home() {
-  useTitle('سطر لتطوير التطبيقات')
+  useTitle('استوديو سطر | تصميم وتطوير التطبيقات')
   const [menuOpen, setMenuOpen] = useState(false)
   const [plan, setPlan] = useState('لم أحدد بعد')
+  const [types, setTypes] = useState<Array<string>>(['تطبيق جوال'])
+  const [message, setMessage] = useState('')
+  const settings = useSettings()
+  const content = useQuery(api.content.publicContent) as
+    | { works: Array<Doc<'works'>>; testimonials: Array<Doc<'testimonials'>> }
+    | undefined
+  const clients = settings.clients ?? []
+  const useEstimate = (summary: string, p: string, t: Array<string>) => {
+    setMessage(summary)
+    setPlan(p)
+    setTypes(t)
+    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+    window.setTimeout(() => document.getElementById('name')?.focus({ preventScroll: true }), 600)
+  }
   return (
     <>
       <header className="site-header">
@@ -79,15 +97,17 @@ export default function Home() {
       </header>
 
       <main id="top">
-        <Hero />
-        <div className="strip">
-          <div className="wrap">
-            <span>شركات وثقت بنا</span>
-            <ul className="clients">
-              {CLIENTS.map((c) => <li key={c}>{c}</li>)}
-            </ul>
+        <Hero stats={settings.stats ?? []} />
+        {clients.length > 0 && (
+          <div className="strip">
+            <div className="wrap">
+              <span>شركات وثقت بنا</span>
+              <ul className="clients">
+                {clients.map((c) => <li key={c}>{c}</li>)}
+              </ul>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="wrap">
           <section className="section" id="services">
@@ -108,10 +128,10 @@ export default function Home() {
           </section>
 
           <section className="section" id="why">
-            <div className="why">
+            <div className={content && content.testimonials.length === 0 ? 'why single' : 'why'}>
               <div>
                 <div className="sec-head" style={{ marginBottom: 28 }}>
-                  <div><span className="kicker">لماذا سطر</span><h2>شريك تقني، لا مجرد منفّذ</h2></div>
+                  <div><span className="kicker">لماذا استوديو سطر</span><h2>شريك تقني، لا مجرد منفّذ</h2></div>
                 </div>
                 <div>
                   {WHY.map((w) => (
@@ -123,7 +143,7 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-              <Testimonials />
+              {content === undefined ? <div className="quote-card skel" aria-hidden="true" /> : content.testimonials.length > 0 && <Testimonials items={content.testimonials} />}
             </div>
           </section>
 
@@ -144,7 +164,7 @@ export default function Home() {
             </div>
           </section>
 
-          <Work />
+          <Work works={content?.works} showNote={settings.showExampleNote !== false} />
 
           <section className="section" id="plans">
             <div className="sec-head">
@@ -162,6 +182,14 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </section>
+
+          <section className="section" id="estimate">
+            <div className="sec-head">
+              <div><span className="kicker">حاسبة التكلفة</span><h2>كم يكلّف تطبيقك؟</h2></div>
+              <p>اختر المنصة والخصائص لتعرف التكلفة والمدة التقريبية خلال ثوانٍ، ثم أرسلها لنا بضغطة.</p>
+            </div>
+            <Estimator onUse={useEstimate} />
           </section>
 
           <section className="section" id="faq">
@@ -189,7 +217,7 @@ export default function Home() {
                 <p className="muted">أرسل لنا فكرتك ونرد عليك خلال يوم عمل واحد بموعد لجلسة اكتشاف مجانية.</p>
 <ContactInfo />
               </div>
-              <ContactForm plan={plan} setPlan={setPlan} />
+              <ContactForm plan={plan} setPlan={setPlan} types={types} setTypes={setTypes} message={message} setMessage={setMessage} />
             </div>
           </section>
         </div>
@@ -208,11 +236,11 @@ export default function Home() {
             </div>
             <div>
               <h4>العملاء</h4>
-              <ul><li><Link to="/login">دخول العملاء</Link></li><li><a href="#contact">اطلب عرض سعر</a></li><li><a href="#faq">الأسئلة الشائعة</a></li></ul>
+              <ul><li><Link to="/login">دخول العملاء</Link></li><li><a href="#estimate">حاسبة التكلفة</a></li><li><a href="#contact">اطلب عرض سعر</a></li><li><a href="#faq">الأسئلة الشائعة</a></li></ul>
             </div>
           </div>
           <div className="legal">
-            <span>© 2026 سطر لتطوير التطبيقات. جميع الحقوق محفوظة.</span>
+            <span>© 2026 استوديو سطر. جميع الحقوق محفوظة.</span>
             <span><Link to="/privacy">سياسة الخصوصية</Link> · <Link to="/terms">الشروط والأحكام</Link></span>
           </div>
         </div>
@@ -222,7 +250,7 @@ export default function Home() {
   )
 }
 
-function Hero() {
+function Hero({ stats }: { stats: Array<{ value: string; label: string }> }) {
   const [stage, setStage] = useState(0)
   const [auto, setAuto] = useState(true)
   const reduce = usePrefersReducedMotion()
@@ -242,13 +270,13 @@ function Hero() {
             <p className="lead">نصمّم ونبني تطبيقات iOS وأندرويد والويب للشركات الناشئة والمنشآت. فريق واحد يتولى البحث والتصميم والبرمجة والإطلاق، ويبقى معك بعد النشر.</p>
             <div className="cta-row">
               <a className="btn" href="#contact">احجز جلسة اكتشاف مجانية</a>
-              <a className="btn ghost" href="#work">شاهد أعمالنا</a>
+              <a className="btn ghost" href="#estimate">احسب تكلفة تطبيقك</a>
             </div>
-            <div className="stats">
-              <div><b>+40</b>تطبيقاً منشوراً</div>
-              <div><b>4.7</b>متوسط التقييم</div>
-              <div><b>12</b>أسبوعاً للإصدار الأول</div>
-            </div>
+            {stats.length > 0 && (
+              <div className="stats">
+                {stats.map((st) => <div key={st.label}><b>{st.value}</b>{st.label}</div>)}
+              </div>
+            )}
           </div>
           <div className="stage">
             <div className="phone" aria-hidden="true">
@@ -291,40 +319,63 @@ function Hero() {
   )
 }
 
-function Testimonials() {
+function Testimonials({ items }: { items: Array<Doc<'testimonials'>> }) {
   const [i, setI] = useState(0)
   const [auto, setAuto] = useState(true)
   const reduce = usePrefersReducedMotion()
   useEffect(() => {
-    if (!auto || reduce) return
-    const t = setInterval(() => setI((x) => (x + 1) % QUOTES.length), 6000)
+    if (!auto || reduce || items.length < 2) return
+    const t = setInterval(() => setI((x) => (x + 1) % items.length), 6000)
     return () => clearInterval(t)
-  }, [auto, reduce])
-  const q = QUOTES[i]
+  }, [auto, reduce, items.length])
+  const q = items[Math.min(i, items.length - 1)]
   return (
     <div className="quote-card" aria-live="polite">
-      <blockquote>{q.t}</blockquote>
+      <blockquote>{q.text}</blockquote>
       <div className="who">
-        <div className="avatar">{q.n.charAt(0)}</div>
-        <div><b>{q.n}</b><span>{q.r}</span></div>
+        <div className="avatar">{q.name.replace('د. ', '').charAt(0)}</div>
+        <div><b>{q.name}</b><span>{q.role}</span></div>
       </div>
-      <div className="qnav" role="group" aria-label="آراء العملاء">
-        {QUOTES.map((x, k) => (
-          <button key={x.n} type="button" aria-pressed={k === i} aria-label={`رأي ${k + 1}`} onClick={() => { setAuto(false); setI(k) }} />
-        ))}
-      </div>
+      {items.length > 1 && (
+        <div className="qnav" role="group" aria-label="آراء العملاء">
+          {items.map((x, k) => (
+            <button key={x._id} type="button" aria-pressed={k === i} aria-label={`رأي ${k + 1}`} onClick={() => { setAuto(false); setI(k) }} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
-function Work() {
+export function WorkCard({ w }: { w: Pick<Doc<'works'>, 'title' | 'label' | 'text' | 'art' | 'color' | 'metrics' | 'url'> }) {
+  const art = ARTS[w.art] ?? ARTS.coffee
+  return (
+    <article className="case" style={{ ['--pa' as string]: (COLORS[w.color] ?? COLORS.accent).css }}>
+      <div className="case-art" aria-hidden="true" dangerouslySetInnerHTML={{ __html: art.html }} />
+      <div className="case-body">
+        <span className="kind">{w.label}</span>
+        <h3>{w.title}</h3>
+        <p>{w.text}</p>
+        {w.metrics.length > 0 && (
+          <div className="metrics">
+            {w.metrics.map((m) => <div key={m.label}><b>{m.value}</b>{m.label}</div>)}
+          </div>
+        )}
+        {w.url && <a className="case-link" href={w.url} target="_blank" rel="noopener noreferrer">زيارة المشروع ←</a>}
+      </div>
+    </article>
+  )
+}
+
+function Work({ works, showNote }: { works: Array<Doc<'works'>> | undefined; showNote: boolean }) {
   const [filter, setFilter] = useState<'all' | 'mobile' | 'web'>('all')
-  const shown = CASES.filter((c) => filter === 'all' || c.kind === filter || c.kind === 'both')
+  if (works && works.length === 0) return null
+  const shown = (works ?? []).filter((c) => filter === 'all' || c.kind === filter || c.kind === 'both')
   return (
     <section className="section" id="work">
       <div className="sec-head">
         <div><span className="kicker">أعمالنا</span><h2>مشاريع أطلقناها</h2></div>
-        <p>في التوصيل والصحة والتجزئة والخدمات.</p>
+        <p>نماذج من تطبيقات الجوال والأنظمة التي بنيناها لعملائنا.</p>
       </div>
       <div className="filters" role="group" aria-label="تصفية الأعمال">
         {([['all', 'الكل'], ['mobile', 'تطبيقات جوال'], ['web', 'أنظمة ويب']] as const).map(([k, t]) => (
@@ -332,21 +383,11 @@ function Work() {
         ))}
       </div>
       <div className="work">
-        {shown.map((c) => (
-          <article className="case" key={c.title} style={{ ['--pa' as string]: c.pa }}>
-            <div className="case-art" aria-hidden="true" dangerouslySetInnerHTML={{ __html: c.art }} />
-            <div className="case-body">
-              <span className="kind">{c.label}</span>
-              <h3>{c.title}</h3>
-              <p>{c.text}</p>
-              <div className="metrics">
-                {c.metrics.map(([v, l]) => <div key={l}><b>{v}</b>{l}</div>)}
-              </div>
-            </div>
-          </article>
-        ))}
+        {works === undefined
+          ? [0, 1, 2].map((k) => <div key={k} className="case skel" aria-hidden="true" />)
+          : shown.map((w) => <WorkCard key={w._id} w={w} />)}
       </div>
-      <p className="note">الأعمال والأرقام وآراء العملاء في هذه الصفحة أمثلة توضيحية، تُستبدل بمشاريع الشركة الفعلية.</p>
+      {showNote && <p className="note">الأعمال والأرقام وآراء العملاء في هذه الصفحة أمثلة توضيحية.</p>}
     </section>
   )
 }
@@ -387,9 +428,17 @@ function CopyRow({ label, value }: { label: string; value: string }) {
 
 const TYPES = ['تطبيق جوال', 'تطبيق ويب', 'تصميم فقط', 'تطوير تطبيق قائم']
 
-function ContactForm({ plan, setPlan }: { plan: string; setPlan: (p: string) => void }) {
+type FormProps = {
+  plan: string
+  setPlan: (p: string) => void
+  types: Array<string>
+  setTypes: (f: (cur: Array<string>) => Array<string>) => void
+  message: string
+  setMessage: (m: string) => void
+}
+
+function ContactForm({ plan, setPlan, types, setTypes, message, setMessage }: FormProps) {
   const submit = useMutation(api.app.submitLead)
-  const [types, setTypes] = useState<Array<string>>(['تطبيق جوال'])
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null)
 
@@ -406,11 +455,12 @@ function ContactForm({ plan, setPlan }: { plan: string; setPlan: (p: string) => 
         email: String(fd.get('email') ?? ''),
         types,
         plan,
-        message: String(fd.get('message') ?? ''),
+        message,
       })
       if (r.ok) {
         setResult({ ok: true, text: 'وصلنا طلبك. سيتواصل معك فريقنا خلال يوم عمل واحد.' })
         form.reset()
+        setMessage('')
       } else {
         setResult({ ok: false, text: r.error })
       }
@@ -448,7 +498,7 @@ function ContactForm({ plan, setPlan }: { plan: string; setPlan: (p: string) => 
           {['لم أحدد بعد', 'الانطلاقة', 'النمو', 'المنشآت'].map((p) => <option key={p}>{p}</option>)}
         </select>
       </div>
-      <div className="field full"><label htmlFor="message">نبذة عن الفكرة</label><textarea id="message" name="message" placeholder="ما المشكلة التي يحلها التطبيق، ومن سيستخدمه؟" /></div>
+      <div className="field full"><label htmlFor="message">نبذة عن الفكرة</label><textarea id="message" name="message" value={message} onChange={(e) => setMessage(e.target.value)} rows={message ? 9 : 4} placeholder="ما المشكلة التي يحلها التطبيق، ومن سيستخدمه؟" /></div>
       <div className="field full">
         <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الإرسال…' : 'إرسال الطلب'}</button>
         <small className="consent">بإرسال الطلب فإنك توافق على <Link to="/privacy">سياسة الخصوصية</Link> و<Link to="/terms">الشروط والأحكام</Link>.</small>

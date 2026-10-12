@@ -3,7 +3,7 @@ import { api } from '@/convex/_generated/api'
 
 // Fallback company details. The live values are edited from the dashboard (الإعدادات).
 export const COMPANY = {
-  name: 'سطر لتطوير التطبيقات',
+  name: 'استوديو سطر',
   city: 'الدمام، المملكة العربية السعودية',
 }
 
@@ -14,6 +14,9 @@ export type SiteSettings = {
   email: string
   address: string
   hours: string
+  stats?: Array<{ value: string; label: string }>
+  clients?: Array<string>
+  showExampleNote?: boolean
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {
@@ -23,6 +26,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   email: 'hello@satr.sa',
   address: 'طريق الملك فهد، الدمام',
   hours: 'الأحد – الخميس، 9 ص – 5 م',
+  stats: [],
+  clients: [],
+  showExampleNote: false,
 }
 
 export function useSettings(): SiteSettings {

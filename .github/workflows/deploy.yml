@@ -24,6 +24,11 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npm run build
+      - name: Render share image
+        continue-on-error: true
+        run: |
+          npm install --no-save --no-audit --no-fund playwright-core@1.47.2
+          node scripts/share-images.mjs
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

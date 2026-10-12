@@ -20,11 +20,11 @@ export function LogoMark({ size = 38 }: { size?: number }) {
 
 export function Logo() {
   return (
-    <Link className="logo" to="/" aria-label="سطر لتطوير التطبيقات">
+    <Link className="logo" to="/" aria-label="استوديو سطر">
       <LogoMark />
       <span className="logo-text">
+        <small>استوديو</small>
         <b>سطر</b>
-        <small>لتطوير التطبيقات</small>
       </span>
     </Link>
   )
