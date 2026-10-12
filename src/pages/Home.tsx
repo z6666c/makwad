@@ -7,6 +7,8 @@ import { Logo } from '@/components/Logo'
 import { FAQ, PLANS, SERVICES, STEPS, WHY } from '@/site-content'
 import { ARTS, COLORS } from '@/mockups'
 import { Estimator } from '@/components/Estimator'
+import { fmtSAR, getService } from '@/estimate'
+import type { ServiceKey } from '@/estimate'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { useTitle } from '@/useTitle'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
@@ -17,7 +19,7 @@ const NAV = [
   ['#process', 'طريقة العمل'],
   ['#work', 'أعمالنا'],
   ['#plans', 'الباقات'],
-  ['#estimate', 'احسب التكلفة'],
+  ['#estimate', 'حاسبة الأسعار'],
   ['#faq', 'الأسئلة الشائعة'],
 ] as const
 
@@ -48,8 +50,13 @@ export default function Home() {
   useTitle('استوديو مكود | حيث تُصنع التطبيقات')
   const [menuOpen, setMenuOpen] = useState(false)
   const [plan, setPlan] = useState('لم أحدد بعد')
-  const [types, setTypes] = useState<Array<string>>(['تطبيق جوال'])
+  const [types, setTypes] = useState<Array<string>>([])
   const [message, setMessage] = useState('')
+  const [estSvc, setEstSvc] = useState<ServiceKey>('web')
+  const priceOf = (k: ServiceKey) => {
+    setEstSvc(k)
+    document.getElementById('estimate')?.scrollIntoView({ behavior: 'smooth' })
+  }
   const settings = useSettings()
   const content = useQuery(api.content.publicContent) as
     | { works: Array<Doc<'works'>>; testimonials: Array<Doc<'testimonials'>> }
@@ -113,7 +120,7 @@ export default function Home() {
           <section className="section" id="services">
             <div className="sec-head">
               <div><span className="kicker">خدماتنا</span><h2>ماذا نبني</h2></div>
-              <p>نختار التقنية حسب احتياج مشروعك وميزانيته، لا حسب ما نفضّله نحن.</p>
+              <p>ثماني خدمات بأسعار واضحة تبدأ من 1,500 ريال. اضغط «احسب السعر» لترى التكلفة بالتفصيل.</p>
             </div>
             <div className="services">
               {SERVICES.map((s) => (
@@ -122,6 +129,10 @@ export default function Home() {
                   <h3>{s.title}</h3>
                   <p>{s.text}</p>
                   <div className="tags">{s.tags.map((t) => <span className="tag" key={t}>{t}</span>)}</div>
+                  <div className="svc-foot">
+                    <span className="svc-price"><small>يبدأ من</small><b className="mono">{fmtSAR(getService(s.key).from)}</b><small>ريال{getService(s.key).monthly ? ' / شهرياً' : ''}</small></span>
+                    <button className="linkish" type="button" onClick={() => priceOf(s.key)}>احسب السعر ←</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -186,10 +197,10 @@ export default function Home() {
 
           <section className="section" id="estimate">
             <div className="sec-head">
-              <div><span className="kicker">حاسبة التكلفة</span><h2>كم يكلّف تطبيقك؟</h2></div>
-              <p>اختر المنصة والخصائص لتعرف التكلفة والمدة التقريبية خلال ثوانٍ، ثم أرسلها لنا بضغطة.</p>
+              <div><span className="kicker">حاسبة الأسعار</span><h2>احسب سعر مشروعك</h2></div>
+              <p>اختر الخدمة ونطاقها والإضافات، وتشوف السعر بنداً بنداً مع الإجمالي والمدة والدفعة الأولى، ثم أرسله لنا بضغطة.</p>
             </div>
-            <Estimator onUse={useEstimate} />
+            <Estimator service={estSvc} onService={setEstSvc} onUse={useEstimate} />
           </section>
 
           <section className="section" id="faq">
@@ -236,7 +247,7 @@ export default function Home() {
             </div>
             <div>
               <h4>العملاء</h4>
-              <ul><li><Link to="/login">دخول العملاء</Link></li><li><a href="#estimate">حاسبة التكلفة</a></li><li><a href="#contact">اطلب عرض سعر</a></li><li><a href="#faq">الأسئلة الشائعة</a></li></ul>
+              <ul><li><Link to="/login">دخول العملاء</Link></li><li><a href="#estimate">حاسبة الأسعار</a></li><li><a href="#contact">اطلب عرض سعر</a></li><li><a href="#faq">الأسئلة الشائعة</a></li></ul>
             </div>
           </div>
           <div className="legal">
@@ -265,12 +276,12 @@ function Hero({ stats }: { stats: Array<{ value: string; label: string }> }) {
       <div className="wrap">
         <div className="hero">
           <div>
-            <div className="eyebrow">استوديو تطوير تطبيقات · الدمام والرياض</div>
+            <div className="eyebrow">استوديو تطوير تطبيقات وأنظمة · الرياض</div>
             <h1>من فكرة على ورقة<br />إلى تطبيق <em>منشور في المتجر</em></h1>
-            <p className="lead">نصمّم ونبني تطبيقات iOS وأندرويد والويب للشركات الناشئة والمنشآت. فريق واحد يتولى البحث والتصميم والبرمجة والإطلاق، ويبقى معك بعد النشر.</p>
+            <p className="lead">نصمّم ونبني تطبيقات الجوال والمواقع والأنظمة وأدوات الذكاء الاصطناعي، ونحلل مشاريعك قبل التنفيذ. فريق واحد يتولى التحليل والتصميم والبرمجة والإطلاق، ويبقى معك بعده.</p>
             <div className="cta-row">
               <a className="btn" href="#contact">احجز جلسة اكتشاف مجانية</a>
-              <a className="btn ghost" href="#estimate">احسب تكلفة تطبيقك</a>
+              <a className="btn ghost" href="#estimate">احسب سعر مشروعك</a>
             </div>
             {stats.length > 0 && (
               <div className="stats">
@@ -426,7 +437,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-const TYPES = ['تطبيق جوال', 'تطبيق ويب', 'تصميم فقط', 'تطوير تطبيق قائم']
+const TYPES = ['موقع أو تطبيق ويب', 'تطبيق جوال', 'برنامج أو نظام', 'أداة ذكاء اصطناعي', 'تحليل مشروع', 'تصميم', 'ربط وتكامل', 'صيانة']
 
 type FormProps = {
   plan: string

@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
-Disallow: /satr/dashboard
-Disallow: /satr/login
+Disallow: /makwad/dashboard
+Disallow: /makwad/login
 
-Sitemap: https://z6666c.github.io/satr/sitemap.xml
+Sitemap: https://z6666c.github.io/makwad/sitemap.xml

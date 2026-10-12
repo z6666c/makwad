@@ -4,7 +4,7 @@ import { api } from '@/convex/_generated/api'
 // Fallback company details. The live values are edited from the dashboard (الإعدادات).
 export const COMPANY = {
   name: 'استوديو مكود',
-  city: 'الدمام، المملكة العربية السعودية',
+  city: 'الرياض، المملكة العربية السعودية',
 }
 
 export type SiteSettings = {
@@ -24,7 +24,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   whatsappMessage: 'السلام عليكم، أرغب بالاستفسار عن تطوير تطبيق.',
   phone: '+966 13 000 0000',
   email: 'hello@makwad.com',
-  address: 'طريق الملك فهد، الدمام',
+  address: 'الرياض، المملكة العربية السعودية',
   hours: 'الأحد – الخميس، 9 ص – 5 م',
   stats: [],
   clients: [],

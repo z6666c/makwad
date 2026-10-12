@@ -22,13 +22,13 @@ const routeTree = rootRoute.addChildren([
 
 const router = createRouter({
   routeTree,
-  basepath: '/satr',
+  basepath: '/makwad',
   scrollRestoration: true,
   defaultNotFoundComponent: () => (
     <div className="center-screen">
       <div className="empty">
         <h3>الصفحة غير موجودة</h3>
-        <a className="btn" href="/satr/">العودة للرئيسية</a>
+        <a className="btn" href="/makwad/">العودة للرئيسية</a>
       </div>
     </div>
   ),
