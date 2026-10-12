@@ -150,17 +150,6 @@ export function Overview({ leads, projects, quotes, go }: {
           </ul>
         </div>
 
-        <div className="panel ov-card ov-wide">
-          <div className="ov-card-head"><b>نشاط الفريق</b><span className="muted">آخر التغييرات</span></div>
-          {activity?.status === 'ok' && activity.items.length > 0 ? (
-            <ul className="act">
-              {activity.items.slice(0, 8).map((x) => (
-                <li key={x._id}><span className="avatar sm">{x.actor.charAt(0)}</span><span><b>{x.actor}</b> {x.text}</span><small className="muted">{new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).format(x._creationTime)}</small></li>
-              ))}
-            </ul>
-          ) : <p className="muted ov-empty">يظهر هنا كل تغيير يسويه الفريق: حالات الطلبات، العروض، الأسعار وأكواد الخصم.</p>}
-        </div>
-
         <div className="panel ov-card">
           <div className="ov-card-head"><b>تقدّم المشاريع</b><button className="linkish" type="button" onClick={() => go('projects')}>عرض الكل</button></div>
           <ul className="prog-list">
@@ -174,6 +163,17 @@ export function Overview({ leads, projects, quotes, go }: {
             {active.length === 0 && <li className="muted">لا توجد مشاريع نشطة.</li>}
           </ul>
         </div>
+        <div className="panel ov-card ov-wide">
+          <div className="ov-card-head"><b>نشاط الفريق</b><span className="muted">آخر التغييرات</span></div>
+          {activity?.status === 'ok' && activity.items.length > 0 ? (
+            <ul className="act">
+              {activity.items.slice(0, 8).map((x) => (
+                <li key={x._id}><span className="avatar sm">{x.actor.charAt(0)}</span><span><b>{x.actor}</b> {x.text}</span><small className="muted">{new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).format(x._creationTime)}</small></li>
+              ))}
+            </ul>
+          ) : <p className="muted ov-empty">يظهر هنا كل تغيير يسويه الفريق: حالات الطلبات، العروض، الأسعار وأكواد الخصم.</p>}
+        </div>
+
       </div>
     </div>
   )
