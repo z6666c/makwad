@@ -1,6 +1,7 @@
 // Admin dashboard: overview, price quotes and the price catalog editor.
 import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useMemo, useState } from 'react'
+import type React from 'react'
 import { api } from '@/convex/_generated/api'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { LogoMark } from '@/components/Logo'
@@ -9,7 +10,7 @@ import type { Catalog, Option, Service } from '@/estimate'
 import { COMPANY, DEFAULT_SETTINGS } from '@/site-config'
 import type { SiteSettings } from '@/site-config'
 
-export type Section = 'overview' | 'leads' | 'projects' | 'quotes' | 'pricing' | 'content' | 'users' | 'settings'
+export type Section = 'overview' | 'leads' | 'projects' | 'quotes' | 'pricing' | 'asclient' | 'content' | 'users' | 'settings'
 export type Quote = Doc<'quotes'>
 type Lead = Doc<'leads'>
 type Project = Doc<'projects'>
@@ -25,6 +26,7 @@ export const ICONS: Record<Section, string> = {
   projects: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   quotes: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h4"/>',
   pricing: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="8" r="1.5"/>',
+  asclient: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   content: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 20V9"/>',
   users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 20a6.5 6.5 0 0 0-3-5.5"/>',
   settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
@@ -62,7 +64,10 @@ export function Overview({ leads, projects, quotes, go }: {
   const sentQuotes = quotes.filter((q) => q.status === 'sent')
   const sentValue = sentQuotes.reduce((n, q) => n + quoteTotals(q).total, 0)
 
-  const stale = leads.filter((l) => l.status === 'new' && now - l._creationTime > 2 * DAY)
+  const activity = useQuery(api.app.listActivity) as { status: 'ok'; items: Array<Doc<'activity'>> } | { status: 'forbidden' } | undefined
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const follow = leads.filter((l) => l.followUp && l.followUp <= todayStr && l.status !== 'won' && l.status !== 'lost')
+  const stale = leads.filter((l) => l.status === 'new' && now - l._creationTime > 2 * DAY && !follow.includes(l))
   const soon = active
     .filter((p) => p.dueDate)
     .map((p) => ({ p, at: new Date(p.dueDate + 'T00:00:00').getTime() }))
@@ -99,11 +104,14 @@ export function Overview({ leads, projects, quotes, go }: {
 
       <div className="ov-grid">
         <div className="panel ov-card">
-          <div className="ov-card-head"><b>يحتاج متابعتك</b><span className="muted">{stale.length + due.length + soon.length} عنصر</span></div>
-          {stale.length + due.length + soon.length === 0 ? (
+          <div className="ov-card-head"><b>يحتاج متابعتك</b><span className="muted">{follow.length + stale.length + due.length + soon.length} عنصر</span></div>
+          {follow.length + stale.length + due.length + soon.length === 0 ? (
             <p className="muted ov-empty">كل شيء تحت السيطرة. لا توجد متابعات متأخرة.</p>
           ) : (
             <ul className="todo">
+              {follow.map((l) => (
+                <li key={'f' + l._id}><i className="dot warn" /><span><b>{l.name}</b> موعد متابعة {l.followUp === todayStr ? 'اليوم' : `متأخر (${l.followUp})`}{l.assignee ? ` · ${l.assignee.split('@')[0]}` : ''}</span><button className="linkish" type="button" onClick={() => go('leads')}>فتح</button></li>
+              ))}
               {stale.map((l) => (
                 <li key={l._id}><i className="dot st-new" /><span><b>{l.name}</b> طلب جديد منذ {Math.floor((now - l._creationTime) / DAY)} أيام بلا تواصل</span><button className="linkish" type="button" onClick={() => go('leads')}>فتح</button></li>
               ))}
@@ -140,6 +148,17 @@ export function Overview({ leads, projects, quotes, go }: {
             ))}
             {leads.length === 0 && <li className="muted">لا توجد طلبات بعد.</li>}
           </ul>
+        </div>
+
+        <div className="panel ov-card ov-wide">
+          <div className="ov-card-head"><b>نشاط الفريق</b><span className="muted">آخر التغييرات</span></div>
+          {activity?.status === 'ok' && activity.items.length > 0 ? (
+            <ul className="act">
+              {activity.items.slice(0, 8).map((x) => (
+                <li key={x._id}><span className="avatar sm">{x.actor.charAt(0)}</span><span><b>{x.actor}</b> {x.text}</span><small className="muted">{new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).format(x._creationTime)}</small></li>
+              ))}
+            </ul>
+          ) : <p className="muted ov-empty">يظهر هنا كل تغيير يسويه الفريق: حالات الطلبات، العروض، الأسعار وأكواد الخصم.</p>}
         </div>
 
         <div className="panel ov-card">
@@ -225,6 +244,7 @@ function QuoteRow({ q, canAdmin, onEdit, onPrint }: { q: Quote; canAdmin: boolea
   const setStatus = useMutation(api.quotes.setStatus)
   const toProject = useMutation(api.quotes.toProject)
   const remove = useMutation(api.quotes.remove)
+  const send = useMutation(api.quotes.send)
   const [confirm, setConfirm] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
   const t = quoteTotals(q)
@@ -241,6 +261,12 @@ function QuoteRow({ q, canAdmin, onEdit, onPrint }: { q: Quote; canAdmin: boolea
       <span className="q-actions">
         <button className="btn ghost small" type="button" onClick={onPrint}>PDF</button>
         <button className="btn ghost small" type="button" onClick={onEdit}>تعديل</button>
+        {(q.status === 'draft' || q.status === 'sent') && !q.projectId && (
+          <button className="btn ghost small" type="button" onClick={async () => {
+            const r = await send({ id: q._id })
+            setMsg(r.ok ? `أُرسل العرض إلى ${q.clientEmail}، ويقدر يقبله من بوابة العملاء.` : r.error)
+          }}>{q.status === 'sent' ? 'إعادة الإرسال' : 'إرسال للعميل'}</button>
+        )}
         {q.projectId ? <span className="src ok">صار مشروعاً</span> : q.status === 'accepted' && (
           <button className="btn small" type="button" onClick={async () => {
             const r = await toProject({ id: q._id, platform: '—' })
@@ -354,7 +380,7 @@ function QuoteForm({ draft, leads, catalog, onClose }: { draft: Draft; leads: Ar
   )
 }
 
-export function QuotePrint({ q, onClose }: { q: Quote; onClose: () => void }) {
+export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => void; actions?: React.ReactNode }) {
   const s = (useQuery(api.settings.get) as SiteSettings | undefined) ?? DEFAULT_SETTINGS
   const t = quoteTotals(q)
   const date = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -367,6 +393,7 @@ export function QuotePrint({ q, onClose }: { q: Quote; onClose: () => void }) {
       <div className="print-bar">
         <b>معاينة عرض السعر</b>
         <span style={{ display: 'flex', gap: 8 }}>
+          {actions}
           <button className="btn small" type="button" onClick={() => window.print()}>طباعة / حفظ PDF</button>
           <button className="btn ghost small" type="button" onClick={onClose}>إغلاق</button>
         </span>
@@ -378,7 +405,7 @@ export function QuotePrint({ q, onClose }: { q: Quote; onClose: () => void }) {
         </header>
         <div className="sheet-parties">
           <div><small>مقدّم إلى</small><b>{q.clientName}</b>{q.company && <span>{q.company}</span>}<span className="mono">{q.clientEmail}</span></div>
-          <div><small>من</small><b>{COMPANY.name}</b><span>{s.address}</span><span className="mono">{s.email}</span></div>
+          <div><small>من</small><b>{COMPANY.name}</b><span>{s.address}</span><span className="mono">{s.email}</span>{s.crNumber && <span>السجل / وثيقة العمل الحر: <span className="mono">{s.crNumber}</span></span>}{s.vatNumber && <span>الرقم الضريبي: <span className="mono">{s.vatNumber}</span></span>}</div>
         </div>
         <h2 className="sheet-title">{q.title}</h2>
         <table className="sheet-table">
@@ -404,6 +431,7 @@ export function QuotePrint({ q, onClose }: { q: Quote; onClose: () => void }) {
             {q.notes && <li>{q.notes}</li>}
           </ul>
         </div>
+        {s.iban && <BankBox s={s} />}
         <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">{s.email}</span></footer>
       </article>
     </div>
@@ -420,6 +448,7 @@ export function PricingPanel() {
   const [list, setList] = useState<Catalog | null>(null)
   const [base, setBase] = useState('')
   const [open, setOpen] = useState<string | null>(null)
+  const [confirmDel, setConfirmDel] = useState<string | null>(null)
   const [state, setState] = useState<{ ok: boolean; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
   useEffect(() => {
@@ -436,6 +465,15 @@ export function PricingPanel() {
   const setOpt = (k: string, group: 'tiers' | 'addons', i: number, p: Partial<Option>) =>
     patch(k, (s) => ({ ...s, [group]: s[group].map((o, j) => (j === i ? { ...o, ...p } : o)) }))
   const minPrice = Math.min(...list.filter((s) => !s.hidden).flatMap((s) => s.tiers.map((t) => t.price)))
+  const addService = () => {
+    const key = `svc${Date.now().toString(36)}`
+    setList((l) => l && [...l, {
+      key, label: 'خدمة جديدة', type: 'خدمة جديدة', from: 1500, tierLabel: 'النطاق', text: 'وصف قصير يظهر في بطاقة الخدمة.', tags: [],
+      tiers: [{ key: 't1', label: 'الباقة الأساسية', hint: '', price: 1500, days: 5 }], addons: [],
+    }])
+    setOpen(key)
+  }
+  const removeService = (k: string) => setList((l) => l && l.filter((s) => s.key !== k))
 
   return (
     <div className="stack">
@@ -460,6 +498,7 @@ export function PricingPanel() {
       </div>
       {state && <div className={state.ok ? 'sent' : 'sent err'} role="status">{state.text}</div>}
       <div className="pr-list">
+        <button className="pr-add" type="button" onClick={addService}>+ إضافة خدمة جديدة</button>
         {list.map((s) => {
           const from = Math.min(...s.tiers.map((t) => t.price))
           const isOpen = open === s.key
@@ -476,8 +515,12 @@ export function PricingPanel() {
               {isOpen && (
                 <div className="pr-body">
                   <div className="pr-row2">
-                    <div className="field"><label>اسم الخدمة</label><input className="input" value={s.label} onChange={(e) => patch(s.key, (x) => ({ ...x, label: e.target.value }))} /></div>
+                    <div className="field"><label>اسم الخدمة</label><input className="input" value={s.label} onChange={(e) => patch(s.key, (x) => ({ ...x, label: e.target.value, type: SERVICE_PRICING.some((d) => d.key === x.key) ? x.type : e.target.value }))} /></div>
+                    <div className="field"><label>عنوان قائمة المستويات</label><input className="input" value={s.tierLabel} onChange={(e) => patch(s.key, (x) => ({ ...x, tierLabel: e.target.value }))} placeholder="مثال: حجم المشروع" /></div>
+                    <div className="field"><label>وصف البطاقة في الموقع</label><input className="input" value={s.text ?? ''} onChange={(e) => patch(s.key, (x) => ({ ...x, text: e.target.value }))} placeholder={SERVICE_PRICING.some((d) => d.key === s.key) ? 'اتركه فارغاً لاستخدام الوصف الحالي' : 'وصف قصير'} /></div>
+                    <div className="field"><label>الوسوم (افصل بفاصلة)</label><input className="input" value={(s.tags ?? []).join('، ')} onChange={(e) => patch(s.key, (x) => ({ ...x, tags: e.target.value.split(/[،,]/).map((t) => t.trim()).filter(Boolean).slice(0, 4) }))} placeholder="مثال: AI، أتمتة" /></div>
                     <div className="field"><label>ملاحظة تحت الحاسبة</label><input className="input" value={s.note ?? ''} onChange={(e) => patch(s.key, (x) => ({ ...x, note: e.target.value }))} placeholder="اختياري" /></div>
+                    <label className="field check-line pr-monthly"><input type="checkbox" checked={!!s.monthly} onChange={(e) => patch(s.key, (x) => ({ ...x, monthly: e.target.checked }))} /> اشتراك شهري (السعر لكل شهر)</label>
                   </div>
                   {(['tiers', 'addons'] as const).map((g) => (
                     <div key={g} className="pr-group">
@@ -497,12 +540,201 @@ export function PricingPanel() {
                       <button className="linkish" type="button" onClick={() => patch(s.key, (x) => ({ ...x, [g]: [...x[g], { key: `n${Date.now()}`, label: 'بند جديد', hint: '', price: 1000, days: 3 }] }))}>+ إضافة بند</button>
                     </div>
                   ))}
+                  <div className="pr-danger">
+                    {confirmDel === s.key ? (
+                      <>
+                        <span>حذف «{s.label}» نهائياً من الموقع والحاسبة؟</span>
+                        <button className="btn danger small" type="button" onClick={() => { removeService(s.key); setConfirmDel(null) }}>نعم، احذف الخدمة</button>
+                        <button className="btn ghost small" type="button" onClick={() => setConfirmDel(null)}>إلغاء</button>
+                      </>
+                    ) : (
+                      <button className="linkish danger-link" type="button" disabled={list.length < 2} onClick={() => setConfirmDel(s.key)}>حذف هذه الخدمة</button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
           )
         })}
       </div>
+      {dirty && <div className="pr-sticky"><span>عندك تغييرات غير محفوظة على الأسعار</span><button className="btn small" type="button" disabled={busy} onClick={async () => {
+        setBusy(true); setState(null)
+        const r = await save({ pricing: list })
+        setBusy(false)
+        if (r.ok) { setBase(JSON.stringify(list)); setState({ ok: true, text: 'تم حفظ الأسعار، وتظهر في الموقع الآن.' }) } else setState({ ok: false, text: r.error })
+      }}>حفظ الآن</button></div>}
+      <CouponsPanel />
+    </div>
+  )
+}
+
+/* =================== COUPONS =================== */
+
+type CouponDoc = Doc<'coupons'>
+type CouponDraft = { id?: Id<'coupons'>; code: string; kind: 'percent' | 'fixed'; value: number; active: boolean; expires: string; maxUses: number; minTotal: number; note: string }
+const newCoupon = (): CouponDraft => ({ code: '', kind: 'percent', value: 10, active: true, expires: '', maxUses: 0, minTotal: 0, note: '' })
+
+export function CouponsPanel() {
+  const res = useQuery(api.coupons.list) as { status: 'ok'; coupons: Array<CouponDoc> } | { status: 'forbidden' } | undefined
+  const save = useMutation(api.coupons.save)
+  const remove = useMutation(api.coupons.remove)
+  const [draft, setDraft] = useState<CouponDraft | null>(null)
+  const [err, setErr] = useState<string | null>(null)
+  const coupons = res?.status === 'ok' ? res.coupons : []
+  const today = new Date().toISOString().slice(0, 10)
+  const state = (c: CouponDoc) => !c.active ? 'موقوف' : c.expires && c.expires < today ? 'منتهي' : c.maxUses && c.uses >= c.maxUses ? 'مستنفد' : 'فعّال'
+  const set = <K extends keyof CouponDraft>(k: K, v: CouponDraft[K]) => setDraft((d) => d && { ...d, [k]: v })
+  return (
+    <div className="panel cp">
+      <div className="panel-pad pr-head">
+        <div><h3>أكواد الخصم</h3><p className="muted">يكتبها العميل في حاسبة الأسعار، ويوصلك الطلب ومعه الكود المستخدم.</p></div>
+        {!draft && <button className="btn small" type="button" onClick={() => { setDraft(newCoupon()); setErr(null) }}>+ كود خصم جديد</button>}
+      </div>
+      {draft && (
+        <div className="cp-form">
+          <div className="field"><label htmlFor="cp-code">الكود</label><input id="cp-code" className="input mono" dir="ltr" value={draft.code} onChange={(e) => set('code', e.target.value.toUpperCase())} placeholder="RAMADAN25" /></div>
+          <div className="field"><label htmlFor="cp-kind">نوع الخصم</label>
+            <select id="cp-kind" className="input" value={draft.kind} onChange={(e) => set('kind', e.target.value as CouponDraft['kind'])}><option value="percent">نسبة مئوية %</option><option value="fixed">مبلغ ثابت (ريال)</option></select>
+          </div>
+          <div className="field"><label htmlFor="cp-val">{draft.kind === 'percent' ? 'النسبة %' : 'المبلغ (ريال)'}</label><input id="cp-val" className="input mono" type="number" min={1} value={draft.value} onChange={(e) => set('value', Number(e.target.value) || 0)} /></div>
+          <div className="field"><label htmlFor="cp-exp">ينتهي في (اختياري)</label><input id="cp-exp" className="input" type="date" dir="ltr" value={draft.expires} onChange={(e) => set('expires', e.target.value)} /></div>
+          <div className="field"><label htmlFor="cp-max">حد الاستخدام (0 = بلا حد)</label><input id="cp-max" className="input mono" type="number" min={0} value={draft.maxUses} onChange={(e) => set('maxUses', Number(e.target.value) || 0)} /></div>
+          <div className="field"><label htmlFor="cp-min">أقل قيمة مشروع (ريال)</label><input id="cp-min" className="input mono" type="number" min={0} step={500} value={draft.minTotal} onChange={(e) => set('minTotal', Number(e.target.value) || 0)} /></div>
+          <div className="field cp-note"><label htmlFor="cp-note">ملاحظة داخلية</label><input id="cp-note" className="input" value={draft.note} onChange={(e) => set('note', e.target.value)} placeholder="مثال: حملة رمضان على إنستقرام" /></div>
+          <label className="field check-line"><input type="checkbox" checked={draft.active} onChange={(e) => set('active', e.target.checked)} /> فعّال</label>
+          <div className="cp-actions">
+            <button className="btn small" type="button" onClick={async () => {
+              setErr(null)
+              const r = await save({
+                ...(draft.id ? { id: draft.id } : {}), code: draft.code, kind: draft.kind, value: draft.value, active: draft.active,
+                ...(draft.expires ? { expires: draft.expires } : {}), ...(draft.maxUses ? { maxUses: draft.maxUses } : {}), ...(draft.minTotal ? { minTotal: draft.minTotal } : {}), note: draft.note,
+              })
+              if (r.ok) setDraft(null); else setErr(r.error)
+            }}>حفظ الكود</button>
+            <button className="btn ghost small" type="button" onClick={() => setDraft(null)}>إلغاء</button>
+            {err && <span className="sent err">{err}</span>}
+          </div>
+        </div>
+      )}
+      {coupons.length === 0 ? (
+        !draft && <div className="empty"><h3>لا توجد أكواد بعد</h3><p>أنشئ كوداً لحملاتك أو لعملاء مميزين، مثل خصم 10% أو 500 ريال.</p></div>
+      ) : (
+        <div className="cp-list">
+          {coupons.map((c) => (
+            <div className="cp-row" key={c._id}>
+              <b className="mono cp-code">{c.code}</b>
+              <span className="cp-val">{c.kind === 'percent' ? `${c.value}%` : `${fmtSAR(c.value)} ريال`}</span>
+              <span className="muted">{c.uses}{c.maxUses ? ` / ${c.maxUses}` : ''} استخدام{c.expires ? ` · حتى ${c.expires}` : ''}{c.minTotal ? ` · من ${fmtSAR(c.minTotal)} ريال` : ''}{c.note ? ` · ${c.note}` : ''}</span>
+              <span className={`badge-s ${state(c) === 'فعّال' ? 'st-won' : 'st-lost'}`}>{state(c)}</span>
+              <span className="q-actions">
+                <button className="btn ghost small" type="button" onClick={() => setDraft({ id: c._id, code: c.code, kind: c.kind, value: c.value, active: c.active, expires: c.expires ?? '', maxUses: c.maxUses ?? 0, minTotal: c.minTotal ?? 0, note: c.note ?? '' })}>تعديل</button>
+                <button className="linkish danger-link" type="button" onClick={() => void remove({ id: c._id })}>حذف</button>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function BankBox({ s }: { s: SiteSettings }) {
+  return (
+    <div className="sheet-bank">
+      <small>بيانات التحويل البنكي</small>
+      <span>{s.bankName || 'الحساب البنكي'} · باسم {COMPANY.name}</span>
+      <b className="mono">{s.iban?.replace(/(.{4})/g, '$1 ').trim()}</b>
+    </div>
+  )
+}
+
+/* =================== INVOICES =================== */
+
+type Pay = { title: string; amount: number; status: 'pending' | 'due' | 'paid' }
+
+export function InvoicePrint({ p, index, onClose }: { p: Project; index: number; onClose: () => void }) {
+  const s = (useQuery(api.settings.get) as SiteSettings | undefined) ?? DEFAULT_SETTINGS
+  const pay = (p.payments ?? [])[index] as Pay | undefined
+  useEffect(() => {
+    document.documentElement.classList.add('printing')
+    return () => document.documentElement.classList.remove('printing')
+  }, [])
+  if (!pay) return null
+  const vatOn = !!s.vatNumber
+  const net = vatOn ? Math.round(pay.amount / (1 + VAT_RATE)) : pay.amount
+  const vat = pay.amount - net
+  const no = `INV-${new Date(p._creationTime).getFullYear()}-${String(p._id).slice(-4).toUpperCase()}-${index + 1}`
+  const date = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }).format(Date.now())
+  return (
+    <div className="print-overlay" role="dialog" aria-label={`فاتورة ${no}`}>
+      <div className="print-bar">
+        <b>معاينة الفاتورة</b>
+        <span style={{ display: 'flex', gap: 8 }}>
+          <button className="btn small" type="button" onClick={() => window.print()}>طباعة / حفظ PDF</button>
+          <button className="btn ghost small" type="button" onClick={onClose}>إغلاق</button>
+        </span>
+      </div>
+      <article className="sheet">
+        <header className="sheet-head">
+          <div className="sheet-brand"><LogoMark height={44} /><div><b>{COMPANY.name}</b><small>MAKWAD STUDIO</small></div></div>
+          <div className="sheet-meta"><h1>{vatOn ? 'فاتورة ضريبية' : 'فاتورة'}</h1><span className="mono">{no}</span><span>{date}</span>
+            <span className={`badge-s pay-${pay.status}`}>{pay.status === 'paid' ? 'مدفوعة' : pay.status === 'due' ? 'مستحقة الدفع' : 'لاحقة'}</span></div>
+        </header>
+        <div className="sheet-parties">
+          <div><small>العميل</small><b>{p.clientName}</b><span className="mono">{p.clientEmail}</span><span>المشروع: {p.title}</span></div>
+          <div><small>المورّد</small><b>{COMPANY.name}</b><span>{s.address}</span>{s.crNumber && <span>السجل / وثيقة العمل الحر: <span className="mono">{s.crNumber}</span></span>}{s.vatNumber && <span>الرقم الضريبي: <span className="mono">{s.vatNumber}</span></span>}</div>
+        </div>
+        <table className="sheet-table">
+          <thead><tr><th>#</th><th>الوصف</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr></thead>
+          <tbody><tr><td className="mono">1</td><td>{pay.title} — {p.title}</td><td className="mono">1</td><td className="mono">{fmtSAR(net)}</td><td className="mono">{fmtSAR(net)}</td></tr></tbody>
+        </table>
+        <div className="sheet-totals">
+          <div><span>المبلغ قبل الضريبة</span><b className="mono">{fmtSAR(net)}</b></div>
+          {vatOn && <div><span>ضريبة القيمة المضافة 15%</span><b className="mono">{fmtSAR(vat)}</b></div>}
+          <div className="grand"><span>الإجمالي المستحق (ريال)</span><b className="mono">{fmtSAR(pay.amount)}</b></div>
+        </div>
+        {s.iban && pay.status !== 'paid' && <BankBox s={s} />}
+        {!vatOn && <p className="sheet-note">المنشأة غير مسجلة في ضريبة القيمة المضافة.</p>}
+        <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">{s.email}</span></footer>
+      </article>
+    </div>
+  )
+}
+
+/* =================== CLIENT QUOTES (portal) =================== */
+
+export function ClientQuotes({ asEmail }: { asEmail?: string }) {
+  const res = useQuery(api.quotes.mine, asEmail ? { asEmail } : {}) as { status: 'ok'; quotes: Array<Quote> } | { status: 'signedOut' } | undefined
+  const respond = useMutation(api.quotes.respond)
+  const [view, setView] = useState<Quote | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
+  if (!res || res.status !== 'ok' || res.quotes.length === 0) return null
+  const answer = async (q: Quote, accept: boolean) => {
+    if (asEmail) { setMsg('هذه معاينة كعميل، الأزرار تعمل فقط من حساب العميل نفسه.'); return }
+    const r = await respond({ id: q._id, accept })
+    setMsg(r.ok ? (accept ? 'شكراً! وصل قبولك لفريقنا وبنبدأ الترتيبات معك.' : 'تم تسجيل ردّك، وبيتواصل معك فريقنا.') : r.error)
+    setView(null)
+  }
+  return (
+    <div className="panel cq">
+      <div className="ov-card-head"><b>عروض الأسعار</b><span className="muted">{res.quotes.length} عرض</span></div>
+      {msg && <div className="sent">{msg}</div>}
+      {res.quotes.map((q) => (
+        <div className="cq-row" key={q._id}>
+          <span><b>{q.title}</b><small className="muted mono">{q.number}</small></span>
+          <b className="mono">{fmtSAR(quoteTotals(q).total)} <small>ريال</small></b>
+          <span className={`badge-s q-${q.status}`}>{QUOTE_STATUS[q.status] === 'أُرسل للعميل' ? 'بانتظار ردّك' : QUOTE_STATUS[q.status]}</span>
+          <button className="btn ghost small" type="button" onClick={() => setView(q)}>عرض التفاصيل</button>
+        </div>
+      ))}
+      {view && (
+        <QuotePrint q={view} onClose={() => setView(null)} actions={view.status === 'sent' ? (
+          <>
+            <button className="btn small" type="button" onClick={() => void answer(view, true)}>قبول العرض</button>
+            <button className="btn ghost small" type="button" onClick={() => void answer(view, false)}>رفض</button>
+          </>
+        ) : null} />
+      )}
     </div>
   )
 }

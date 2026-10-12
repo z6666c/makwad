@@ -19,7 +19,7 @@ const step = async (name, fn) => { try { await fn() } catch (e) { logs.push(`[st
 
 // Dashboard (sample data)
 const d = await page({ width: 1440, height: 900 })
-for (const tab of ['overview', 'leads', 'projects', 'quotes', 'pricing', 'users']) {
+for (const tab of ['overview', 'leads', 'projects', 'quotes', 'pricing', 'asclient', 'settings']) {
   await step(tab, async () => {
     await d.goto(`${BASE}/preview?tab=${tab}`, { waitUntil: 'networkidle' }); await settle(d)
     await shot(d, `dash-${tab}`, { fullPage: tab !== 'leads' && tab !== 'projects' })
@@ -54,6 +54,22 @@ await step('lead-open', async () => {
   await d.getByRole('button', { name: 'التفاصيل' }).first().click(); await d.waitForTimeout(400)
   await shot(d, 'dash-lead-open')
 })
+await step('invoice', async () => {
+  await d.goto(`${BASE}/preview?tab=projects`, { waitUntil: 'networkidle' }); await settle(d)
+  await d.locator('.inv-links .linkish').first().click(); await d.waitForTimeout(800)
+  await shot(d, 'dash-invoice')
+})
+await step('coupon-new', async () => {
+  await d.goto(`${BASE}/preview?tab=pricing`, { waitUntil: 'networkidle' }); await settle(d)
+  await d.getByRole('button', { name: '+ كود خصم جديد' }).click(); await d.waitForTimeout(300)
+  await d.locator('#cp-code').fill('RAMADAN25'); await d.locator('#cp-val').fill('25')
+  await d.locator('.cp').screenshot({ path: 'shots/dash-coupons.png' })
+})
+await step('client-quote', async () => {
+  await d.goto(`${BASE}/preview?tab=asclient`, { waitUntil: 'networkidle' }); await settle(d)
+  await d.getByRole('button', { name: 'عرض التفاصيل' }).first().click(); await d.waitForTimeout(800)
+  await shot(d, 'dash-client-quote')
+})
 const m = await page({ width: 390, height: 844 }, true)
 await step('mobile', async () => {
   await m.goto(`${BASE}/preview?tab=overview`, { waitUntil: 'networkidle' }); await settle(m)
@@ -74,6 +90,8 @@ await step('site', async () => {
   await s.locator('#services').getByRole('button', { name: /احسب السعر/ }).nth(3).click(); await s.waitForTimeout(900)
   await s.locator('#estimate .est-feats label').nth(0).click(); await s.locator('#estimate .est-feats label').nth(2).click(); await s.waitForTimeout(300)
   await s.locator('#estimate').screenshot({ path: 'shots/site-estimate-ai.png' })
+  await s.locator('.est-coupon input').fill('NOPE'); await s.locator('.est-coupon button').click(); await s.waitForTimeout(1500)
+  await s.locator('#estimate .est-result').screenshot({ path: 'shots/site-coupon-bad.png' })
 })
 await step('site-mobile', async () => {
   await m.goto(`${BASE}/`, { waitUntil: 'networkidle' }); await settle(m, 2000)

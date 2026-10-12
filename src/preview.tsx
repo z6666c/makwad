@@ -14,7 +14,7 @@ const d = (days: number) => now - days * 86400000
 const iso = (days: number) => new Date(now + days * 86400000).toISOString().slice(0, 10)
 
 const leads = [
-  { _id: 'l1', _creationTime: d(0.2), name: 'سارة القحطاني', company: 'مؤسسة الريان', email: 'sara@alrayan.sa', types: ['موقع أو تطبيق ويب'], plan: 'النمو', message: 'متجر إلكتروني لمنتجات العناية مع دفع مدى وApple Pay.', source: 'website', status: 'new', amount: 12000 },
+  { _id: 'l1', _creationTime: d(0.2), name: 'سارة القحطاني', company: 'مؤسسة الريان', email: 'sara@alrayan.sa', phone: '966551234567', coupon: 'MAKWAD10', assignee: 'sultan@makwad.com', followUp: iso(0), types: ['موقع أو تطبيق ويب'], plan: 'النمو', message: 'متجر إلكتروني لمنتجات العناية مع دفع مدى وApple Pay.', source: 'website', status: 'new', amount: 12000 },
   { _id: 'l2', _creationTime: d(1), name: 'فهد العتيبي', company: 'شركة مسار اللوجستية', email: 'fahad@masar.sa', types: ['تطبيق جوال'], plan: 'النمو', message: 'تطبيق مندوبين مع تتبع مباشر ولوحة إدارة.', source: 'website', status: 'contacted', amount: 37000 },
   { _id: 'l3', _creationTime: d(3), name: 'نورة الشهري', company: 'مخبز السنابل', email: 'noura@sanabel.sa', types: ['أداة ذكاء اصطناعي'], plan: 'النمو', message: 'روبوت واتساب يستقبل الطلبات ويرد على الاستفسارات.', source: 'website', status: 'new', amount: 7000 },
   { _id: 'l4', _creationTime: d(4), name: 'عبدالله السالم', company: 'مكتب السالم للمحاماة', email: 'abdullah@salem.law', types: ['تحليل مشروع'], plan: 'الانطلاقة', message: 'نبغى وثيقة متطلبات لنظام إدارة القضايا.', source: 'website', status: 'won', amount: 3500 },
@@ -52,13 +52,32 @@ const users = [
   { key: 'u3', userId: 'u3', email: 'majed@rawa.sa', name: 'ماجد الحربي', role: 'client', joined: d(28), pending: false },
 ]
 
+const activity = [
+  { _id: 'a1', _creationTime: d(0.05), actor: 'سلطان', kind: 'lead', text: 'غيّر حالة طلب فهد العتيبي إلى «تم التواصل»' },
+  { _id: 'a2', _creationTime: d(0.2), actor: 'أحمد الرشيدي', kind: 'quote', text: 'أرسل العرض MK-2026-004 إلى fahad@masar.sa' },
+  { _id: 'a3', _creationTime: d(0.4), actor: 'أحمد الرشيدي', kind: 'coupon', text: 'أنشأ كود الخصم MAKWAD10 (10%)' },
+  { _id: 'a4', _creationTime: d(1), actor: 'أحمد الرشيدي', kind: 'lead', text: 'أسند طلب سارة القحطاني إلى sultan@makwad.com' },
+  { _id: 'a5', _creationTime: d(2), actor: 'ماجد الحربي', kind: 'quote', text: 'قبِل العميل ماجد الحربي العرض MK-2026-002' },
+  { _id: 'a6', _creationTime: d(2.1), actor: 'سلطان', kind: 'project', text: 'حوّل العرض MK-2026-002 إلى مشروع «نظام مستودعات وفوترة»' },
+]
+const coupons = [
+  { _id: 'c1', _creationTime: d(1), code: 'MAKWAD10', kind: 'percent', value: 10, active: true, uses: 3, maxUses: 50, note: 'إطلاق الموقع' },
+  { _id: 'c2', _creationTime: d(5), code: 'RIYADH500', kind: 'fixed', value: 500, active: true, uses: 1, minTotal: 5000, expires: iso(30) },
+  { _id: 'c3', _creationTime: d(40), code: 'SUMMER', kind: 'percent', value: 15, active: true, uses: 12, expires: iso(-10) },
+]
+
 const DATA: Record<string, unknown> = {
+  'app:teamMembers': { status: 'ok', me: 'alrashidi7amad@gmail.com', rows: [{ email: 'alrashidi7amad@gmail.com', name: 'أحمد الرشيدي' }, { email: 'sultan@makwad.com', name: 'سلطان' }] },
+  'app:listActivity': { status: 'ok', items: activity },
+  'coupons:list': { status: 'ok', coupons },
+  'coupons:check': { ok: true, code: 'MAKWAD10', kind: 'percent', value: 10, minTotal: 0 },
+  'quotes:mine': { status: 'ok', quotes: [{ ...quotes[0], clientEmail: 'majed@rawa.sa', status: 'sent' }, quotes[2]] },
   'app:me': { status: 'ok', role: 'admin', isOwner: true, name: 'أحمد الرشيدي', email: 'alrashidi7amad@gmail.com' },
   'app:listLeads': { status: 'ok', leads },
   'app:listProjects': { status: 'ok', projects },
   'app:listUpdates': { status: 'ok', updates: [] },
   'quotes:list': { status: 'ok', quotes },
-  'settings:get': DEFAULT_SETTINGS,
+  'settings:get': { ...DEFAULT_SETTINGS, crNumber: 'FL-123456789', bankName: 'مصرف الراجحي', iban: 'SA0380000000608010167519' },
   'users:listUsers': { status: 'ok', rows: users, me: 'alrashidi7amad@gmail.com' },
   'content:adminContent': { status: 'ok', works: [], testimonials: [] },
   'content:publicContent': { works: [], testimonials: [] },

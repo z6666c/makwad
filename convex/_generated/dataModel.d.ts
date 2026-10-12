@@ -5,7 +5,7 @@ type Tables = {
   leads: Base & {
     name: string; company?: string; email: string; types: string[]; plan: string; message: string;
     source: "website" | "client"; status: "new" | "contacted" | "won" | "lost";
-    notes?: string; projectId?: string; amount?: number; isExample?: boolean;
+    notes?: string; projectId?: string; amount?: number; phone?: string; assignee?: string; followUp?: string; coupon?: string; isExample?: boolean;
   };
   projects: Base & {
     title: string; clientName: string; clientEmail: string; platform: string;
@@ -24,6 +24,8 @@ type Tables = {
     items: Array<{ label: string; qty: number; price: number }>; discount: number; vat: boolean; validDays: number;
     notes?: string; status: "draft" | "sent" | "accepted" | "rejected"; projectId?: string; createdBy: string;
   };
+  coupons: Base & { code: string; kind: 'percent' | 'fixed'; value: number; active: boolean; expires?: string; maxUses?: number; uses: number; minTotal?: number; note?: string };
+  activity: Base & { actor: string; kind: string; text: string };
   testimonials: Base & { text: string; name: string; role: string; order: number; visible: boolean };
 };
 export type TableNames = keyof Tables;

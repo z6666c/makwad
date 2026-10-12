@@ -7,7 +7,7 @@ import { Logo } from '@/components/Logo'
 import { FAQ, PLANS, SERVICES, STEPS, WHY } from '@/site-content'
 import { ARTS, COLORS } from '@/mockups'
 import { Estimator } from '@/components/Estimator'
-import { fmtSAR, getService } from '@/estimate'
+import { fmtSAR } from '@/estimate'
 import type { ServiceKey } from '@/estimate'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { useTitle } from '@/useTitle'
@@ -64,8 +64,10 @@ export default function Home() {
   const clients = settings.clients ?? []
   const catalog = usePricing()
   const [amount, setAmount] = useState<number | undefined>(undefined)
-  const useEstimate = (summary: string, p: string, t: Array<string>, total: number) => {
+  const [coupon, setCoupon] = useState<string | undefined>(undefined)
+  const useEstimate = (summary: string, p: string, t: Array<string>, total: number, code?: string) => {
     setAmount(total)
+    setCoupon(code)
     setMessage(summary)
     setPlan(p)
     setTypes(t)
@@ -126,18 +128,21 @@ export default function Home() {
               <p>خدمات بأسعار واضحة تبدأ من 1,500 ريال. اضغط «احسب السعر» لترى التكلفة بالتفصيل.</p>
             </div>
             <div className="services">
-              {SERVICES.filter((s) => catalog.some((c) => c.key === s.key)).map((s) => (
-                <div className="svc" key={s.title}>
-                  <div className="svc-icon"><Icon d={s.icon} /></div>
-                  <h3>{s.title}</h3>
-                  <p>{s.text}</p>
-                  <div className="tags">{s.tags.map((t) => <span className="tag" key={t}>{t}</span>)}</div>
-                  <div className="svc-foot">
-                    <span className="svc-price"><small>يبدأ من</small><b className="mono">{fmtSAR(getService(s.key, catalog).from)}</b><small>ريال{getService(s.key, catalog).monthly ? ' / شهرياً' : ''}</small></span>
-                    <button className="linkish" type="button" onClick={() => priceOf(s.key)}>احسب السعر ←</button>
+              {catalog.map((c) => {
+                const st = SERVICES.find((x) => x.key === c.key)
+                return (
+                  <div className="svc" key={c.key}>
+                    <div className="svc-icon"><Icon d={st?.icon ?? '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>'} /></div>
+                    <h3>{c.label}</h3>
+                    <p>{c.text || st?.text || ''}</p>
+                    <div className="tags">{(c.tags?.length ? c.tags : st?.tags ?? []).map((t) => <span className="tag" key={t}>{t}</span>)}</div>
+                    <div className="svc-foot">
+                      <span className="svc-price"><small>يبدأ من</small><b className="mono">{fmtSAR(Math.min(...c.tiers.map((t) => t.price)))}</b><small>ريال{c.monthly ? ' / شهرياً' : ''}</small></span>
+                      <button className="linkish" type="button" onClick={() => priceOf(c.key)}>احسب السعر ←</button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </section>
 
@@ -231,7 +236,7 @@ export default function Home() {
                 <p className="muted">أرسل لنا فكرتك ونرد عليك خلال يوم عمل واحد بموعد لجلسة اكتشاف مجانية.</p>
 <ContactInfo />
               </div>
-              <ContactForm plan={plan} setPlan={setPlan} types={types} setTypes={setTypes} message={message} setMessage={(m) => { setMessage(m); if (!m) setAmount(undefined) }} amount={amount} />
+              <ContactForm plan={plan} setPlan={setPlan} types={types} setTypes={setTypes} message={message} setMessage={(m) => { setMessage(m); if (!m) setAmount(undefined) }} amount={amount} coupon={coupon} />
             </div>
           </section>
         </div>
@@ -450,9 +455,10 @@ type FormProps = {
   message: string
   setMessage: (m: string) => void
   amount?: number
+  coupon?: string
 }
 
-function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amount }: FormProps) {
+function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amount, coupon }: FormProps) {
   const submit = useMutation(api.app.submitLead)
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null)
@@ -472,6 +478,8 @@ function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amou
         plan,
         message,
         ...(amount ? { amount } : {}),
+        ...(coupon ? { coupon } : {}),
+        phone: String(fd.get('phone') ?? ''),
       })
       if (r.ok) {
         setResult({ ok: true, text: 'وصلنا طلبك. سيتواصل معك فريقنا خلال يوم عمل واحد.' })
@@ -491,7 +499,8 @@ function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amou
     <form className="form" noValidate onSubmit={onSubmit}>
       <div className="field"><label htmlFor="name">الاسم</label><input id="name" name="name" autoComplete="name" placeholder="مثال: عبدالله السالم" /></div>
       <div className="field"><label htmlFor="company">الشركة</label><input id="company" name="company" autoComplete="organization" placeholder="اختياري" /></div>
-      <div className="field full"><label htmlFor="email">البريد الإلكتروني</label><input id="email" name="email" type="email" autoComplete="email" dir="ltr" placeholder="name@company.sa" /></div>
+      <div className="field"><label htmlFor="email">البريد الإلكتروني</label><input id="email" name="email" type="email" autoComplete="email" dir="ltr" placeholder="name@company.sa" /></div>
+      <div className="field"><label htmlFor="phone">رقم الجوال (واتساب)</label><input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="05XXXXXXXX" /></div>
       <div className="field full">
         <span className="lbl">نوع المشروع</span>
         <div className="chips">

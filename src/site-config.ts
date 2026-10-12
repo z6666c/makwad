@@ -20,6 +20,10 @@ export type SiteSettings = {
   clients?: Array<string>
   showExampleNote?: boolean
   pricing?: Catalog | null
+  vatNumber?: string
+  crNumber?: string
+  bankName?: string
+  iban?: string
 }
 
 export const DEFAULT_SETTINGS: SiteSettings = {

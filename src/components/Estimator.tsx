@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useQuery } from 'convex/react'
+import { api } from '@/convex/_generated/api'
 import { DEPOSIT_RATE, DURATIONS, defaultInput, estimate, estimateSummary, fmtDays, fmtSAR, getService } from '@/estimate'
-import type { EstimateInput, ServiceKey } from '@/estimate'
+import type { Coupon, EstimateInput, ServiceKey } from '@/estimate'
 import { usePricing } from '@/site-config'
 
 type Props = {
   service: ServiceKey
   onService: (k: ServiceKey) => void
-  onUse: (summary: string, plan: string, types: Array<string>, amount: number) => void
+  onUse: (summary: string, plan: string, types: Array<string>, amount: number, coupon?: string) => void
 }
 
 export function Estimator({ service, onService, onUse }: Props) {
@@ -16,7 +18,15 @@ export function Estimator({ service, onService, onUse }: Props) {
     setInput((cur) => (cur.service === service ? cur : defaultInput(service, catalog)))
   }, [service, catalog])
   const s = getService(input.service, catalog)
-  const e = useMemo(() => estimate(input, catalog), [input, catalog])
+  const [codeText, setCodeText] = useState('')
+  const [code, setCode] = useState('')
+  const base = useMemo(() => estimate(input, catalog), [input, catalog])
+  const check = useQuery(api.coupons.check, code ? { code, total: base.total } : 'skip') as
+    | { ok: true; code: string; kind: 'percent' | 'fixed'; value: number }
+    | { ok: false; error: string }
+    | undefined
+  const coupon: Coupon | null = check && check.ok ? { code: check.code, kind: check.kind, value: check.value } : null
+  const e = useMemo(() => estimate(input, catalog, coupon), [input, catalog, coupon?.code, coupon?.value, coupon?.kind])
   const toggle = (k: string) =>
     setInput((v) => ({ ...v, addons: v.addons.includes(k) ? v.addons.filter((a) => a !== k) : [...v.addons, k] }))
 
@@ -84,6 +94,12 @@ export function Estimator({ service, onService, onUse }: Props) {
       </div>
 
       <aside className="est-result" aria-live="polite">
+        <form className="est-coupon" onSubmit={(ev) => { ev.preventDefault(); setCode(codeText.trim()) }}>
+          <input value={codeText} onChange={(ev) => { setCodeText(ev.target.value); if (!ev.target.value) setCode('') }} placeholder="عندك كود خصم؟" aria-label="كود الخصم" dir="ltr" />
+          <button type="submit" disabled={!codeText.trim()}>تطبيق</button>
+        </form>
+        {code && check && !check.ok && <small className="est-coupon-err">{check.error}</small>}
+        {coupon && <small className="est-coupon-ok">تم تطبيق الكود {coupon.code} ✓</small>}
         <span className="kicker">عرض السعر المبدئي</span>
         <ul className="est-lines">
           {e.lines.map((l) => (
@@ -100,7 +116,7 @@ export function Estimator({ service, onService, onUse }: Props) {
           </>
         )}
         <div className="est-row"><span>الباقة المناسبة</span><b>{e.plan}</b></div>
-        <button className="btn" type="button" onClick={() => onUse(estimateSummary(input, e, catalog), e.plan, [s.type], e.total)}>اطلب عرضاً بهذه التفاصيل</button>
+        <button className="btn" type="button" onClick={() => onUse(estimateSummary(input, e, catalog), e.plan, [s.type], e.total, coupon?.code)}>اطلب عرضاً بهذه التفاصيل</button>
         <p className="est-note">الأسعار بالريال السعودي ولا تشمل ضريبة القيمة المضافة إن وُجدت. {s.note ?? ''} السعر النهائي يُعتمد بعد جلسة الاكتشاف المجانية.</p>
       </aside>
     </div>

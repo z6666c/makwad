@@ -10,7 +10,7 @@ import { useTitle } from '@/useTitle'
 import { DEFAULT_SETTINGS, whatsappLink } from '@/site-config'
 import type { SiteSettings } from '@/site-config'
 import { WorkCard } from '@/pages/Home'
-import { ICONS, Icon, Overview, PricingPanel, QuotesPanel, draftFromLead } from '@/pages/AdminExtras'
+import { ClientQuotes, ICONS, Icon, InvoicePrint, Overview, PricingPanel, QuotesPanel, draftFromLead } from '@/pages/AdminExtras'
 import type { Quote, Section } from '@/pages/AdminExtras'
 import { fmtSAR } from '@/estimate'
 import { usePricing } from '@/site-config'
@@ -18,6 +18,9 @@ import { ARTS, COLORS } from '@/mockups'
 
 const CanAdmin = createContext(false)
 const MakeQuote = createContext<(l: Doc<'leads'>) => void>(() => {})
+type TeamRow = { email: string; name: string }
+const Team = createContext<{ me: string; rows: Array<TeamRow> }>({ me: '', rows: [] })
+const waLink = (phone: string, text: string) => `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
 const ROLE_LABEL: Record<string, string> = { owner: 'المالك', admin: 'مدير', staff: 'موظف', client: 'عميل', blocked: 'موقوف' }
 
 const STAGES = ['الاكتشاف', 'التصميم', 'البرمجة', 'الاختبار', 'الإطلاق']
@@ -110,7 +113,8 @@ const SECTIONS: Array<{ key: Section; label: string; admin?: boolean }> = [
   { key: 'leads', label: 'الطلبات' },
   { key: 'projects', label: 'المشاريع' },
   { key: 'quotes', label: 'عروض الأسعار' },
-  { key: 'pricing', label: 'الأسعار والخدمات', admin: true },
+  { key: 'pricing', label: 'الخدمات والأسعار والخصومات', admin: true },
+  { key: 'asclient', label: 'معاينة كعميل', admin: true },
   { key: 'content', label: 'محتوى الموقع', admin: true },
   { key: 'users', label: 'المستخدمون والموظفون', admin: true },
   { key: 'settings', label: 'الإعدادات', admin: true },
@@ -128,6 +132,8 @@ function AdminView() {
   const clear = useMutation(api.app.clearExamples)
   const canAdmin = useContext(CanAdmin)
   const catalog = usePricing()
+  const teamRes = useQuery(api.app.teamMembers) as { status: 'ok'; me: string; rows: Array<TeamRow> } | { status: 'forbidden' } | undefined
+  const team = teamRes?.status === 'ok' ? { me: teamRes.me, rows: teamRes.rows } : { me: '', rows: [] }
   const [tab, setTab] = useState<Section>(initialSection)
   const [seed, setSeed] = useState<ReturnType<typeof draftFromLead> | null>(null)
   const go = (s: Section) => { setTab(s); window.scrollTo({ top: 0 }) }
@@ -149,7 +155,7 @@ function AdminView() {
   const today = new Intl.DateTimeFormat('ar-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' }).format(Date.now())
 
   return (
-    <MakeQuote.Provider value={(l) => { setSeed(draftFromLead(l)); go('quotes') }}>
+    <Team.Provider value={team}><MakeQuote.Provider value={(l) => { setSeed(draftFromLead(l)); go('quotes') }}>
       <div className="admin wrap">
         <aside className="side" aria-label="أقسام لوحة التحكم">
           <span className="side-cap">{canAdmin ? 'لوحة الإدارة' : 'لوحة الفريق'}</span>
@@ -177,12 +183,13 @@ function AdminView() {
           {cur.key === 'projects' && <ProjectsPanel projects={projects} />}
           {cur.key === 'quotes' && <QuotesPanel quotes={quotes} leads={leads} catalog={catalog} seed={seed} onSeedUsed={() => setSeed(null)} canAdmin={canAdmin} />}
           {cur.key === 'pricing' && canAdmin && <PricingPanel />}
+          {cur.key === 'asclient' && canAdmin && <AsClient projects={projects} />}
           {cur.key === 'content' && canAdmin && <ContentPanel />}
           {cur.key === 'users' && canAdmin && <UsersPanel />}
-          {cur.key === 'settings' && canAdmin && <SettingsPanel />}
+          {cur.key === 'settings' && canAdmin && <><SettingsPanel /><BusinessForm /></>}
         </main>
       </div>
-    </MakeQuote.Provider>
+    </MakeQuote.Provider></Team.Provider>
   )
 }
 
@@ -237,18 +244,22 @@ function LeadsChart({ leads }: { leads: Array<Doc<'leads'>> }) {
 }
 
 function LeadsPanel({ leads }: { leads: Array<Doc<'leads'>> }) {
-  const [filter, setFilter] = useState<'all' | LeadStatus>('all')
+  const [filter, setFilter] = useState<'all' | LeadStatus | 'mine' | 'follow'>('all')
   const [q, setQ] = useState('')
+  const team = useContext(Team)
   const t = q.trim().toLowerCase()
-  const shown = leads.filter((l) => (filter === 'all' || l.status === filter) &&
-    (!t || [l.name, l.email, l.company ?? '', l.message, l.notes ?? ''].some((x) => x.toLowerCase().includes(t))))
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const match = (l: Doc<'leads'>, f: typeof filter) =>
+    f === 'all' || (f === 'mine' ? l.assignee === team.me : f === 'follow' ? !!l.followUp && l.followUp <= todayStr && l.status !== 'won' && l.status !== 'lost' : l.status === f)
+  const shown = leads.filter((l) => match(l, filter) &&
+    (!t || [l.name, l.email, l.company ?? '', l.message, l.notes ?? '', l.phone ?? '', l.coupon ?? ''].some((x) => x.toLowerCase().includes(t))))
   return (
     <div className="panel">
       <div className="panel-pad toolbar">
         <div className="filters" style={{ margin: 0 }}>
-          {(['all', 'new', 'contacted', 'won', 'lost'] as const).map((k) => (
+          {(['all', 'new', 'contacted', 'won', 'lost', 'mine', 'follow'] as const).map((k) => (
             <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}>
-              {k === 'all' ? 'الكل' : STATUS[k]} <span className="count">{k === 'all' ? leads.length : leads.filter((l) => l.status === k).length}</span>
+              {k === 'all' ? 'الكل' : k === 'mine' ? 'المسندة لي' : k === 'follow' ? 'متابعات اليوم' : STATUS[k]} <span className="count">{leads.filter((l) => match(l, k)).length}</span>
             </button>
           ))}
         </div>
@@ -275,6 +286,9 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
   const create = useMutation(api.app.createProject)
   const canAdmin = useContext(CanAdmin)
   const makeQuote = useContext(MakeQuote)
+  const team = useContext(Team)
+  const setMeta = useMutation(api.app.setLeadMeta)
+  const [phone, setPhone] = useState(l.phone ?? '')
   const [confirm, setConfirm] = useState(false)
   const [open, setOpen] = useState(false)
   const [notes, setNotes] = useState(l.notes ?? '')
@@ -290,10 +304,14 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
           <span className="src">{l.source === 'client' ? 'من بوابة العملاء' : 'من الموقع'}</span>
           {l.projectId && <span className="src ok">تحوّل إلى مشروع</span>}
           {l.notes && <span className="src">فيه ملاحظات</span>}
+          {l.coupon && <span className="src ok">كود {l.coupon}</span>}
+          {l.assignee && <span className="src">مسند: {team.rows.find((r) => r.email === l.assignee)?.name ?? l.assignee.split('@')[0]}</span>}
+          {l.followUp && <span className="src">متابعة {l.followUp}</span>}
           {l.isExample && <span className="ex">مثال</span>}
         </div>
         <div className="lead-meta">
           <span className="mono">{l.email}</span>
+          {l.phone && <span className="mono">+{l.phone}</span>}
           {l.company && <span>{l.company}</span>}
           <span>{l.types.join('، ')}</span>
           <span>الباقة: {l.plan}</span>
@@ -305,6 +323,7 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
         <select aria-label="حالة الطلب" value={l.status} onChange={(e) => void setStatus({ id: l._id, status: e.target.value as LeadStatus })}>
           {(Object.keys(STATUS) as Array<LeadStatus>).map((k) => <option key={k} value={k}>{STATUS[k]}</option>)}
         </select>
+        {l.phone && <a className="btn wa small" href={waLink(l.phone, `السلام عليكم ${l.name}، معك فريق استوديو مكود بخصوص طلبك${l.types[0] ? ` (${l.types[0]})` : ''}.`)} target="_blank" rel="noopener noreferrer">واتساب</a>}
         <button className="btn ghost small" type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}>{open ? 'إغلاق' : 'التفاصيل'}</button>
       </div>
       {l.message && <p className="lead-msg">{l.message}</p>}
@@ -316,6 +335,23 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <button className="btn small" type="button" disabled={notes === (l.notes ?? '')} onClick={async () => { await saveNotes({ id: l._id, notes }); setSaved(true) }}>حفظ الملاحظات</button>
               {saved && <small className="ok-note">تم الحفظ</small>}
+            </div>
+          </div>
+          <div className="lead-meta-edit">
+            <div className="field"><label htmlFor={`as-${l._id}`}>مسند إلى</label>
+              <select id={`as-${l._id}`} className="input" value={l.assignee ?? ''} onChange={(e) => void setMeta({ id: l._id, assignee: e.target.value })}>
+                <option value="">— بدون —</option>
+                {team.rows.map((r) => <option key={r.email} value={r.email}>{r.name}</option>)}
+              </select>
+            </div>
+            <div className="field"><label htmlFor={`fu-${l._id}`}>تاريخ المتابعة</label>
+              <input id={`fu-${l._id}`} className="input" type="date" dir="ltr" value={l.followUp ?? ''} onChange={(e) => void setMeta({ id: l._id, followUp: e.target.value })} />
+            </div>
+            <div className="field"><label htmlFor={`ph-${l._id}`}>جوال العميل</label>
+              <span style={{ display: 'flex', gap: 6 }}>
+                <input id={`ph-${l._id}`} className="input" dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05XXXXXXXX" />
+                <button className="btn ghost small" type="button" disabled={phone === (l.phone ?? '')} onClick={async () => { const r = await setMeta({ id: l._id, phone }); if (!r.ok) setErr(r.error) }}>حفظ</button>
+              </span>
             </div>
           </div>
           <div className="lead-more-actions">
@@ -420,6 +456,7 @@ function AdminProject({ p }: { p: Doc<'projects'> }) {
   const [confirm, setConfirm] = useState(false)
   const [email, setEmail] = useState(p.clientEmail)
   const [err, setErr] = useState<string | null>(null)
+  const [invoice, setInvoice] = useState<number | null>(null)
   const canAdmin = useContext(CanAdmin)
 
   return (
@@ -480,6 +517,13 @@ function AdminProject({ p }: { p: Doc<'projects'> }) {
         )}
       </div>
       <PaymentsSummary payments={p.payments} />
+      {p.payments && p.payments.length > 0 && (
+        <div className="inv-links">
+          <span className="muted">الفواتير:</span>
+          {p.payments.map((x, i) => <button key={i} className="linkish" type="button" onClick={() => setInvoice(i)}>{x.title.split('(')[0].trim() || `دفعة ${i + 1}`}</button>)}
+        </div>
+      )}
+      {invoice !== null && <InvoicePrint p={p} index={invoice} onClose={() => setInvoice(null)} />}
       {extras && <ProjectExtras p={p} />}
       {open && <Feed projectId={p._id} placeholder="اكتب تحديثاً للعميل… (يصله إشعار بالبريد)" />}
     </article>
@@ -528,8 +572,24 @@ function Feed({ projectId, placeholder }: { projectId: Id<'projects'>; placehold
 
 /* =================== CLIENT =================== */
 
-function ClientView({ name }: { name: string }) {
-  const res = useQuery(api.app.listProjects)
+function AsClient({ projects }: { projects: Array<Doc<'projects'>> }) {
+  const emails = [...new Set(projects.map((p) => p.clientEmail))]
+  const [email, setEmail] = useState(emails[0] ?? '')
+  return (
+    <div className="stack">
+      <div className="panel panel-pad pr-head">
+        <div><h3>معاينة بوابة العملاء</h3><p className="muted">تشوف البوابة بالضبط مثل ما يشوفها العميل: مشاريعه ودفعاته وعروض أسعاره. للعرض فقط.</p></div>
+        <select className="input" style={{ maxWidth: 320 }} value={email} onChange={(e) => setEmail(e.target.value)} aria-label="العميل">
+          {emails.map((e) => <option key={e} value={e}>{projects.find((p) => p.clientEmail === e)?.clientName} · {e}</option>)}
+        </select>
+      </div>
+      {email ? <div className="as-client"><ClientView name={projects.find((p) => p.clientEmail === email)?.clientName ?? ''} asEmail={email} /></div> : <div className="panel empty"><h3>لا يوجد عملاء بعد</h3><p>أنشئ مشروعاً لعميل لتعاين بوابته.</p></div>}
+    </div>
+  )
+}
+
+function ClientView({ name, asEmail }: { name: string; asEmail?: string }) {
+  const res = useQuery(api.app.listProjects, asEmail ? { asEmail } : {})
   if (res === undefined) return <p className="muted">جارٍ تحميل مشاريعك…</p>
   if (res.status !== 'ok') return <p className="muted">سجّل الدخول لعرض مشاريعك.</p>
   const projects = res.projects
@@ -540,6 +600,7 @@ function ClientView({ name }: { name: string }) {
       </div>
       <div className="split">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <ClientQuotes asEmail={asEmail} />
           {projects.length === 0 ? (
             <div className="panel empty">
               <h3>لا توجد مشاريع مرتبطة بحسابك بعد</h3>
@@ -549,7 +610,7 @@ function ClientView({ name }: { name: string }) {
             projects.map((p) => <ClientProject key={p._id} p={p} />)
           )}
         </div>
-        <NewRequest />
+        {asEmail ? <div className="panel panel-pad muted">نموذج «طلب جديد» يظهر هنا للعميل.</div> : <NewRequest />}
       </div>
     </>
   )
@@ -770,6 +831,33 @@ function InviteForm({ onDone }: { onDone: () => void }) {
 }
 
 /* =================== SITE SETTINGS (admins) =================== */
+
+function BusinessForm() {
+  const current = useQuery(api.settings.get) as SiteSettings | undefined
+  const save = useMutation(api.settings.updateBusiness)
+  const [f, setF] = useState({ vatNumber: '', crNumber: '', bankName: '', iban: '' })
+  const [loaded, setLoaded] = useState(false)
+  const [state, setState] = useState<{ ok: boolean; text: string } | null>(null)
+  useEffect(() => {
+    if (current && !loaded) { setF({ vatNumber: current.vatNumber ?? '', crNumber: current.crNumber ?? '', bankName: current.bankName ?? '', iban: current.iban ?? '' }); setLoaded(true) }
+  }, [current, loaded])
+  const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((x) => ({ ...x, [k]: e.target.value }))
+  return (
+    <form className="form" onSubmit={async (e) => {
+      e.preventDefault(); setState(null)
+      const r = await save(f)
+      setState(r.ok ? { ok: true, text: 'تم الحفظ، وتظهر في عروض الأسعار والفواتير.' } : { ok: false, text: r.error })
+    }}>
+      <div className="field full"><h3 style={{ fontSize: '1.1rem' }}>بيانات المنشأة للعروض والفواتير</h3><p className="muted" style={{ fontSize: '.88rem' }}>اختيارية. إذا أضفت الرقم الضريبي تصير الفواتير «فاتورة ضريبية» وتُحسب الضريبة 15% منها.</p></div>
+      <div className="field"><label htmlFor="bz-cr">رقم السجل التجاري أو وثيقة العمل الحر</label><input id="bz-cr" dir="ltr" value={f.crNumber} onChange={set('crNumber')} /></div>
+      <div className="field"><label htmlFor="bz-vat">الرقم الضريبي (15 رقماً)</label><input id="bz-vat" dir="ltr" inputMode="numeric" value={f.vatNumber} onChange={set('vatNumber')} placeholder="3XXXXXXXXXXXXX3" /></div>
+      <div className="field"><label htmlFor="bz-bank">اسم البنك</label><input id="bz-bank" value={f.bankName} onChange={set('bankName')} placeholder="مثال: مصرف الراجحي" /></div>
+      <div className="field"><label htmlFor="bz-iban">رقم الآيبان</label><input id="bz-iban" dir="ltr" value={f.iban} onChange={set('iban')} placeholder="SA00 0000 0000 0000 0000 0000" /></div>
+      <div className="field full settings-actions"><button className="btn" type="submit">حفظ بيانات المنشأة</button></div>
+      {state && <div className={state.ok ? 'sent' : 'sent err'} role="status">{state.text}</div>}
+    </form>
+  )
+}
 
 function SettingsPanel() {
   const current = useQuery(api.settings.get) as SiteSettings | undefined

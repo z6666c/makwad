@@ -1,6 +1,8 @@
 // Itemised, non-binding price calculator. All figures are in SAR, excluding VAT.
 
-export type ServiceKey = 'web' | 'mobile' | 'software' | 'ai' | 'analysis' | 'design' | 'integration' | 'maintenance'
+// Built-in keys are 'web' | 'mobile' | 'software' | 'ai' | 'analysis' | 'design' | 'integration' | 'maintenance';
+// services added from the dashboard get their own keys.
+export type ServiceKey = string
 
 export type Option = { key: string; label: string; hint?: string; price: number; days: number }
 
@@ -15,6 +17,8 @@ export type Service = {
   addons: Array<Option>
   note?: string
   hidden?: boolean
+  text?: string // card description for services added from the dashboard
+  tags?: Array<string>
 }
 
 export const SERVICE_PRICING: Array<Service> = [
@@ -174,6 +178,26 @@ export type EstimateInput = {
   months: number
 }
 
+export type Coupon = { code: string; kind: 'percent' | 'fixed'; value: number }
+
+export const couponOff = (c: Coupon, total: number) =>
+  Math.min(total, c.kind === 'percent' ? Math.round((total * c.value) / 100) : Math.round(c.value))
+
+const withCoupon = (e: Estimate, c: Coupon | null | undefined, monthly: boolean): Estimate => {
+  if (!c) return e
+  const off = couponOff(c, e.total)
+  if (!off) return e
+  const total = e.total - off
+  return {
+    ...e,
+    lines: [...e.lines, { label: `كود الخصم ${c.code}${c.kind === 'percent' ? ` (${c.value}%)` : ''}`, amount: -off }],
+    total,
+    deposit: monthly ? Math.round(total / e.months) : Math.round(total * DEPOSIT_RATE),
+    monthly: e.monthly === null ? null : Math.round(total / e.months),
+    plan: planFor(total),
+  }
+}
+
 export type Line = { label: string; amount: number }
 
 export type Estimate = {
@@ -184,6 +208,7 @@ export type Estimate = {
   daysLow: number
   daysHigh: number
   monthly: number | null
+  months: number
   plan: string
 }
 
@@ -203,8 +228,12 @@ export function planFor(total: number): string {
   return 'المنشآت'
 }
 
-export function estimate(input: EstimateInput, catalog: Catalog = SERVICE_PRICING): Estimate {
+export function estimate(input: EstimateInput, catalog: Catalog = SERVICE_PRICING, coupon?: Coupon | null): Estimate {
   const s = getService(input.service, catalog)
+  return withCoupon(baseEstimate(input, s), coupon, !!s.monthly)
+}
+
+function baseEstimate(input: EstimateInput, s: Service): Estimate {
   const tier = s.tiers.find((t) => t.key === input.tier) ?? s.tiers[0]
   const addons = s.addons.filter((a) => input.addons.includes(a.key))
   const lines: Array<Line> = [{ label: tier.label, amount: tier.price }, ...addons.map((a) => ({ label: a.label, amount: a.price }))]
@@ -217,7 +246,7 @@ export function estimate(input: EstimateInput, catalog: Catalog = SERVICE_PRICIN
     if (d.months > 1) lines.push({ label: `× ${d.months} أشهر`, amount: gross - monthly })
     if (d.discount) lines.push({ label: `خصم الاشتراك ${Math.round(d.discount * 100)}%`, amount: -Math.round(gross * d.discount) })
     const total = Math.max(MIN_PRICE, gross - Math.round(gross * d.discount))
-    return { lines, subtotal: gross, total, deposit: Math.round(total / d.months), daysLow: 0, daysHigh: 0, monthly: Math.round(total / d.months), plan: planFor(total) }
+    return { lines, subtotal: gross, total, deposit: Math.round(total / d.months), daysLow: 0, daysHigh: 0, monthly: Math.round(total / d.months), months: d.months, plan: planFor(total) }
   }
 
   const subtotal = lines.reduce((n, l) => n + l.amount, 0)
@@ -228,7 +257,7 @@ export function estimate(input: EstimateInput, catalog: Catalog = SERVICE_PRICIN
   const total = Math.max(MIN_PRICE, lines.reduce((n, l) => n + l.amount, 0))
   const daysLow = Math.max(3, days)
   const daysHigh = Math.max(daysLow + 2, Math.round(days * 1.3))
-  return { lines, subtotal, total, deposit: Math.round(total * DEPOSIT_RATE), daysLow, daysHigh, monthly: null, plan: planFor(total) }
+  return { lines, subtotal, total, deposit: Math.round(total * DEPOSIT_RATE), daysLow, daysHigh, monthly: null, months: 1, plan: planFor(total) }
 }
 
 export const fmtSAR = (n: number) => n.toLocaleString('en-US')
