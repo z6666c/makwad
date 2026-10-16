@@ -26,6 +26,7 @@ jobs:
             echo "== $u"; curl -sI "$u" | grep -iE "^(HTTP|location|strict-transport|content-security|x-frame|x-content|server)" ; done > headers.txt 2>&1
           echo "== convex" >> headers.txt; curl -sI https://calm-mallard-903.eu-west-1.convex.cloud/version | grep -iE "^(HTTP|strict-transport|access-control)" >> headers.txt
       - run: node scripts/browsers.mjs
+      - run: node scripts/design.mjs
       - name: Publish results
         run: |
           mkdir -p out && cp -r shots/* out/ && cp audit.txt headers.txt out/
