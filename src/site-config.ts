@@ -47,7 +47,7 @@ export function useSettings(): SiteSettings {
 export const whatsappLink = (s: SiteSettings) =>
   `https://wa.me/${s.whatsapp}?text=${encodeURIComponent(s.whatsappMessage)}`
 
-export const LEGAL_UPDATED = '16 أكتوبر 2026'
+export const LEGAL_UPDATED = '17 أكتوبر 2026'
 
 // Price catalog: the one saved from the dashboard, or the built-in prices.
 export function usePricing(): Catalog {
