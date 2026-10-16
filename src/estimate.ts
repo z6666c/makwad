@@ -183,7 +183,7 @@ export const DURATIONS = [
   { months: 12, label: 'سنة', discount: 0.15 },
 ]
 
-export const MIN_PRICE = 1500
+
 export const URGENT_RATE = 0.25
 export const DEPOSIT_RATE = 0.4
 
@@ -263,7 +263,7 @@ function baseEstimate(input: EstimateInput, s: Service): Estimate {
     const gross = monthly * d.months
     if (d.months > 1) lines.push({ label: `× ${d.months} أشهر`, amount: gross - monthly })
     if (d.discount) lines.push({ label: `خصم الاشتراك ${Math.round(d.discount * 100)}%`, amount: -Math.round(gross * d.discount) })
-    const total = Math.max(MIN_PRICE, gross - Math.round(gross * d.discount))
+    const total = gross - Math.round(gross * d.discount)
     return { lines, subtotal: gross, total, deposit: Math.round(total / d.months), daysLow: 0, daysHigh: 0, monthly: Math.round(total / d.months), months: d.months, plan: planFor(total) }
   }
 
@@ -272,7 +272,7 @@ function baseEstimate(input: EstimateInput, s: Service): Estimate {
     lines.push({ label: `تسليم مستعجل +${URGENT_RATE * 100}%`, amount: Math.round(subtotal * URGENT_RATE) })
     days = Math.ceil(days * 0.7)
   }
-  const total = Math.max(MIN_PRICE, lines.reduce((n, l) => n + l.amount, 0))
+  const total = lines.reduce((n, l) => n + l.amount, 0)
   const daysLow = Math.max(3, days)
   const daysHigh = Math.max(daysLow + 2, Math.round(days * 1.3))
   return { lines, subtotal, total, deposit: Math.round(total * DEPOSIT_RATE), daysLow, daysHigh, monthly: null, months: 1, plan: planFor(total) }
