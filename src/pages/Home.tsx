@@ -238,7 +238,7 @@ export default function Home() {
           <section className="section" id="contact">
             <div className="contact">
               <div className="info">
-                <div><span className="kicker">تواصل معنا</span><h2 className="h2">لنتحدث عن تطبيقك</h2></div>
+                <div><span className="kicker">تواصل معنا</span><h2 className="h2">لنتحدث عن مشروعك</h2></div>
                 <p className="muted">أرسل لنا فكرتك ونرد عليك خلال يوم عمل واحد بموعد لجلسة اكتشاف مجانية.</p>
 <ContactInfo />
               </div>
@@ -532,7 +532,7 @@ function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amou
           {['لم أحدد بعد', 'الانطلاقة', 'النمو', 'المنشآت'].map((p) => <option key={p}>{p}</option>)}
         </select>
       </div>
-      <div className="field full"><label htmlFor="message">نبذة عن الفكرة</label><textarea id="message" name="message" value={message} onChange={(e) => setMessage(e.target.value)} rows={message ? 9 : 4} placeholder="ما المشكلة التي يحلها التطبيق، ومن سيستخدمه؟" /></div>
+      <div className="field full"><label htmlFor="message">نبذة عن الفكرة</label><textarea id="message" name="message" value={message} onChange={(e) => setMessage(e.target.value)} rows={message ? 9 : 4} placeholder="ما فكرة مشروعك، ومن سيستخدمه؟" /></div>
       <div className="field full">
         <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الإرسال…' : 'إرسال الطلب'}</button>
         <small className="consent">بإرسال الطلب فإنك توافق على <Link to="/privacy">سياسة الخصوصية</Link> و<Link to="/terms">الشروط والأحكام</Link>.</small>
