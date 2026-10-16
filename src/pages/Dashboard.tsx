@@ -974,7 +974,12 @@ function SettingsPanel() {
       e.preventDefault()
       setBusy(true)
       setState(null)
-      const r = await save(form)
+      let r: { ok: true; whatsapp: string } | { ok: false; error: string }
+      try {
+        r = await save({ whatsapp: form.whatsapp, whatsappMessage: form.whatsappMessage, phone: form.phone, email: form.email, address: form.address, hours: form.hours })
+      } catch {
+        r = { ok: false, error: 'تعذّر الحفظ. تحقق من الاتصال وحاول مرة أخرى.' }
+      }
       setBusy(false)
       if (r.ok) { setForm((f) => ({ ...f, whatsapp: r.whatsapp })); setState({ ok: true, text: 'تم حفظ الإعدادات، وتظهر في الموقع مباشرة.' }) }
       else setState({ ok: false, text: r.error })
