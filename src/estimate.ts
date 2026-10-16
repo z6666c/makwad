@@ -240,8 +240,9 @@ export function defaultInput(k: ServiceKey, catalog: Catalog = SERVICE_PRICING):
 }
 
 export function planFor(total: number): string {
-  if (total <= 6000) return 'الانطلاقة'
-  if (total <= 30000) return 'النمو'
+  // Matches the plan cards: النمو starts at 6,500 and المنشآت at 30,000
+  if (total < 6500) return 'الانطلاقة'
+  if (total < 30000) return 'النمو'
   return 'المنشآت'
 }
 

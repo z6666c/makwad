@@ -201,7 +201,7 @@ export default function Home() {
                 <div className={p.feat ? 'plan feat' : 'plan'} key={p.name}>
                   {p.feat && <span className="badge">الأكثر طلباً</span>}
                   <h3>{p.name}</h3>
-                  <div className="price">{p.price}<small>{p.small}</small></div>
+                  <div className="price">{p.name === 'الانطلاقة' ? `SAR ${fmtSAR(minPrice)}` : p.price}<small>{p.small}</small></div>
                   <ul>{p.items.map((it) => <li key={it}>{it}</li>)}</ul>
                   <a className={p.feat ? 'btn' : 'btn ghost'} href="#contact" onClick={() => setPlan(p.name)}>{p.cta}</a>
                 </div>
@@ -242,7 +242,7 @@ export default function Home() {
                 <p className="muted">أرسل لنا فكرتك ونرد عليك خلال يوم عمل واحد بموعد لجلسة اكتشاف مجانية.</p>
 <ContactInfo />
               </div>
-              <ContactForm plan={plan} setPlan={setPlan} types={types} setTypes={setTypes} message={message} setMessage={(m) => { setMessage(m); if (!m) setAmount(undefined) }} amount={amount} coupon={coupon} />
+              <ContactForm plan={plan} setPlan={setPlan} types={types} setTypes={setTypes} message={message} setMessage={(m) => { setMessage(m); if (!m) setAmount(undefined) }} amount={amount} coupon={coupon} serviceTypes={[...new Set(catalog.map((c) => c.type || c.label))]} />
             </div>
           </section>
         </div>
@@ -451,7 +451,6 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-const TYPES = ['موقع أو تطبيق ويب', 'تطبيق جوال', 'برنامج أو نظام', 'أداة ذكاء اصطناعي', 'تحليل مشروع', 'تصميم', 'استضافة وسحابة', 'ربط وتكامل', 'صيانة']
 
 type FormProps = {
   plan: string
@@ -462,9 +461,11 @@ type FormProps = {
   setMessage: (m: string) => void
   amount?: number
   coupon?: string
+  serviceTypes: Array<string>
 }
 
-function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amount, coupon }: FormProps) {
+function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amount, coupon, serviceTypes }: FormProps) {
+  const TYPES = [...serviceTypes, 'أخرى']
   const submit = useMutation(api.app.submitLead)
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null)
