@@ -113,7 +113,7 @@ export function mount(el: HTMLElement) {
   const root = createRootRoute({ component: () => <Outlet /> })
   const router = createRouter({
     routeTree: root.addChildren([createRoute({ getParentRoute: () => root, path: '/preview', component: () => <DashFrame onSignOut={() => {}} /> })]),
-    basepath: '/makwad',
+    basepath: '/',
   })
   createRoot(el).render(
     <StrictMode>

@@ -225,7 +225,7 @@ function AdminView() {
         <aside className="side" aria-label="أقسام لوحة التحكم">
           <span className="side-cap">{canAdmin ? 'لوحة الإدارة' : 'لوحة الفريق'}</span>
           <SideNav sections={sections} cur={cur.key} counts={counts} go={go} />
-          <a className="side-link" href="/makwad/" target="_blank" rel="noopener noreferrer">معاينة الموقع ↗</a>
+          <a className="side-link" href="/" target="_blank" rel="noopener noreferrer">معاينة الموقع ↗</a>
         </aside>
         <main className="admin-main">
           <div className="dash-head">
@@ -1127,7 +1127,7 @@ function ContentPanel() {
           <button type="button" aria-pressed={section === 'quotes'} onClick={() => setSection('quotes')}>آراء العملاء <span className="count">{res.testimonials.length}</span></button>
           <button type="button" aria-pressed={section === 'home'} onClick={() => setSection('home')}>الأرقام والشركات</button>
         </div>
-        <a className="btn ghost small" href="/makwad/" target="_blank" rel="noopener noreferrer">معاينة الموقع ↗</a>
+        <a className="btn ghost small" href="/" target="_blank" rel="noopener noreferrer">معاينة الموقع ↗</a>
       </div>
       {section === 'works' && <WorksEditor works={res.works} />}
       {section === 'quotes' && <QuotesEditor items={res.testimonials} />}

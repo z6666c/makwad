@@ -2,9 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
-// GitHub Pages serves the site from https://<user>.github.io/makwad/
+// GitHub Pages serves the site from https://makwad.com (custom domain on GitHub Pages)
 export default defineConfig({
-  base: '/makwad/',
+  base: '/',
   plugins: [react()],
   resolve: {
     alias: [

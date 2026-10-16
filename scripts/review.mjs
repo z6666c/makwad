@@ -2,7 +2,7 @@
 import { chromium } from 'playwright-core'
 import { mkdirSync, writeFileSync } from 'node:fs'
 
-const BASE = 'http://localhost:4173/makwad'
+const BASE = 'http://localhost:4173'
 mkdirSync('shots', { recursive: true })
 const browser = await chromium.launch({ channel: 'chrome' })
 const logs = []

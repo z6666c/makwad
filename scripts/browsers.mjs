@@ -3,7 +3,7 @@ import { chromium, firefox, webkit, devices } from 'playwright'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { ConvexHttpClient } from 'convex/browser'
 
-const BASE = 'https://z6666c.github.io/makwad'
+const BASE = 'https://makwad.com'
 mkdirSync('shots', { recursive: true })
 const report = []
 const say = (s) => { report.push(s); console.log(s) }

@@ -2,7 +2,7 @@
 import { chromium } from 'playwright-core'
 import { mkdirSync } from 'node:fs'
 
-const BASE = 'https://z6666c.github.io/makwad'
+const BASE = 'https://makwad.com'
 mkdirSync('shots', { recursive: true })
 const browser = await chromium.launch({ channel: 'chrome' })
 
