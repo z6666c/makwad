@@ -45,6 +45,25 @@ export const ARTS: Record<string, { label: string; html: string }> = {
       <div class="pitch"><i class="mid"></i><i class="net"></i></div>
       <div class="ms-slots"><span>6 م</span><span class="on">7 م</span><span class="off">8 م</span></div>
       <div class="ms-cta">احجز · 250 ر.س</div></div></div>` },
+  menu: { label: 'منيو رقمي (جوال)', html: `<div class="dev-phone">${top}<div class="ms-pad">
+      <div class="ms-title">سُفرة</div>
+      <div class="ms-sub">منيو رقمي · عربي / English</div>
+      <div class="ms-tabs"><span class="on">الأطباق</span><span>المشروبات</span><span>الحلا</span></div>
+      <div class="ms-row"><i class="cup"></i><div><b>كبسة لحم</b><small>650 سعرة · 48 ر.س</small></div><em class="tag">الأكثر طلباً</em></div>
+      <div class="ms-row"><i class="cup c2"></i><div><b>مندي دجاج</b><small>540 سعرة · 36 ر.س</small></div></div>
+      <div class="ms-row"><i class="cup c3"></i><div><b>سلطة الموسم</b><small>180 سعرة · 22 ر.س</small></div><em class="tag">جديد</em></div>
+      <div class="ms-qr"><i></i><small>امسح للطلب من الطاولة</small></div></div></div>` },
+  grc: { label: 'منصة امتثال (ويب)', html: `<div class="dev-laptop"><div class="lap-screen">
+      <div class="lap-side"><i class="lg"></i><i class="on"></i><i></i><i></i><i></i></div>
+      <div class="lap-main">
+        <div class="lap-gauge"><div class="ring"><b class="mono">86%</b></div><div><b>مؤشر حصيف</b><small>منشأتك مكتملة الامتثال</small></div></div>
+        <div class="lap-lic"><span><b>السجل التجاري</b><em class="ok">ساري</em></span><span><b>رخصة البلدية</b><em class="warn">خلال 21 يوماً</em></span><span><b>سياسة الخصوصية</b><em class="ok">محدّثة</em></span></div>
+      </div></div><div class="lap-base"></div></div>` },
+  brand: { label: 'هوية بصرية (ويب)', html: `<div class="dev-laptop"><div class="lap-screen">
+      <div class="lap-main">
+        <div class="lap-brand"><div class="logo"><i></i><b>نَسَق</b></div><div class="sw"><i></i><i></i><i></i><i></i></div></div>
+        <div class="lap-prints"><span class="card"><i></i></span><span class="paper"><i></i><i></i><i></i></span><span class="env"><i></i></span></div>
+      </div></div><div class="lap-base"></div></div>` },
 }
 
 export const COLORS: Record<string, { label: string; css: string }> = {
