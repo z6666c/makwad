@@ -1,0 +1,18 @@
+== https://makwad.com/
+HTTP/2 200 
+server: GitHub.com
+== https://makwad.com/login
+HTTP/2 301 
+server: GitHub.com
+location: https://makwad.com/login/
+== https://makwad.com/dashboard
+HTTP/2 301 
+server: GitHub.com
+location: https://makwad.com/dashboard/
+== http://makwad.com/
+HTTP/1.1 301 Moved Permanently
+Server: GitHub.com
+Location: https://makwad.com/
+== convex
+HTTP/2 200 
+access-control-allow-credentials: true

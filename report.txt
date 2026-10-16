@@ -1,0 +1,50 @@
+  chrome-desktop /login: HTTP 200 · "بوابة عملاء استوديو مكود"
+  chrome-desktop /privacy: HTTP 200 · "سياسة الخصوصية"
+  chrome-desktop /terms: HTTP 200 · "الشروط والأحكام"
+  chrome-desktop /dashboard: HTTP 200 · "سجّل الدخول للمتابعة"
+  chrome-desktop /login/: HTTP 200 · "بوابة عملاء استوديو مكود"
+OK chrome-desktop: loaded in 1116ms, 11 service cards, calculator total 4,000 ريال, horizontal overflow 0px, errors: none
+  firefox-desktop /login: HTTP 200 · "بوابة عملاء استوديو مكود"
+  firefox-desktop /privacy: HTTP 200 · "سياسة الخصوصية"
+  firefox-desktop /terms: HTTP 200 · "الشروط والأحكام"
+  firefox-desktop /dashboard: HTTP 200 · "سجّل الدخول للمتابعة"
+  firefox-desktop /login/: HTTP 200 · "بوابة عملاء استوديو مكود"
+OK firefox-desktop: loaded in 2072ms, 11 service cards, calculator total 4,000 ريال, horizontal overflow 0px, errors: none
+  safari-desktop /login: HTTP 200 · "بوابة عملاء استوديو مكود"
+  safari-desktop /privacy: HTTP 200 · "سياسة الخصوصية"
+  safari-desktop /terms: HTTP 200 · "الشروط والأحكام"
+  safari-desktop /dashboard: HTTP 200 · "سجّل الدخول للمتابعة"
+  safari-desktop /login/: HTTP 200 · "بوابة عملاء استوديو مكود"
+OK safari-desktop: loaded in 918ms, 11 service cards, calculator total 4,000 ريال, horizontal overflow 0px, errors: none
+  iphone-safari /login: HTTP 200 · "بوابة عملاء استوديو مكود"
+  iphone-safari /privacy: HTTP 200 · "سياسة الخصوصية"
+  iphone-safari /terms: HTTP 200 · "الشروط والأحكام"
+  iphone-safari /dashboard: HTTP 200 · "سجّل الدخول للمتابعة"
+  iphone-safari /login/: HTTP 200 · "بوابة عملاء استوديو مكود"
+OK iphone-safari: loaded in 828ms, 11 service cards, calculator total 4,000 ريال, horizontal overflow 0px, errors: none
+  android-chrome /login: HTTP 200 · "بوابة عملاء استوديو مكود"
+  android-chrome /privacy: HTTP 200 · "سياسة الخصوصية"
+  android-chrome /terms: HTTP 200 · "الشروط والأحكام"
+  android-chrome /dashboard: HTTP 200 · "سجّل الدخول للمتابعة"
+  android-chrome /login/: HTTP 200 · "بوابة عملاء استوديو مكود"
+OK android-chrome: loaded in 1304ms, 11 service cards, calculator total 4,000 ريال, horizontal overflow 0px, errors: none
+  ipad-safari /login: HTTP 200 · "بوابة عملاء استوديو مكود"
+  ipad-safari /privacy: HTTP 200 · "سياسة الخصوصية"
+  ipad-safari /terms: HTTP 200 · "الشروط والأحكام"
+  ipad-safari /dashboard: HTTP 200 · "سجّل الدخول للمتابعة"
+  ipad-safari /login/: HTTP 200 · "بوابة عملاء استوديو مكود"
+OK ipad-safari: loaded in 896ms, 11 service cards, calculator total 4,000 ريال, horizontal overflow 0px, errors: none
+SEC listLeads anonymous: {"status":"forbidden"}
+SEC listProjects anonymous: {"status":"signedOut"}
+SEC listProjects asEmail anonymous: {"status":"signedOut"}
+SEC users.listUsers anonymous: {"status":"forbidden"}
+SEC quotes.list anonymous: {"status":"forbidden"}
+SEC quotes.mine anonymous: {"status":"signedOut"}
+SEC coupons.list anonymous: {"status":"forbidden"}
+SEC activity anonymous: {"status":"forbidden"}
+SEC settings.update anonymous: {"error":"تعديل الإعدادات للمدراء فقط.","ok":false}
+SEC updatePricing anonymous: {"error":"تعديل الأسعار للمدراء فقط.","ok":false}
+SEC setRole anonymous: {"error":"تعديل الصلاحيات للمدراء فقط.","ok":false}
+SEC coupons.save anonymous: {"error":"أكواد الخصم للمدراء فقط.","ok":false}
+SEC seed (internal) anonymous: rejected ([Request ID: 0a4d419a61dbf821] Server Error)
+SEC coupon wrong code: {"error":"الكود غير صحيح.","ok":false}
