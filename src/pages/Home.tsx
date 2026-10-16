@@ -63,6 +63,7 @@ export default function Home() {
     | undefined
   const clients = settings.clients ?? []
   const catalog = usePricing()
+  const minPrice = Math.min(...catalog.flatMap((c) => c.tiers.map((t) => t.price)), 1500)
   const [amount, setAmount] = useState<number | undefined>(undefined)
   const [coupon, setCoupon] = useState<string | undefined>(undefined)
   const useEstimate = (summary: string, p: string, t: Array<string>, total: number, code?: string) => {
@@ -125,7 +126,7 @@ export default function Home() {
           <section className="section" id="services">
             <div className="sec-head">
               <div><span className="kicker">خدماتنا</span><h2>ماذا نبني</h2></div>
-              <p>خدمات بأسعار واضحة تبدأ من 1,500 ريال. اضغط «احسب السعر» لترى التكلفة بالتفصيل.</p>
+              <p>خدمات بأسعار واضحة تبدأ من {fmtSAR(minPrice)} ريال. اضغط «احسب السعر» لترى التكلفة بالتفصيل.</p>
             </div>
             <div className="services">
               {catalog.map((c) => {
@@ -143,6 +144,11 @@ export default function Home() {
                   </div>
                 )
               })}
+              <div className="svc svc-cta">
+                <h3>مشروعك مختلف؟</h3>
+                <p>نجهّز لك عرضاً مخصصاً بعد جلسة اكتشاف مجانية.</p>
+                <a className="btn small" href="#contact">احجز جلسة مجانية</a>
+              </div>
             </div>
           </section>
 
@@ -152,7 +158,7 @@ export default function Home() {
                 <div className="sec-head" style={{ marginBottom: 28 }}>
                   <div><span className="kicker">لماذا استوديو مكود</span><h2>شريك تقني، لا مجرد منفّذ</h2></div>
                 </div>
-                <div>
+                <div className="why-list">
                   {WHY.map((w) => (
                     <div className="why-item" key={w.title}>
                       <Icon d={w.icon} size={22} />
@@ -222,7 +228,7 @@ export default function Home() {
                 {FAQ.map((f, i) => (
                   <details key={f.q} open={i === 0}>
                     <summary>{f.q}</summary>
-                    <p>{f.a}</p>
+                    <p>{f.a.replace('1,500 ريال', `${fmtSAR(minPrice)} ريال`)}</p>
                   </details>
                 ))}
               </div>
