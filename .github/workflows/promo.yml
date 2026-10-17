@@ -1,0 +1,37 @@
+name: promo-video
+on:
+  push:
+    branches: [promo]
+permissions:
+  contents: write
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Fonts
+        run: |
+          mkdir -p /tmp/f && cd /tmp/f && npm init -y >/dev/null
+          npm i @fontsource/alexandria@5.1.0 @fontsource/readex-pro@5.1.0 @fontsource/montserrat@5.1.0 >/dev/null
+          mkdir -p $GITHUB_WORKSPACE/promo/fonts && cd node_modules/@fontsource
+          for w in 700 800; do for s in arabic latin; do cp alexandria/files/alexandria-$s-$w-normal.woff2 $GITHUB_WORKSPACE/promo/fonts/alexandria-$s-$w.woff2; done; done
+          for w in 400 500; do for s in arabic latin; do cp readex-pro/files/readex-pro-$s-$w-normal.woff2 $GITHUB_WORKSPACE/promo/fonts/readex-pro-$s-$w.woff2; done; done
+          cp montserrat/files/montserrat-latin-600-normal.woff2 $GITHUB_WORKSPACE/promo/fonts/montserrat-latin-600.woff2
+          ls $GITHUB_WORKSPACE/promo/fonts
+      - name: Render
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          pip install -q playwright numpy && python -m playwright install --with-deps chromium >/dev/null
+          cd promo
+          python render.py --preview 1.9,4.9,9.2,12.0,14.6
+          python render.py
+          ffmpeg -loglevel error -y -i out/prev_1.9.png -i out/prev_4.9.png -i out/prev_9.2.png -i out/prev_12.0.png -i out/prev_14.6.png -filter_complex "[0][1][2][3][4]hstack=5,scale=2000:-1" out/sheet.png
+          ffmpeg -loglevel error -y -ss 13 -i out/makwad-promo.mp4 -frames:v 1 out/cover.jpg
+      - name: Publish
+        run: |
+          mkdir /tmp/pub && cp promo/out/makwad-promo.mp4 promo/out/sheet.png promo/out/cover.jpg /tmp/pub/ && cp -r promo/fonts /tmp/pub/
+          cd /tmp/pub && git init -q -b promo-out && git add -A
+          git -c user.name=bot -c user.email=bot@users.noreply.github.com commit -qm "promo render ${GITHUB_SHA::7}"
+          git push -qf https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git promo-out
