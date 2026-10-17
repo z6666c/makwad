@@ -1027,3 +1027,15 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
   .work { display: grid; grid-auto-flow: column; grid-auto-columns: 84%; grid-template-columns: none !important; overflow-x: auto; scroll-snap-type: x mandatory; gap: 14px; padding-bottom: 8px; margin-inline: -16px; padding-inline: 16px; scrollbar-width: none; }
   .work > * { scroll-snap-align: center; }
 }
+
+/* Promo video samples */
+.promo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.promo-card { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; }
+.promo-card video { display: block; width: 100%; aspect-ratio: 9 / 16; max-height: 560px; object-fit: cover; background: #05080F; }
+.promo-card figcaption { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; }
+.promo-card figcaption b { font-family: var(--f-display); font-weight: 700; font-size: 17px; }
+.promo-card figcaption span { color: var(--muted); font-size: 14px; line-height: 1.6; }
+@media (max-width: 760px) {
+  .promo-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 72%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; }
+  .promo-card { scroll-snap-align: start; }
+}

@@ -191,6 +191,8 @@ export default function Home() {
 
           <Work works={content?.works} showNote={settings.showExampleNote !== false} />
 
+          <PromoVideos />
+
           <section className="section" id="plans">
             <div className="sec-head">
               <div><span className="kicker">الباقات</span><h2>اختر نقطة البداية</h2></div>
@@ -389,6 +391,33 @@ export function WorkCard({ w }: { w: Pick<Doc<'works'>, 'title' | 'label' | 'tex
         {w.url && <a className="case-link" href={w.url} target="_blank" rel="noopener noreferrer">زيارة المشروع ←</a>}
       </div>
     </article>
+  )
+}
+
+// Motion-graphics samples made for Makwad itself (files in public/videos).
+const PROMOS = [
+  { src: 'chat', title: 'محادثة مع عميل', text: 'إعلان على شكل محادثة واتساب، يناسب سناب وتيك توك.' },
+  { src: 'launch', title: 'الإطلاق من الرياض', text: 'قصة سينمائية بعد تنازلي وإطلاق، لتعريف العلامة.' },
+  { src: 'identity', title: 'تصميم الهويات', text: 'من مفاهيم الشعار إلى هوية كاملة على المطبوعات.' },
+]
+
+function PromoVideos() {
+  const base = import.meta.env.BASE_URL
+  return (
+    <section className="section" id="promos">
+      <div className="sec-head">
+        <div><span className="kicker">المواد الدعائية</span><h2>فيديوهات دعائية من صنعنا</h2></div>
+        <p>نماذج موشن جرافيك صممناها لاستوديو مكود بموسيقى أصلية، ونسوي مثلها لنشاطك ابتداءً من 500 ريال.</p>
+      </div>
+      <div className="promo-grid">
+        {PROMOS.map((v) => (
+          <figure className="promo-card" key={v.src}>
+            <video src={`${base}videos/${v.src}.mp4`} poster={`${base}videos/${v.src}.jpg`} controls playsInline preload="none" aria-label={v.title} />
+            <figcaption><b>{v.title}</b><span>{v.text}</span></figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
   )
 }
 
