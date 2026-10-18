@@ -1043,9 +1043,12 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
   .promo-card { scroll-snap-align: start; }
 }
 
-/* Process tracks */
-.track-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
-.track-tabs button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 18px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 600; font-size: .95rem; cursor: pointer; text-align: start; }
-.track-tabs button small { font-weight: 500; font-size: .8rem; color: var(--muted); }
-.track-tabs button.on { border: 2px solid var(--accent); background: var(--soft); }
-.track-tabs button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+/* Plan timeline: the selected plan's delivery stages, under the plan cards */
+.plan-timeline { margin-top: 22px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); padding: 28px 28px 30px; }
+.pt-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px 24px; margin-bottom: 26px; }
+.pt-head h3 { font-size: 1.35rem; margin-top: 4px; }
+.pt-head p { color: var(--muted); font-size: .95rem; max-width: 520px; }
+.pt-head p b { color: var(--ink); font-weight: 600; white-space: nowrap; }
+.plan-timeline .step { animation: pt-in .35s ease both; }
+@keyframes pt-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .plan-timeline .step { animation: none; } }

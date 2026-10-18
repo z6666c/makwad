@@ -50,9 +50,7 @@ export default function Home() {
   useTitle('استوديو مكود | حيث تُصنع التطبيقات')
   const [menuOpen, setMenuOpen] = useState(false)
   const [plan, setPlan] = useState('لم أحدد بعد')
-  const [trackKey, setTrackKey] = useState<string | null>(null)
-  useEffect(() => { setTrackKey(null) }, [plan])
-  const track = TRACKS.find((t) => t.key === trackKey) ?? TRACKS.find((t) => t.plan === plan) ?? TRACKS[1]
+  const track = TRACKS.find((t) => t.plan === plan) ?? TRACKS[1]
   const [types, setTypes] = useState<Array<string>>([])
   const [message, setMessage] = useState('')
   const [estSvc, setEstSvc] = useState<ServiceKey>('web')
@@ -175,30 +173,6 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="section" id="process">
-            <div className="sec-head">
-              <div><span className="kicker">طريقة العمل</span><h2>مراحل واضحة حسب نوع مشروعك</h2></div>
-              <p>{track.note} المدة المتوقعة: <b>{track.range}</b>.</p>
-            </div>
-            <div className="track-tabs" role="tablist" aria-label="نوع المشروع">
-              {TRACKS.map((t) => (
-                <button key={t.key} type="button" role="tab" aria-selected={t.key === track.key} className={t.key === track.key ? 'on' : ''} onClick={() => setTrackKey(t.key)}>
-                  {t.label}<small>{t.range}</small>
-                </button>
-              ))}
-            </div>
-            <div className="process" role="tabpanel" style={{ ['--n' as string]: track.steps.length }}>
-              {track.steps.map((s, i) => (
-                <div className="step" key={track.key + s.t}>
-                  <div className="dot">{i + 1}</div>
-                  <h3>{s.t}</h3>
-                  <span className="wk">{s.w}</span>
-                  <p>{s.p}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
           <Work works={content?.works} showNote={settings.showExampleNote !== false} />
 
           <PromoVideos />
@@ -230,6 +204,25 @@ export default function Home() {
                   </div>
                 )
               })}
+            </div>
+            <div className="plan-timeline" id="process" aria-live="polite">
+              <div className="pt-head">
+                <div>
+                  <span className="kicker">طريقة العمل</span>
+                  <h3>مراحل تنفيذ باقة {track.plan}</h3>
+                </div>
+                <p>{track.note} <b>المدة المتوقعة: {track.range}</b></p>
+              </div>
+              <div className="process" style={{ ['--n' as string]: track.steps.length }}>
+                {track.steps.map((st, i) => (
+                  <div className="step" key={track.key + st.t}>
+                    <div className="dot">{i + 1}</div>
+                    <h3>{st.t}</h3>
+                    <span className="wk">{st.w}</span>
+                    <p>{st.p}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 
