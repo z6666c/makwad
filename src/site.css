@@ -308,7 +308,10 @@ a { color: inherit; }
 /* plans */
 .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .plan { border: 1px solid var(--line); border-radius: var(--r); padding: 28px; display: flex; flex-direction: column; gap: 14px; background: var(--surface); min-width: 0; }
-.plan.feat { border: 2px solid var(--accent); }
+.plan { cursor: pointer; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.plan:hover { transform: translateY(-2px); }
+.plan:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.plan.feat { border: 2px solid var(--accent); box-shadow: 0 12px 30px color-mix(in srgb, var(--accent) 18%, transparent); }
 .plan .badge { align-self: flex-start; font-size: .75rem; font-weight: 600; color: var(--accent); background: var(--soft); padding: 2px 10px; border-radius: 999px; }
 .plan h3 { font-size: 1.3rem; }
 .price { font-family: var(--f-mono); font-size: 1.6rem; direction: ltr; text-align: right; }

@@ -199,15 +199,27 @@ export default function Home() {
               <p>أسعار تقديرية تبدأ منها، والعرض النهائي بعد جلسة الاكتشاف المجانية.</p>
             </div>
             <div className="plans">
-              {PLANS.map((p) => (
-                <div className={p.feat ? 'plan feat' : 'plan'} key={p.name}>
-                  {p.feat && <span className="badge">الأكثر طلباً</span>}
-                  <h3>{p.name}</h3>
-                  <div className="price">{p.price}<small>{p.small}</small></div>
-                  <ul>{p.items.map((it) => <li key={it}>{it}</li>)}</ul>
-                  <a className={p.feat ? 'btn' : 'btn ghost'} href="#contact" onClick={() => setPlan(p.name)}>{p.cta}</a>
-                </div>
-              ))}
+              {PLANS.map((p) => {
+                const on = p.name === (PLANS.some((x) => x.name === plan) ? plan : 'النمو')
+                return (
+                  <div
+                    className={on ? 'plan feat' : 'plan'}
+                    key={p.name}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={on}
+                    aria-label={`اختيار باقة ${p.name}`}
+                    onClick={() => setPlan(p.name)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPlan(p.name) } }}
+                  >
+                    {p.feat && <span className="badge">الأكثر طلباً</span>}
+                    <h3>{p.name}</h3>
+                    <div className="price">{p.price}<small>{p.small}</small></div>
+                    <ul>{p.items.map((it) => <li key={it}>{it}</li>)}</ul>
+                    <a className={on ? 'btn' : 'btn ghost'} href="#contact" onClick={(e) => { e.stopPropagation(); setPlan(p.name) }}>{p.cta}</a>
+                  </div>
+                )
+              })}
             </div>
           </section>
 
