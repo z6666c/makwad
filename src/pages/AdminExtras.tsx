@@ -403,6 +403,12 @@ export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => v
           <button className="btn ghost small" type="button" onClick={onClose}>إغلاق</button>
         </span>
       </div>
+      <div className="print-bar wa-send vat-bar">
+        <label htmlFor="inv-cvat">الرقم الضريبي للعميل (اختياري)</label>
+        <input id="inv-cvat" className="input" dir="ltr" inputMode="numeric" value={clientVat} onChange={(e) => setClientVat(e.target.value)} placeholder="3XXXXXXXXXXXXX3" />
+        {clientVat && !clientVatOk && <span className="muted" style={{ fontSize: '.85rem' }}>الرقم الضريبي 15 رقماً يبدأ وينتهي بـ 3</span>}
+        {clientVatOk && <span className="muted" style={{ fontSize: '.85rem' }}>{vatOn ? 'يظهر في الفاتورة وتصير «فاتورة ضريبية»' : 'يظهر في الفاتورة. تصير ضريبية بعد إضافة رقمك الضريبي في الإعدادات'}</span>}
+      </div>
       {waOpen && (
         <div className="print-bar wa-send">
           <label htmlFor="inv-wa">جوال العميل</label>
@@ -665,21 +671,33 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
   const lead = leadsRes?.status === 'ok' ? leadsRes.leads.find((l) => l.projectId === p._id && l.phone) ?? leadsRes.leads.find((l) => l.email.toLowerCase() === p.clientEmail.toLowerCase() && l.phone) : undefined
   const [waPhone, setWaPhone] = useState('')
   const [waOpen, setWaOpen] = useState(false)
+  const vatKey = `inv-client-vat-${p._id}`
+  const [clientVat, setClientVat] = useState(() => { try { return localStorage.getItem(vatKey) ?? '' } catch { return '' } })
+  useEffect(() => { try { if (clientVat) localStorage.setItem(vatKey, clientVat); else localStorage.removeItem(vatKey) } catch { /* ignore */ } }, [clientVat, vatKey])
   useEffect(() => { if (lead?.phone && !waPhone) setWaPhone(lead.phone) }, [lead?.phone])
   useEffect(() => {
     document.documentElement.classList.add('printing')
     return () => document.documentElement.classList.remove('printing')
   }, [])
+  const no = `INV-${new Date(p._creationTime).getFullYear()}-${String(p._id).slice(-4).toUpperCase()}-${index + 1}`
+  useEffect(() => {
+    // the browser prints the page title in the PDF header and uses it as the file name
+    const prev = document.title
+    document.title = `فاتورة ${no} - ${COMPANY.name}`
+    return () => { document.title = prev }
+  }, [no])
   if (!pay) return null
   const vatOn = !!s.vatNumber
+  const cv = clientVat.replace(/\D/g, '')
+  const clientVatOk = /^3\d{13}3$/.test(cv)
+  const docTitle = vatOn ? (clientVatOk ? 'فاتورة ضريبية' : 'فاتورة ضريبية مبسطة') : 'فاتورة'
   const net = vatOn ? Math.round(pay.amount / (1 + VAT_RATE)) : pay.amount
   const vat = pay.amount - net
-  const no = `INV-${new Date(p._creationTime).getFullYear()}-${String(p._id).slice(-4).toUpperCase()}-${index + 1}`
   const date = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }).format(Date.now())
   const waNum = toWaNumber(waPhone)
   const waText = [
     `السلام عليكم ${p.clientName}،`,
-    `مرفق تفاصيل ${vatOn ? 'الفاتورة الضريبية' : 'الفاتورة'} من ${COMPANY.name}:`,
+    `مرفق تفاصيل ${docTitle} من ${COMPANY.name}:`,
     `رقم الفاتورة: ${no}`,
     `المشروع: ${p.title}`,
     `البند: ${pay.title}`,
@@ -689,7 +707,7 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
     'تقدر تشوف الفاتورة وتحمّلها من بوابة العميل: https://makwad.com/login',
   ].join('\n')
   return (
-    <div className="print-overlay" role="dialog" aria-label={`فاتورة ${no}`}>
+    <div className="print-overlay" style={{ paddingTop: waOpen ? 200 : 140 }} role="dialog" aria-label={`فاتورة ${no}`}>
       <div className="print-bar">
         <b>معاينة الفاتورة</b>
         <span style={{ display: 'flex', gap: 8 }}>
@@ -697,6 +715,12 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
           {leadsRes?.status === 'ok' && <button className="btn wa small" type="button" aria-expanded={waOpen} onClick={() => setWaOpen((v) => !v)}>إرسال واتساب</button>}
           <button className="btn ghost small" type="button" onClick={onClose}>إغلاق</button>
         </span>
+      </div>
+      <div className="print-bar wa-send vat-bar">
+        <label htmlFor="inv-cvat">الرقم الضريبي للعميل (اختياري)</label>
+        <input id="inv-cvat" className="input" dir="ltr" inputMode="numeric" value={clientVat} onChange={(e) => setClientVat(e.target.value)} placeholder="3XXXXXXXXXXXXX3" />
+        {clientVat && !clientVatOk && <span className="muted" style={{ fontSize: '.85rem' }}>الرقم الضريبي 15 رقماً يبدأ وينتهي بـ 3</span>}
+        {clientVatOk && <span className="muted" style={{ fontSize: '.85rem' }}>{vatOn ? 'يظهر في الفاتورة وتصير «فاتورة ضريبية»' : 'يظهر في الفاتورة. تصير ضريبية بعد إضافة رقمك الضريبي في الإعدادات'}</span>}
       </div>
       {waOpen && (
         <div className="print-bar wa-send">
@@ -711,11 +735,11 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
       <article className="sheet">
         <header className="sheet-head">
           <div className="sheet-brand"><LogoMark height={44} /><div><b>{COMPANY.name}</b><small>MAKWAD STUDIO</small></div></div>
-          <div className="sheet-meta"><h1>{vatOn ? 'فاتورة ضريبية' : 'فاتورة'}</h1><span className="mono">{no}</span><span>{date}</span>
+          <div className="sheet-meta"><h1>{docTitle}</h1><span className="mono">{no}</span><span>{date}</span>
             <span className={`badge-s pay-${pay.status}`}>{pay.status === 'paid' ? 'مدفوعة' : pay.status === 'due' ? 'مستحقة الدفع' : 'لاحقة'}</span></div>
         </header>
         <div className="sheet-parties">
-          <div><small>العميل</small><b>{p.clientName}</b><span className="mono">{p.clientEmail}</span><span>المشروع: {p.title}</span></div>
+          <div><small>العميل</small><b>{p.clientName}</b><span className="mono">{p.clientEmail}</span>{clientVatOk && <span>الرقم الضريبي: <span className="mono">{cv}</span></span>}<span>المشروع: {p.title}</span></div>
           <div><small>المورّد</small><b>{COMPANY.name}</b><span>{s.address}</span>{s.crNumber && <span>السجل / وثيقة العمل الحر: <span className="mono">{s.crNumber}</span></span>}{s.vatNumber && <span>الرقم الضريبي: <span className="mono">{s.vatNumber}</span></span>}</div>
         </div>
         <table className="sheet-table">

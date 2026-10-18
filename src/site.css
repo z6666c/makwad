@@ -836,13 +836,13 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .sheet-foot { display: flex; justify-content: space-between; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); font-size: .78rem; color: var(--muted); }
 @media (max-width: 640px) { .sheet { padding: 28px 22px; } .sheet-parties { grid-template-columns: 1fr; } .sheet-totals { min-width: 0; align-self: stretch; } }
 @media print {
-  @page { size: A4; margin: 12mm; }
+  @page { size: A4; margin: 0; }
   html.printing, html.printing body { background: #fff !important; }
   html.printing body * { visibility: hidden !important; }
   html.printing .print-overlay, html.printing .print-overlay * { visibility: visible !important; }
-  html.printing .print-overlay { position: absolute; inset: 0; padding: 0; background: none; overflow: visible; }
+  html.printing .print-overlay { position: absolute; inset: 0; padding: 0 !important; background: none; overflow: visible; }
   html.printing .print-bar { display: none !important; }
-  html.printing .sheet { box-shadow: none; max-width: none; padding: 0; border-radius: 0; }
+  html.printing .sheet { box-shadow: none; max-width: none; padding: 14mm 14mm; border-radius: 0; }
   html.printing .wa-float, html.printing .whatsapp-float { display: none !important; }
 }
 
@@ -1098,4 +1098,5 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .wa-send { flex-wrap: wrap; gap: 8px 12px; justify-content: flex-start; }
 .wa-send .input { max-width: 180px; }
 .wa-send small { flex-basis: 100%; }
-.wa-send { top: 57px; z-index: 3; }
+.vat-bar { top: 57px; z-index: 3; }
+.wa-send:not(.vat-bar) { top: 114px; z-index: 3; }
