@@ -8,7 +8,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const DashboardRoute = () => <Suspense fallback={<div className="center-screen">جارٍ التحميل…</div>}><Dashboard /></Suspense>
-import { Privacy, Terms } from './pages/Legal'
+import { Privacy, Refund, Terms } from './pages/Legal'
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string)
 
@@ -19,6 +19,7 @@ const routeTree = rootRoute.addChildren([
   createRoute({ getParentRoute: () => rootRoute, path: '/dashboard', component: DashboardRoute }),
   createRoute({ getParentRoute: () => rootRoute, path: '/privacy', component: Privacy }),
   createRoute({ getParentRoute: () => rootRoute, path: '/terms', component: Terms }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/refund', component: Refund }),
 ])
 
 const router = createRouter({

@@ -267,8 +267,8 @@ export default function Home() {
             </div>
           </div>
           <div className="legal">
-            <span>© 2026 استوديو مكود. جميع الحقوق محفوظة.</span>
-            <span><Link to="/privacy">سياسة الخصوصية</Link> · <Link to="/terms">الشروط والأحكام</Link></span>
+            <span>© 2026 استوديو مكود. جميع الحقوق محفوظة.{settings.crNumber && <> · وثيقة العمل الحر رقم <span className="mono" dir="ltr">{settings.crNumber}</span></>}</span>
+            <span><Link to="/privacy">سياسة الخصوصية</Link> · <Link to="/terms">الشروط والأحكام</Link> · <Link to="/refund">الإلغاء والاسترداد</Link></span>
           </div>
         </div>
       </footer>
