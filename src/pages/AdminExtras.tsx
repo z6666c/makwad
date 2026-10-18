@@ -756,6 +756,19 @@ const SCHEDULE: Array<[string, number]> = [['الدفعة الأولى عند ا
 
 /* =================== INVOICES =================== */
 
+/** Spreads this payment over the quote's service lines (same share of each), so the invoice lists every service the client ordered. Lines sum exactly to `net`. */
+function invoiceLines(q: Quote | undefined, net: number, paid: number): Array<SheetItem> {
+  if (!q || !q.items.length) return []
+  const total = quoteTotals(q).total
+  if (total <= 0 || net <= 0) return []
+  const r = paid / total // this payment's share of the whole deal
+  const out: Array<SheetItem> = q.items.map((it) => ({ label: it.label, qty: 1, price: Math.round(it.qty * it.price * r) }))
+  if (q.discount) out.push({ label: 'الخصم', qty: 1, price: -Math.round(q.discount * r) })
+  const diff = net - out.reduce((n, x) => n + x.price, 0)
+  if (diff) { const k = out.findIndex((x) => x.price > 0); if (k >= 0) out[k] = { ...out[k], price: out[k].price + diff } }
+  return out
+}
+
 /** Sequential invoice number per year: every payment of every project, in the order the projects were created. */
 export function invoiceNumber(projects: Array<Project>, p: Project, index: number): string {
   const year = new Date(p._creationTime).getFullYear()
@@ -821,6 +834,8 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
   const docTitle = vatOn ? (clientVatOk ? 'فاتورة ضريبية' : 'فاتورة ضريبية مبسطة') : 'فاتورة'
   const net = vatOn ? Math.round(pay.amount / (1 + VAT_RATE)) : pay.amount
   const vat = pay.amount - net
+  const lines = invoiceLines(srcQuote, net, pay.amount)
+  const share = srcQuote && quoteTotals(srcQuote).total > 0 ? Math.round((pay.amount / quoteTotals(srcQuote).total) * 100) : 0
   const date = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }).format(Date.now())
   const stampAt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(Date.now()).replace(',', '')
   const waNum = toWaNumber(waPhone)
@@ -870,16 +885,19 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
           <SupplierBox s={s} />
         </div>
         <h2 className="sheet-title"><small>المشروع</small>{p.title}</h2>
-        <table className="sheet-table">
-          <thead><tr><th>#</th><th>الوصف</th><th>الكمية</th><th>سعر الوحدة</th><th>المجموع (ريال)</th></tr></thead>
-          <tbody><tr><td className="mono">1</td><td>{pay.title}</td><td className="mono">1</td><td className="mono">{fmtSAR(net)}</td><td className="mono">{fmtSAR(net)}</td></tr></tbody>
-        </table>
+        {lines.length > 1
+          ? <ItemsTable items={lines} caption={`${pay.title}${share && share < 100 ? ` · ${share}% من قيمة كل خدمة` : ''} · حسب عرض السعر ${srcQuote?.number ?? ''}`} />
+          : (
+            <table className="sheet-table">
+              <thead><tr><th>#</th><th>الوصف</th><th>الكمية</th><th>سعر الوحدة</th><th>المجموع (ريال)</th></tr></thead>
+              <tbody><tr><td className="mono">1</td><td>{pay.title}</td><td className="mono">1</td><td className="mono">{fmtSAR(net)}</td><td className="mono">{fmtSAR(net)}</td></tr></tbody>
+            </table>
+          )}
         <div className="sheet-totals">
           <div><span>المبلغ قبل الضريبة</span><b className="mono">{fmtSAR(net)}</b></div>
           {vatOn && <div><span>ضريبة القيمة المضافة 15%</span><b className="mono">{fmtSAR(vat)}</b></div>}
           <div className="grand"><span>{pay.status === 'paid' ? 'المبلغ المدفوع (ريال)' : 'الإجمالي المستحق (ريال)'}</span><b className="mono">{fmtSAR(pay.amount)}</b></div>
         </div>
-        {srcQuote && srcQuote.items.length > 0 && <ItemsTable items={srcQuote.items} caption={`تفاصيل بنود المشروع حسب عرض السعر ${srcQuote.number}`} />}
         {(p.payments ?? []).length > 1 && (
           <div className="sheet-terms">
             <h3>جدول دفعات المشروع</h3>
