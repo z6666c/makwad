@@ -298,10 +298,12 @@ function Hero({ stats }: { stats: Array<{ value: string; label: string }> }) {
   const reduce = usePrefersReducedMotion()
   useEffect(() => {
     if (!auto || reduce) return
-    const t = setInterval(() => setStage((s) => (s ? 0 : 1)), 3200)
+    const t = setInterval(() => setStage((s) => (s + 1) % 4), 3200)
     return () => clearInterval(t)
   }, [auto, reduce])
-  const logs = ['wireframe v0.3 · 6 screens', 'build 1.0.0 (42) · ready for review']
+  const logs = ['wireframe v0.3 · 6 screens', 'build 1.0.0 (42) · ready for review', 'wireframe v0.2 · dashboard', 'deploy · makwad.com · live']
+  const dev = stage < 2 ? 0 : 1
+  const lay = stage % 2
   return (
     <div className="hero-band">
       <div className="wrap">
@@ -321,37 +323,69 @@ function Hero({ stats }: { stats: Array<{ value: string; label: string }> }) {
             )}
           </div>
           <div className="stage">
-            <div className="phone" aria-hidden="true">
-              <div className="screen">
-                <div className="notch" />
-                <div className={stage === 0 ? 'layer sk' : 'layer sk off'}>
-                  <div className="bar" style={{ width: '55%' }} />
-                  <div className="bar" style={{ width: '35%', height: 8 }} />
-                  <div className="box" style={{ height: 92 }} />
-                  <div className="box" style={{ height: 44 }} />
-                  <div className="box" style={{ height: 44 }} />
-                  <div className="box" style={{ height: 44 }} />
-                  <div className="bar" style={{ marginTop: 'auto', height: 22 }} />
-                </div>
-                <div className={stage === 1 ? 'layer dz' : 'layer dz off'}>
-                  <div className="h">صباح الخير، نورة</div>
-                  <div className="sub">طلبك في الطريق إليك</div>
-                  <div className="card main">
-                    <span style={{ fontSize: '.72rem', opacity: 0.85 }}>الوصول المتوقع</span>
-                    <span className="big">12 min</span>
-                    <span style={{ fontSize: '.7rem', opacity: 0.85 }}>المندوب: سعد · حي الشاطئ</span>
+            <div className="devices" aria-hidden="true">
+              <div className={dev === 0 ? 'phone' : 'phone dev-off'}>
+                <div className="screen">
+                  <div className="notch" />
+                  <div className={lay === 0 ? 'layer sk' : 'layer sk off'}>
+                    <div className="bar" style={{ width: '55%' }} />
+                    <div className="bar" style={{ width: '35%', height: 8 }} />
+                    <div className="box" style={{ height: 92 }} />
+                    <div className="box" style={{ height: 44 }} />
+                    <div className="box" style={{ height: 44 }} />
+                    <div className="box" style={{ height: 44 }} />
+                    <div className="bar" style={{ marginTop: 'auto', height: 22 }} />
                   </div>
-                  <div className="card"><span>قهوة مختصة ×2</span><span className="pill">تم التجهيز</span></div>
-                  <div className="card"><span>كرواسون زعتر</span><span className="pill">تم التجهيز</span></div>
-                  <div className="card"><span>نقاط الولاء</span><span className="mono">320</span></div>
-                  <div className="tabbar"><i className="on" /><i /><i /><i /></div>
+                  <div className={lay === 1 ? 'layer dz' : 'layer dz off'}>
+                    <div className="h">صباح الخير، نورة</div>
+                    <div className="sub">طلبك في الطريق إليك</div>
+                    <div className="card main">
+                      <span style={{ fontSize: '.72rem', opacity: 0.85 }}>الوصول المتوقع</span>
+                      <span className="big">12 min</span>
+                      <span style={{ fontSize: '.7rem', opacity: 0.85 }}>المندوب: سعد · حي الشاطئ</span>
+                    </div>
+                    <div className="card"><span>قهوة مختصة ×2</span><span className="pill">تم التجهيز</span></div>
+                    <div className="card"><span>كرواسون زعتر</span><span className="pill">تم التجهيز</span></div>
+                    <div className="card"><span>نقاط الولاء</span><span className="mono">320</span></div>
+                    <div className="tabbar"><i className="on" /><i /><i /><i /></div>
+                  </div>
                 </div>
               </div>
+              <div className={dev === 1 ? 'laptop' : 'laptop dev-off'}>
+                <div className="lid"><div className="lscreen">
+                  <div className={lay === 0 ? 'llayer lsk' : 'llayer lsk off'}>
+                    <div className="side"><div className="bar" style={{ width: '70%' }} /><div className="bar" /><div className="bar" /><div className="bar" /><div className="bar" /></div>
+                    <div className="main">
+                      <div className="bar" style={{ width: '40%' }} />
+                      <div className="row3"><div className="box" style={{ height: 30 }} /><div className="box" style={{ height: 30 }} /><div className="box" style={{ height: 30 }} /></div>
+                      <div className="box" style={{ flex: 1 }} />
+                      <div className="bar" /><div className="bar" style={{ width: '80%' }} />
+                    </div>
+                  </div>
+                  <div className={lay === 1 ? 'llayer ldz' : 'llayer ldz off'}>
+                    <div className="side"><div className="logo"><i />متجرك</div><span className="on">الرئيسية</span><span>الطلبات</span><span>المنتجات</span><span>العملاء</span><span>التقارير</span></div>
+                    <div className="main">
+                      <div className="top"><b>لوحة متجرك</b><small>اليوم</small></div>
+                      <div className="kpis"><div className="main"><small>المبيعات</small><b>4,820</b></div><div><small>الطلبات</small><b>38</b></div><div><small>الزوار</small><b>1.2K</b></div></div>
+                      <div className="chart">{[35, 52, 44, 63, 58, 86, 70].map((h, i) => <i key={i} className={i === 5 ? 'hi' : undefined} style={{ height: `${h}%` }} />)}</div>
+                      <div className="orders"><div><span>#1042 · سارة</span><span className="pill">قيد التوصيل</span></div><div><span>#1041 · فهد</span><span className="pill">تم التسليم</span></div></div>
+                    </div>
+                  </div>
+                </div></div>
+                <div className="base" />
+              </div>
             </div>
-            <div className="seg" role="group" aria-label="مراحل بناء التطبيق">
-              {['مخطط أولي', 'التصميم النهائي'].map((t, i) => (
-                <button key={t} type="button" aria-pressed={stage === i} onClick={() => { setAuto(false); setStage(i) }}>{t}</button>
-              ))}
+            <div className="stage-ctl">
+              <div className="seg" role="group" aria-label="نوع الجهاز">
+                {['جوال', 'كمبيوتر'].map((t, i) => (
+                  <button key={t} type="button" aria-pressed={dev === i} onClick={() => { setAuto(false); setStage(i * 2 + lay) }}>{t}</button>
+                ))}
+              </div>
+              <div className="seg" role="group" aria-label="مراحل البناء">
+                {['مخطط أولي', 'التصميم النهائي'].map((t, i) => (
+                  <button key={t} type="button" aria-pressed={lay === i} onClick={() => { setAuto(false); setStage(dev * 2 + i) }}>{t}</button>
+                ))}
+              </div>
             </div>
             <div className="build-log">{logs[stage]}</div>
           </div>

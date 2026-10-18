@@ -1052,3 +1052,42 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .plan-timeline .step { animation: pt-in .35s ease both; }
 @keyframes pt-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .plan-timeline .step { animation: none; } }
+/* hero devices: phone and laptop take turns */
+.devices { position: relative; display: grid; place-items: center; width: min(460px, 100%); }
+.devices > .phone, .devices > .laptop { grid-area: 1 / 1; transition: opacity .6s ease, transform .6s ease; }
+.devices > .dev-off { opacity: 0; transform: scale(.94) translateY(10px); pointer-events: none; }
+.laptop { width: 100%; display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 30px 40px rgba(10, 30, 24, .35)); }
+.laptop .lid { width: 100%; background: var(--ink); border-radius: 18px 18px 6px 6px; padding: 10px 10px 14px; }
+.laptop .lscreen { position: relative; aspect-ratio: 16 / 10; border-radius: 8px; background: var(--surface); overflow: hidden; }
+.laptop .base { width: 112%; height: 14px; background: color-mix(in srgb, var(--ink) 80%, var(--muted)); border-radius: 2px 2px 16px 16px; position: relative; }
+.laptop .base::after { content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 18%; height: 5px; border-radius: 0 0 6px 6px; background: color-mix(in srgb, var(--ink) 60%, var(--muted)); }
+.llayer { position: absolute; inset: 0; display: grid; grid-template-columns: 24% 1fr; transition: opacity .6s ease; }
+.llayer.off { opacity: 0; }
+.llayer .side { padding: 10px 8px; display: flex; flex-direction: column; gap: 7px; }
+.llayer .main { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.lsk .side { border-inline-end: 1.5px dashed var(--muted); }
+.lsk .bar { height: 8px; border: 1.5px dashed var(--muted); border-radius: 4px; }
+.lsk .box { border: 1.5px dashed var(--muted); border-radius: 8px; }
+.lsk .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ldz .side { background: var(--ink); color: var(--bg); }
+.ldz .side .logo { display: flex; align-items: center; gap: 5px; font-family: var(--f-display); font-weight: 700; font-size: .62rem; margin-bottom: 4px; }
+.ldz .side .logo i { width: 12px; height: 12px; border-radius: 4px; background: var(--accent); display: block; }
+.ldz .side span { font-size: .55rem; padding: 4px 6px; border-radius: 5px; opacity: .75; }
+.ldz .side span.on { background: color-mix(in srgb, var(--accent) 30%, transparent); opacity: 1; }
+.ldz .top { display: flex; justify-content: space-between; align-items: baseline; }
+.ldz .top b { font-family: var(--f-display); font-size: .78rem; }
+.ldz .top small { font-size: .52rem; color: var(--muted); }
+.ldz .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ldz .kpis div { background: var(--soft); border-radius: 7px; padding: 5px 7px; display: flex; flex-direction: column; }
+.ldz .kpis small { font-size: .48rem; color: var(--muted); }
+.ldz .kpis b { font-family: var(--f-mono); font-weight: 500; font-size: .74rem; direction: ltr; text-align: right; }
+.ldz .kpis div.main { background: var(--accent); color: var(--accent-ink); }
+.ldz .kpis div.main small { color: inherit; opacity: .85; }
+.ldz .chart { flex: 1; display: flex; align-items: flex-end; gap: 5px; padding: 6px 4px 0; border-bottom: 1px solid var(--line); min-height: 0; }
+.ldz .chart i { flex: 1; border-radius: 3px 3px 0 0; background: color-mix(in srgb, var(--accent) 35%, var(--surface)); display: block; }
+.ldz .chart i.hi { background: var(--accent); }
+.ldz .orders { display: flex; flex-direction: column; gap: 3px; }
+.ldz .orders div { display: flex; justify-content: space-between; font-size: .5rem; padding: 3px 5px; border-radius: 4px; background: color-mix(in srgb, var(--soft) 60%, transparent); }
+.ldz .orders .pill { font-size: .46rem; padding: 0 5px; border-radius: 999px; background: var(--surface); color: var(--accent); font-weight: 600; }
+.stage-ctl { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+@media (prefers-reduced-motion: reduce) { .devices > .phone, .devices > .laptop, .llayer { transition: none; } }
