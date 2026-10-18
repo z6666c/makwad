@@ -1091,3 +1091,7 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .ldz .orders .pill { font-size: .46rem; padding: 0 5px; border-radius: 999px; background: var(--surface); color: var(--accent); font-weight: 600; }
 .stage-ctl { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 @media (prefers-reduced-motion: reduce) { .devices > .phone, .devices > .laptop, .llayer { transition: none; } }
+.h-rot { display: grid; }
+.h-rot > span { grid-area: 1 / 1; opacity: 0; transform: translateY(.3em); transition: opacity .6s ease, transform .6s ease; }
+.h-rot > span.on { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .h-rot > span { transition: none; } }

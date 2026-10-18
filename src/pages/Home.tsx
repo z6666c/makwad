@@ -310,7 +310,12 @@ function Hero({ stats }: { stats: Array<{ value: string; label: string }> }) {
         <div className="hero">
           <div>
             <div className="eyebrow">استوديو تطوير تطبيقات وأنظمة · الرياض</div>
-            <h1>من فكرة على ورقة<br />إلى تطبيق <em>منشور في المتجر</em></h1>
+            <h1>من فكرة على ورقة<br />
+              <span className="h-rot">
+                <span className={dev === 0 ? 'on' : undefined} aria-hidden={dev !== 0}>إلى تطبيق <em>منشور في المتجر</em></span>
+                <span className={dev === 1 ? 'on' : undefined} aria-hidden={dev !== 1}>إلى نظام <em>يدير أعمالك</em></span>
+              </span>
+            </h1>
             <p className="lead">نصمّم ونبني تطبيقات الجوال والمواقع والأنظمة وأدوات الذكاء الاصطناعي، ونحلل مشاريعك قبل التنفيذ. فريق واحد يتولى التحليل والتصميم والبرمجة والإطلاق، ويبقى معك بعده.</p>
             <div className="cta-row">
               <a className="btn" href="#contact">احجز جلسة اكتشاف مجانية</a>
