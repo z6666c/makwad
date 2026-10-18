@@ -203,7 +203,7 @@ export default function Home() {
                 <div className={p.feat ? 'plan feat' : 'plan'} key={p.name}>
                   {p.feat && <span className="badge">الأكثر طلباً</span>}
                   <h3>{p.name}</h3>
-                  <div className="price">{p.name === 'الانطلاقة' ? `SAR ${fmtSAR(minPrice)}` : p.price}<small>{p.small}</small></div>
+                  <div className="price">{p.price}<small>{p.small}</small></div>
                   <ul>{p.items.map((it) => <li key={it}>{it}</li>)}</ul>
                   <a className={p.feat ? 'btn' : 'btn ghost'} href="#contact" onClick={() => setPlan(p.name)}>{p.cta}</a>
                 </div>
