@@ -1095,3 +1095,7 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .h-rot > span { grid-area: 1 / 1; opacity: 0; transform: translateY(.3em); transition: opacity .6s ease, transform .6s ease; }
 .h-rot > span.on { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .h-rot > span { transition: none; } }
+.wa-send { flex-wrap: wrap; gap: 8px 12px; justify-content: flex-start; }
+.wa-send .input { max-width: 180px; }
+.wa-send small { flex-basis: 100%; }
+.wa-send { top: 57px; z-index: 3; }

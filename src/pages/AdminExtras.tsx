@@ -5,6 +5,7 @@ import type React from 'react'
 import { api } from '@/convex/_generated/api'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { LogoMark } from '@/components/Logo'
+import { toWaNumber } from '@/phone'
 import { PayMethodsBox } from '@/components/PayMethods'
 import { SERVICE_PRICING, fmtSAR } from '@/estimate'
 import type { Catalog, Option, Service } from '@/estimate'
@@ -398,9 +399,20 @@ export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => v
         <span style={{ display: 'flex', gap: 8 }}>
           {actions}
           <button className="btn small" type="button" onClick={() => window.print()}>طباعة / حفظ PDF</button>
+          {leadsRes?.status === 'ok' && <button className="btn wa small" type="button" aria-expanded={waOpen} onClick={() => setWaOpen((v) => !v)}>إرسال واتساب</button>}
           <button className="btn ghost small" type="button" onClick={onClose}>إغلاق</button>
         </span>
       </div>
+      {waOpen && (
+        <div className="print-bar wa-send">
+          <label htmlFor="inv-wa">جوال العميل</label>
+          <input id="inv-wa" className="input" dir="ltr" inputMode="tel" value={waPhone} onChange={(e) => setWaPhone(e.target.value)} placeholder="05XXXXXXXX" />
+          {waNum
+            ? <a className="btn wa small" href={`https://wa.me/${waNum}?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener noreferrer">فتح واتساب وإرسال</a>
+            : <span className="muted" style={{ fontSize: '.85rem' }}>اكتب رقم جوال صحيح</span>}
+          <small className="muted">ترسل رسالة فيها تفاصيل الفاتورة. لإرفاق ملف PDF احفظه من «طباعة / حفظ PDF» وأرفقه في المحادثة.</small>
+        </div>
+      )}
       <article className="sheet">
         <header className="sheet-head">
           <div className="sheet-brand"><LogoMark height={44} /><div><b>{COMPANY.name}</b><small>MAKWAD STUDIO</small></div></div>
@@ -643,11 +655,17 @@ export function CouponsPanel() {
 
 /* =================== INVOICES =================== */
 
+
 type Pay = { title: string; amount: number; status: 'pending' | 'due' | 'paid'; paidAt?: string; method?: string }
 
 export function InvoicePrint({ p, index, onClose }: { p: Project; index: number; onClose: () => void }) {
   const s = (useQuery(api.settings.get) as SiteSettings | undefined) ?? DEFAULT_SETTINGS
   const pay = (p.payments ?? [])[index] as Pay | undefined
+  const leadsRes = useQuery(api.app.listLeads)
+  const lead = leadsRes?.status === 'ok' ? leadsRes.leads.find((l) => l.projectId === p._id && l.phone) ?? leadsRes.leads.find((l) => l.email.toLowerCase() === p.clientEmail.toLowerCase() && l.phone) : undefined
+  const [waPhone, setWaPhone] = useState('')
+  const [waOpen, setWaOpen] = useState(false)
+  useEffect(() => { if (lead?.phone && !waPhone) setWaPhone(lead.phone) }, [lead?.phone])
   useEffect(() => {
     document.documentElement.classList.add('printing')
     return () => document.documentElement.classList.remove('printing')
@@ -658,15 +676,38 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
   const vat = pay.amount - net
   const no = `INV-${new Date(p._creationTime).getFullYear()}-${String(p._id).slice(-4).toUpperCase()}-${index + 1}`
   const date = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }).format(Date.now())
+  const waNum = toWaNumber(waPhone)
+  const waText = [
+    `السلام عليكم ${p.clientName}،`,
+    `مرفق تفاصيل ${vatOn ? 'الفاتورة الضريبية' : 'الفاتورة'} من ${COMPANY.name}:`,
+    `رقم الفاتورة: ${no}`,
+    `المشروع: ${p.title}`,
+    `البند: ${pay.title}`,
+    `المبلغ: ${fmtSAR(pay.amount)} ريال${vatOn ? ' (شامل الضريبة)' : ''}`,
+    `الحالة: ${pay.status === 'paid' ? 'مدفوعة، شكراً لك' : pay.status === 'due' ? 'مستحقة الدفع' : 'لاحقة'}`,
+    ...(pay.status !== 'paid' && s.iban ? [`الدفع بالتحويل: ${s.bankName ?? ''} ${s.iban}`.trim()] : []),
+    'تقدر تشوف الفاتورة وتحمّلها من بوابة العميل: https://makwad.com/login',
+  ].join('\n')
   return (
     <div className="print-overlay" role="dialog" aria-label={`فاتورة ${no}`}>
       <div className="print-bar">
         <b>معاينة الفاتورة</b>
         <span style={{ display: 'flex', gap: 8 }}>
           <button className="btn small" type="button" onClick={() => window.print()}>طباعة / حفظ PDF</button>
+          {leadsRes?.status === 'ok' && <button className="btn wa small" type="button" aria-expanded={waOpen} onClick={() => setWaOpen((v) => !v)}>إرسال واتساب</button>}
           <button className="btn ghost small" type="button" onClick={onClose}>إغلاق</button>
         </span>
       </div>
+      {waOpen && (
+        <div className="print-bar wa-send">
+          <label htmlFor="inv-wa">جوال العميل</label>
+          <input id="inv-wa" className="input" dir="ltr" inputMode="tel" value={waPhone} onChange={(e) => setWaPhone(e.target.value)} placeholder="05XXXXXXXX" />
+          {waNum
+            ? <a className="btn wa small" href={`https://wa.me/${waNum}?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener noreferrer">فتح واتساب وإرسال</a>
+            : <span className="muted" style={{ fontSize: '.85rem' }}>اكتب رقم جوال صحيح</span>}
+          <small className="muted">ترسل رسالة فيها تفاصيل الفاتورة. لإرفاق ملف PDF احفظه من «طباعة / حفظ PDF» وأرفقه في المحادثة.</small>
+        </div>
+      )}
       <article className="sheet">
         <header className="sheet-head">
           <div className="sheet-brand"><LogoMark height={44} /><div><b>{COMPANY.name}</b><small>MAKWAD STUDIO</small></div></div>

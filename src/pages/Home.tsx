@@ -11,6 +11,7 @@ import { fmtSAR } from '@/estimate'
 import type { ServiceKey } from '@/estimate'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { useTitle } from '@/useTitle'
+import { toWaNumber } from '@/phone'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
 import { usePricing, useSettings } from '@/site-config'
 
@@ -557,6 +558,11 @@ function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amou
     e.preventDefault()
     const form = e.currentTarget
     const fd = new FormData(form)
+    if (!toWaNumber(String(fd.get('phone') ?? ''))) {
+      setResult({ ok: false, text: 'رقم الجوال مطلوب. اكتبه بصيغة 05XXXXXXXX.' })
+      form.querySelector<HTMLInputElement>('#phone')?.focus()
+      return
+    }
     setBusy(true)
     setResult(null)
     try {
@@ -592,7 +598,7 @@ function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amou
       <div className="field"><label htmlFor="company">الشركة</label><input id="company" name="company" autoComplete="organization" placeholder="اختياري" /></div>
       <div className="field"><label htmlFor="email">البريد الإلكتروني</label><input id="email" name="email" type="email" autoComplete="email" dir="ltr" placeholder="name@company.sa" /></div>
       <div className="hp" aria-hidden="true"><label htmlFor="website">الموقع</label><input id="website" name="website" tabIndex={-1} autoComplete="off" /></div>
-      <div className="field"><label htmlFor="phone">رقم الجوال (واتساب)</label><input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="05XXXXXXXX" /></div>
+      <div className="field"><label htmlFor="phone">رقم الجوال (واتساب) <span aria-hidden="true" style={{ color: 'var(--accent)' }}>*</span></label><input id="phone" name="phone" required aria-required="true" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="05XXXXXXXX" /></div>
       <div className="field full">
         <span className="lbl">نوع المشروع</span>
         <div className="chips">
