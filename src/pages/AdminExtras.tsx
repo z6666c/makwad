@@ -399,26 +399,9 @@ export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => v
         <span style={{ display: 'flex', gap: 8 }}>
           {actions}
           <button className="btn small" type="button" onClick={() => window.print()}>طباعة / حفظ PDF</button>
-          {leadsRes?.status === 'ok' && <button className="btn wa small" type="button" aria-expanded={waOpen} onClick={() => setWaOpen((v) => !v)}>إرسال واتساب</button>}
           <button className="btn ghost small" type="button" onClick={onClose}>إغلاق</button>
         </span>
       </div>
-      <div className="print-bar wa-send vat-bar">
-        <label htmlFor="inv-cvat">الرقم الضريبي للعميل (اختياري)</label>
-        <input id="inv-cvat" className="input" dir="ltr" inputMode="numeric" value={clientVat} onChange={(e) => setClientVat(e.target.value)} placeholder="3XXXXXXXXXXXXX3" />
-        {clientVat && !clientVatOk && <span className="muted" style={{ fontSize: '.85rem' }}>الرقم الضريبي 15 رقماً يبدأ وينتهي بـ 3</span>}
-        {clientVatOk && <span className="muted" style={{ fontSize: '.85rem' }}>{vatOn ? 'يظهر في الفاتورة وتصير «فاتورة ضريبية»' : 'يظهر في الفاتورة. تصير ضريبية بعد إضافة رقمك الضريبي في الإعدادات'}</span>}
-      </div>
-      {waOpen && (
-        <div className="print-bar wa-send">
-          <label htmlFor="inv-wa">جوال العميل</label>
-          <input id="inv-wa" className="input" dir="ltr" inputMode="tel" value={waPhone} onChange={(e) => setWaPhone(e.target.value)} placeholder="05XXXXXXXX" />
-          {waNum
-            ? <a className="btn wa small" href={`https://wa.me/${waNum}?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener noreferrer">فتح واتساب وإرسال</a>
-            : <span className="muted" style={{ fontSize: '.85rem' }}>اكتب رقم جوال صحيح</span>}
-          <small className="muted">ترسل رسالة فيها تفاصيل الفاتورة. لإرفاق ملف PDF احفظه من «طباعة / حفظ PDF» وأرفقه في المحادثة.</small>
-        </div>
-      )}
       <article className="sheet">
         <header className="sheet-head">
           <div className="sheet-brand"><LogoMark height={44} /><div><b>{COMPANY.name}</b><small>MAKWAD STUDIO</small></div></div>
@@ -453,6 +436,14 @@ export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => v
           </ul>
         </div>
         <PayMethodsBox s={s} />
+        <div className="sheet-stamp">
+          <div className="st-text">
+            <b>ختم إلكتروني</b>
+            <span>صدر هذا العرض إلكترونياً من {COMPANY.name} ومختوم بختمه.</span>
+            <span>رقم العرض: <span className="mono">{q.number}</span></span>
+          </div>
+          <EStamp doc={s.crNumber} />
+        </div>
         <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">{s.email}</span></footer>
       </article>
     </div>
