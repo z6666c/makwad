@@ -208,7 +208,9 @@ function itemsFromLead(l: Lead): Pick<Draft, 'items' | 'discount'> {
   const items: Draft['items'] = []
   let discount = 0
   let svc = l.types[0]
-  for (const raw of (l.message ?? '').split('\n')) {
+  const head = (l.message ?? '').split(/نبذة عن الفكرة:/)[0]
+  for (const part of head.split('•').slice(1)) {
+    const raw = `• ${part.replace(/\s+/g, ' ').trim()}`
     const sv = raw.match(/^\s*•\s*الخدمة:\s*(.+)$/)
     if (sv) { svc = sv[1].trim(); continue }
     const m = raw.match(/^\s*•\s*(.+?):\s*(−|-)?\s*([\d,٬]+)\s*ريال/)
@@ -347,6 +349,13 @@ function QuoteForm({ draft, leads, catalog, onClose }: { draft: Draft; leads: Ar
 
           <div className="field full">
             <span className="lbl">البنود</span>
+            {(() => {
+              const l = d.leadId ? leads.find((x) => x._id === d.leadId) : undefined
+              const fresh = l ? itemsFromLead(l) : null
+              return fresh && fresh.items.length > 1 && fresh.items.length !== d.items.length
+                ? <button className="btn ghost small q-split" type="button" onClick={() => setD((x) => ({ ...x, items: fresh.items, discount: fresh.discount }))}>تفصيل البنود حسب اختيارات العميل ({fresh.items.length} بنود)</button>
+                : null
+            })()}
             <div className="q-items">
               {d.items.map((it, i) => (
                 <div className="q-item" key={i}>
@@ -427,48 +436,42 @@ export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => v
         </span>
       </div>
       <article className="sheet">
-        <header className="sheet-head">
-          <div className="sheet-brand"><LogoMark height={44} /><div><b>{COMPANY.name}</b><small>MAKWAD STUDIO</small></div></div>
-          <div className="sheet-meta"><h1>عرض سعر</h1><span className="mono">{q.number}</span><span>{date.format(q._creationTime)}</span></div>
-        </header>
+        <SheetHead title="عرض سعر" meta={[['رقم العرض', q.number], ['التاريخ', date.format(q._creationTime)], ['صالح حتى', date.format(q._creationTime + q.validDays * 86400000)]]} />
         <div className="sheet-parties">
           <div><small>مقدّم إلى</small><b>{q.clientName}</b>{q.company && <span>{q.company}</span>}<span className="mono">{q.clientEmail}</span></div>
-          <div><small>من</small><b>{COMPANY.name}</b><span>{s.address}</span><span className="mono">{s.email}</span>{s.crNumber && <span>السجل / وثيقة العمل الحر: <span className="mono">{s.crNumber}</span></span>}{s.vatNumber && <span>الرقم الضريبي: <span className="mono">{s.vatNumber}</span></span>}</div>
+          <SupplierBox s={s} />
         </div>
-        <h2 className="sheet-title">{q.title}</h2>
-        <table className="sheet-table">
-          <thead><tr><th>#</th><th>البند</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr></thead>
-          <tbody>
-            {q.items.map((it, i) => (
-              <tr key={i}><td className="mono">{i + 1}</td><td>{it.label}</td><td className="mono">{it.qty}</td><td className="mono">{fmtSAR(it.price)}</td><td className="mono">{fmtSAR(it.qty * it.price)}</td></tr>
-            ))}
-          </tbody>
-        </table>
+        <h2 className="sheet-title"><small>المشروع</small>{q.title}</h2>
+        <ItemsTable items={q.items} />
         <div className="sheet-totals">
           <div><span>المجموع</span><b className="mono">{fmtSAR(t.subtotal)}</b></div>
           {q.discount > 0 && <div><span>الخصم</span><b className="mono">−{fmtSAR(q.discount)}</b></div>}
           {q.vat && <div><span>ضريبة القيمة المضافة 15%</span><b className="mono">{fmtSAR(t.vat)}</b></div>}
           <div className="grand"><span>الإجمالي (ريال سعودي)</span><b className="mono">{fmtSAR(t.total)}</b></div>
         </div>
-        <div className="sheet-terms">
-          <h3>الشروط</h3>
-          <ul>
-            <li>الدفعات: 40% عند البدء، 30% عند اعتماد التصميم، 30% عند التسليم.</li>
-            <li>العرض صالح لمدة {q.validDays} يوماً من تاريخه{q.vat ? '' : '، والأسعار لا تشمل ضريبة القيمة المضافة إن وُجدت'}.</li>
-            <li>تنتقل ملكية الشيفرة المصدرية والتصاميم للعميل بعد سداد كامل المبلغ.</li>
-            {q.notes && <li>{q.notes}</li>}
-          </ul>
+        <div className="sheet-cols">
+          <div className="sheet-terms">
+            <h3>جدول الدفعات</h3>
+            <table className="sheet-mini"><tbody>
+              {SCHEDULE.map(([label, r], k) => {
+                const amt = k === SCHEDULE.length - 1 ? t.total - SCHEDULE.slice(0, -1).reduce((n, [, x]) => n + Math.round(t.total * x), 0) : Math.round(t.total * r)
+                return <tr key={label}><td>{label}</td><td className="mono">{Math.round(r * 100)}%</td><td className="mono">{fmtSAR(amt)}</td></tr>
+              })}
+            </tbody></table>
+          </div>
+          <div className="sheet-terms">
+            <h3>الشروط</h3>
+            <ul>
+              <li>العرض صالح لمدة {q.validDays} يوماً من تاريخه{q.vat ? '' : '، والأسعار لا تشمل ضريبة القيمة المضافة إن وُجدت'}.</li>
+              <li>تنتقل ملكية الشيفرة المصدرية والتصاميم للعميل بعد سداد كامل المبلغ.</li>
+              <li>تُطبَّق سياسة الإلغاء والاسترداد المنشورة في <span className="mono">makwad.com/refund</span>.</li>
+              {q.notes && <li>{q.notes}</li>}
+            </ul>
+          </div>
         </div>
         <PayMethodsBox s={s} />
-        <div className="sheet-stamp">
-          <div className="st-text">
-            <b>ختم إلكتروني</b>
-            <span>صدر هذا العرض إلكترونياً من {COMPANY.name} ومختوم بختمه.</span>
-            <span>رقم العرض: <span className="mono">{q.number}</span></span>
-          </div>
-          <EStamp doc={s.crNumber} />
-        </div>
-        <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">{s.email}</span></footer>
+        <StampBlock s={s} kind="quote" no={q.number} />
+        <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">makwad.com · {s.email}</span></footer>
       </article>
     </div>
   )
@@ -674,6 +677,83 @@ export function CouponsPanel() {
   )
 }
 
+
+/* =================== PRINT SHEET PARTS =================== */
+
+type SheetItem = { label: string; qty: number; price: number }
+/** Groups lines that share a service prefix ("خدمة: بند" or "خدمة — بند") under one heading row. */
+function groupItems(items: Array<SheetItem>): Array<{ group?: string; items: Array<SheetItem> }> {
+  const out: Array<{ group?: string; items: Array<SheetItem> }> = []
+  for (const it of items) {
+    const m = it.label.match(/^(.{2,60}?)(?::| — )\s*(.+)$/)
+    if (m) out.push({ group: m[1].trim(), items: [{ ...it, label: m[2].trim() }] })
+    else if (out.length) out[out.length - 1].items.push(it)
+    else out.push({ items: [it] })
+  }
+  // merge consecutive blocks of the same group
+  return out.reduce<typeof out>((acc, b) => {
+    const last = acc[acc.length - 1]
+    if (last && b.group && last.group === b.group) last.items.push(...b.items)
+    else acc.push(b)
+    return acc
+  }, [])
+}
+
+function ItemsTable({ items, caption }: { items: Array<SheetItem>; caption?: string }) {
+  let n = 0
+  return (
+    <table className="sheet-table">
+      {caption && <caption>{caption}</caption>}
+      <thead><tr><th>#</th><th>البند</th><th>الكمية</th><th>سعر الوحدة</th><th>المجموع (ريال)</th></tr></thead>
+      <tbody>
+        {groupItems(items).map((g, gi) => [
+          g.group ? <tr key={`g${gi}`} className="grp"><td /><td colSpan={4}>{g.group}</td></tr> : null,
+          ...g.items.map((it, i) => { n += 1; return <tr key={`${gi}-${i}`}><td className="mono">{n}</td><td>{it.label}</td><td className="mono">{it.qty}</td><td className="mono">{fmtSAR(it.price)}</td><td className="mono">{fmtSAR(it.qty * it.price)}</td></tr> }),
+        ])}
+      </tbody>
+    </table>
+  )
+}
+
+function SheetHead({ title, meta, badge }: { title: string; meta: Array<[string, string]>; badge?: React.ReactNode }) {
+  return (
+    <header className="sheet-head">
+      <div className="sheet-brand"><LogoMark height={44} /><div><b>{COMPANY.name}</b><small>MAKWAD STUDIO</small></div></div>
+      <div className="sheet-meta">
+        <h1>{title}</h1>
+        <dl>{meta.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+        {badge}
+      </div>
+    </header>
+  )
+}
+
+function SupplierBox({ s }: { s: SiteSettings }) {
+  return (
+    <div><small>من</small><b>{COMPANY.name}</b><span>{s.address}</span>
+      {s.crNumber && <span>وثيقة العمل الحر / السجل: <span className="mono">{s.crNumber}</span></span>}
+      {s.vatNumber && <span>الرقم الضريبي: <span className="mono">{s.vatNumber}</span></span>}
+      <span className="mono">{s.email}</span>
+    </div>
+  )
+}
+
+function StampBlock({ s, kind, no, at }: { s: SiteSettings; kind: 'quote' | 'invoice'; no: string; at?: string }) {
+  return (
+    <div className="sheet-stamp">
+      <div className="st-text">
+        <b>ختم إلكتروني</b>
+        <span>{kind === 'quote' ? `صدر هذا العرض إلكترونياً من ${COMPANY.name} ومختوم بختمه.` : `صدرت هذه الفاتورة إلكترونياً من ${COMPANY.name} ومختومة بختمه.`}</span>
+        <span>{kind === 'quote' ? 'رقم العرض' : 'رقم الفاتورة'}: <span className="mono">{no}</span></span>
+        {at && <span>تاريخ الختم: <span className="mono">{at}</span></span>}
+      </div>
+      <EStamp doc={s.crNumber} />
+    </div>
+  )
+}
+
+const SCHEDULE: Array<[string, number]> = [['الدفعة الأولى عند البدء', 0.4], ['الدفعة الثانية عند اعتماد التصميم', 0.3], ['الدفعة الأخيرة عند التسليم', 0.3]]
+
 /* =================== INVOICES =================== */
 
 /** Sequential invoice number per year: every payment of every project, in the order the projects were created. */
@@ -724,6 +804,8 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
     document.documentElement.classList.add('printing')
     return () => document.documentElement.classList.remove('printing')
   }, [])
+  const quotesRes = useQuery(api.quotes.list) as { status: 'ok'; quotes: Array<Quote> } | { status: string } | undefined
+  const srcQuote = quotesRes && 'quotes' in quotesRes ? quotesRes.quotes.find((x) => x.projectId === p._id) : undefined
   const projRes = useQuery(api.app.listProjects, {}) as { status: 'ok'; projects: Array<Project> } | { status: string } | undefined
   const no = invoiceNumber(projRes && 'projects' in projRes ? projRes.projects : [p], p, index)
   useEffect(() => {
@@ -780,36 +862,38 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
         </div>
       )}
       <article className="sheet">
-        <header className="sheet-head">
-          <div className="sheet-brand"><LogoMark height={44} /><div><b>{COMPANY.name}</b><small>MAKWAD STUDIO</small></div></div>
-          <div className="sheet-meta"><h1>{docTitle}</h1><span className="mono">{no}</span><span>{date}</span>
-            <span className={`badge-s pay-${pay.status}`}>{pay.status === 'paid' ? 'مدفوعة' : pay.status === 'due' ? 'مستحقة الدفع' : 'لاحقة'}</span></div>
-        </header>
+        <SheetHead title={docTitle}
+          meta={[['رقم الفاتورة', no], ['تاريخ الإصدار', date], ...(srcQuote ? [['مرجع العرض', srcQuote.number] as [string, string]] : [])]}
+          badge={<span className={`badge-s pay-${pay.status}`}>{pay.status === 'paid' ? 'مدفوعة' : pay.status === 'due' ? 'مستحقة الدفع' : 'لاحقة'}</span>} />
         <div className="sheet-parties">
-          <div><small>العميل</small><b>{p.clientName}</b><span className="mono">{p.clientEmail}</span>{clientVatOk && <span>الرقم الضريبي: <span className="mono">{cv}</span></span>}<span>المشروع: {p.title}</span></div>
-          <div><small>المورّد</small><b>{COMPANY.name}</b><span>{s.address}</span>{s.crNumber && <span>السجل / وثيقة العمل الحر: <span className="mono">{s.crNumber}</span></span>}{s.vatNumber && <span>الرقم الضريبي: <span className="mono">{s.vatNumber}</span></span>}</div>
+          <div><small>فاتورة إلى</small><b>{p.clientName}</b><span className="mono">{p.clientEmail}</span>{clientVatOk && <span>الرقم الضريبي: <span className="mono">{cv}</span></span>}</div>
+          <SupplierBox s={s} />
         </div>
+        <h2 className="sheet-title"><small>المشروع</small>{p.title}</h2>
         <table className="sheet-table">
-          <thead><tr><th>#</th><th>الوصف</th><th>الكمية</th><th>السعر</th><th>المجموع</th></tr></thead>
-          <tbody><tr><td className="mono">1</td><td>{pay.title} — {p.title}</td><td className="mono">1</td><td className="mono">{fmtSAR(net)}</td><td className="mono">{fmtSAR(net)}</td></tr></tbody>
+          <thead><tr><th>#</th><th>الوصف</th><th>الكمية</th><th>سعر الوحدة</th><th>المجموع (ريال)</th></tr></thead>
+          <tbody><tr><td className="mono">1</td><td>{pay.title}</td><td className="mono">1</td><td className="mono">{fmtSAR(net)}</td><td className="mono">{fmtSAR(net)}</td></tr></tbody>
         </table>
         <div className="sheet-totals">
           <div><span>المبلغ قبل الضريبة</span><b className="mono">{fmtSAR(net)}</b></div>
           {vatOn && <div><span>ضريبة القيمة المضافة 15%</span><b className="mono">{fmtSAR(vat)}</b></div>}
-          <div className="grand"><span>الإجمالي المستحق (ريال)</span><b className="mono">{fmtSAR(pay.amount)}</b></div>
+          <div className="grand"><span>{pay.status === 'paid' ? 'المبلغ المدفوع (ريال)' : 'الإجمالي المستحق (ريال)'}</span><b className="mono">{fmtSAR(pay.amount)}</b></div>
         </div>
-        {pay.status !== 'paid' && <PayMethodsBox s={s} />}
-        {!vatOn && <p className="sheet-note">المنشأة غير مسجلة في ضريبة القيمة المضافة.</p>}
-        <div className="sheet-stamp">
-          <div className="st-text">
-            <b>ختم إلكتروني</b>
-            <span>صدرت هذه الفاتورة إلكترونياً من {COMPANY.name} ومختومة بختمه.</span>
-            <span>رقم الفاتورة: <span className="mono">{no}</span></span>
-            <span>تاريخ الختم: <span className="mono">{stampAt}</span></span>
+        {srcQuote && srcQuote.items.length > 0 && <ItemsTable items={srcQuote.items} caption={`تفاصيل بنود المشروع حسب عرض السعر ${srcQuote.number}`} />}
+        {(p.payments ?? []).length > 1 && (
+          <div className="sheet-terms">
+            <h3>جدول دفعات المشروع</h3>
+            <table className="sheet-mini"><tbody>
+              {(p.payments ?? []).map((x, k) => (
+                <tr key={k} className={k === index ? 'cur' : undefined}><td>{x.title}</td><td className="mono">{fmtSAR(x.amount)}</td><td>{x.status === 'paid' ? 'مدفوعة' : x.status === 'due' ? 'مستحقة' : 'لاحقة'}{k === index ? ' · هذه الفاتورة' : ''}</td></tr>
+              ))}
+            </tbody></table>
           </div>
-          <EStamp doc={s.crNumber} />
-        </div>
-        <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">{s.email}</span></footer>
+        )}
+        {pay.status !== 'paid' && <PayMethodsBox s={s} />}
+        {!vatOn && <p className="sheet-note">المنشأة غير مسجلة في ضريبة القيمة المضافة، ولا تُحتسب ضريبة على هذه الفاتورة.</p>}
+        <StampBlock s={s} kind="invoice" no={no} at={stampAt} />
+        <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">makwad.com · {s.email}</span></footer>
       </article>
     </div>
   )

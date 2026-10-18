@@ -1107,3 +1107,26 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .e-stamp { flex: none; transform: rotate(-8deg); direction: ltr; }
 .e-stamp .ar { font-family: var(--f-display); }
 .e-stamp .lat { font-family: var(--f-body); }
+
+/* tidy print sheets */
+.sheet-meta dl { margin: 6px 0 0; display: grid; grid-template-columns: auto auto; gap: 2px 14px; font-size: .8rem; }
+.sheet-meta dl div { display: contents; }
+.sheet-meta dt { color: var(--muted); }
+.sheet-meta dd { margin: 0; color: var(--ink); text-align: end; }
+.sheet-parties span { line-height: 1.6; }
+.sheet-title { display: flex; flex-direction: column; gap: 2px; }
+.sheet-title small { font-size: .72rem; color: var(--muted); font-weight: 500; font-family: var(--f-body); }
+.sheet-table caption { caption-side: top; text-align: start; font-weight: 600; font-size: .88rem; padding-bottom: 8px; }
+.sheet-table tbody tr:nth-child(even):not(.grp) td { background: #FAFBFD; }
+.sheet-table tr.grp td { background: var(--soft); color: var(--accent); font-weight: 600; font-size: .85rem; padding-block: 8px; }
+.sheet-table th:nth-child(3), .sheet-table td:nth-child(3) { text-align: center; width: 64px; }
+.sheet-table th:nth-child(4), .sheet-table td:nth-child(4), .sheet-table th:nth-child(5), .sheet-table td:nth-child(5) { width: 110px; }
+.sheet-table td.mono { font-variant-numeric: tabular-nums; }
+.sheet-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.sheet-mini { width: 100%; border-collapse: collapse; font-size: .84rem; }
+.sheet-mini td { padding: 7px 8px; border-bottom: 1px solid var(--line); }
+.sheet-mini td:not(:first-child) { text-align: end; white-space: nowrap; }
+.sheet-mini tr.cur td { background: var(--soft); font-weight: 600; }
+.sheet .paybox { break-inside: avoid; }
+.sheet-table, .sheet-totals, .sheet-cols { break-inside: avoid; }
+@media (max-width: 640px) { .sheet-cols { grid-template-columns: 1fr; } }
