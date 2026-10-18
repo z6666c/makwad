@@ -1100,3 +1100,10 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .wa-send small { flex-basis: 100%; }
 .vat-bar { top: 57px; z-index: 3; }
 .wa-send:not(.vat-bar) { top: 114px; z-index: 3; }
+/* invoice e-stamp */
+.sheet-stamp { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 16px; border-top: 1px solid var(--line); break-inside: avoid; }
+.sheet-stamp .st-text { display: flex; flex-direction: column; gap: 3px; font-size: .84rem; color: var(--muted); }
+.sheet-stamp .st-text b { color: var(--ink); font-size: .95rem; }
+.e-stamp { flex: none; transform: rotate(-8deg); direction: ltr; }
+.e-stamp .ar { font-family: var(--f-display); }
+.e-stamp .lat { font-family: var(--f-body); }

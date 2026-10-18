@@ -661,6 +661,24 @@ export function CouponsPanel() {
 
 /* =================== INVOICES =================== */
 
+/** Studio e-stamp; the document number comes from settings so it always matches. */
+export function EStamp({ doc }: { doc?: string }) {
+  const c = '#1F6F8B'
+  return (
+    <svg className="e-stamp" width="150" height="150" viewBox="0 0 200 200" role="img" aria-label={`ختم ${COMPANY.name} الإلكتروني`}>
+      <defs><path id="st-top" d="M28,100 a72,72 0 0,1 144,0" /><path id="st-bot" d="M20,100 a80,80 0 0,0 160,0" /></defs>
+      <g fill="none" stroke={c}><circle cx="100" cy="100" r="95" strokeWidth="4" /><circle cx="100" cy="100" r="88" strokeWidth="1.2" /><circle cx="100" cy="100" r="62" strokeWidth="1.2" /></g>
+      <text className="lat" fontSize="14" fontWeight="600" fill={c} letterSpacing="3"><textPath href="#st-top" startOffset="50%" textAnchor="middle">MAKWAD STUDIO</textPath></text>
+      <text className="lat" fontSize="11" fill={c} letterSpacing="2.5" dy="-1"><textPath href="#st-bot" startOffset="50%" textAnchor="middle">RIYADH · KSA</textPath></text>
+      <circle cx="30" cy="100" r="2.5" fill={c} /><circle cx="170" cy="100" r="2.5" fill={c} />
+      <text x="100" y="80" textAnchor="middle" className="ar" fontWeight="700" fontSize="11" fill={c}>استوديو</text>
+      <text x="100" y="106" textAnchor="middle" className="ar" fontWeight="800" fontSize="28" fill={c}>مكود</text>
+      {doc && <text x="100" y="122" textAnchor="middle" className="lat" fontSize="9.5" fill={c}>{doc}</text>}
+      <text x="100" y={doc ? 138 : 126} textAnchor="middle" className="ar" fontWeight="700" fontSize="9.5" fill={c}>ختم إلكتروني</text>
+    </svg>
+  )
+}
+
 
 type Pay = { title: string; amount: number; status: 'pending' | 'due' | 'paid'; paidAt?: string; method?: string }
 
@@ -694,6 +712,7 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
   const net = vatOn ? Math.round(pay.amount / (1 + VAT_RATE)) : pay.amount
   const vat = pay.amount - net
   const date = new Intl.DateTimeFormat('ar-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' }).format(Date.now())
+  const stampAt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(Date.now()).replace(',', '')
   const waNum = toWaNumber(waPhone)
   const waText = [
     `السلام عليكم ${p.clientName}،`,
@@ -753,6 +772,15 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
         </div>
         {pay.status !== 'paid' && <PayMethodsBox s={s} />}
         {!vatOn && <p className="sheet-note">المنشأة غير مسجلة في ضريبة القيمة المضافة.</p>}
+        <div className="sheet-stamp">
+          <div className="st-text">
+            <b>ختم إلكتروني</b>
+            <span>صدرت هذه الفاتورة إلكترونياً من {COMPANY.name} ومختومة بختمه.</span>
+            <span>رقم الفاتورة: <span className="mono">{no}</span></span>
+            <span>تاريخ الختم: <span className="mono">{stampAt}</span></span>
+          </div>
+          <EStamp doc={s.crNumber} />
+        </div>
         <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">{s.email}</span></footer>
       </article>
     </div>
