@@ -199,8 +199,32 @@ export function draftFromLead(l: Lead): Draft {
     ...emptyDraft(),
     clientName: l.name, clientEmail: l.email, company: l.company ?? '', leadId: l._id,
     title: `${l.types[0] ?? 'مشروع'} — ${l.company || l.name}`,
-    items: l.amount ? [{ label: l.types[0] ?? 'تنفيذ المشروع', qty: 1, price: l.amount }] : [],
+    ...itemsFromLead(l),
   }
+}
+
+/** Splits the estimator summary in the lead message into one line per option; discounts go to the discount field. */
+function itemsFromLead(l: Lead): Pick<Draft, 'items' | 'discount'> {
+  const items: Draft['items'] = []
+  let discount = 0
+  let svc = l.types[0]
+  for (const raw of (l.message ?? '').split('\n')) {
+    const sv = raw.match(/^\s*•\s*الخدمة:\s*(.+)$/)
+    if (sv) { svc = sv[1].trim(); continue }
+    const m = raw.match(/^\s*•\s*(.+?):\s*(−|-)?\s*([\d,٬]+)\s*ريال/)
+    if (!m) continue
+    const label = m[1].trim()
+    if (label === 'الإجمالي' || label === 'الخدمة') continue
+    const amount = Number(m[3].replace(/[,٬]/g, ''))
+    if (!amount) continue
+    if (m[2]) discount += amount
+    else items.push({ label, qty: 1, price: amount })
+  }
+  if (items.length) {
+    if (svc && !items[0].label.includes(svc)) items[0] = { ...items[0], label: `${svc}: ${items[0].label}` }
+    return { items, discount }
+  }
+  return { items: l.amount ? [{ label: l.types[0] ?? 'تنفيذ المشروع', qty: 1, price: l.amount }] : [], discount: 0 }
 }
 
 export function QuotesPanel({ quotes, leads, catalog, seed, onSeedUsed, canAdmin }: {
@@ -652,6 +676,18 @@ export function CouponsPanel() {
 
 /* =================== INVOICES =================== */
 
+/** Sequential invoice number per year: every payment of every project, in the order the projects were created. */
+export function invoiceNumber(projects: Array<Project>, p: Project, index: number): string {
+  const year = new Date(p._creationTime).getFullYear()
+  let n = 0
+  for (const x of [...projects].sort((a, b) => a._creationTime - b._creationTime)) {
+    if (new Date(x._creationTime).getFullYear() !== year) continue
+    if (x._id === p._id) { n += index + 1; break }
+    n += (x.payments ?? []).length
+  }
+  return `INV-${year}-${String(Math.max(n, index + 1)).padStart(4, '0')}`
+}
+
 /** Studio e-stamp; the document number comes from settings so it always matches. */
 export function EStamp({ doc }: { doc?: string }) {
   const c = '#1F6F8B'
@@ -688,7 +724,8 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
     document.documentElement.classList.add('printing')
     return () => document.documentElement.classList.remove('printing')
   }, [])
-  const no = `INV-${new Date(p._creationTime).getFullYear()}-${String(p._id).slice(-4).toUpperCase()}-${index + 1}`
+  const projRes = useQuery(api.app.listProjects, {}) as { status: 'ok'; projects: Array<Project> } | { status: string } | undefined
+  const no = invoiceNumber(projRes && 'projects' in projRes ? projRes.projects : [p], p, index)
   useEffect(() => {
     // the browser prints the page title in the PDF header and uses it as the file name
     const prev = document.title
