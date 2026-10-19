@@ -246,12 +246,34 @@ export function planFor(total: number): string {
   return 'المنشآت'
 }
 
+/** Plan cards as a calculator service, so each plan's starting price shows exactly; add-ons reuse catalog prices. */
+export const PLANS_KEY = 'plans'
+export function withPlans(catalog: Catalog, plans: Array<{ name: string; price: string; items: Array<string> }>): Catalog {
+  if (catalog.some((c) => c.key === PLANS_KEY)) return catalog
+  const days = [7, 15, 40]
+  const pick = (svc: string, keys: Array<string>) => {
+    const s = catalog.find((c) => c.key === svc)
+    return s ? s.addons.filter((a) => keys.includes(a.key)) : []
+  }
+  const seen = new Set<string>()
+  const addons = [...pick('web', ['cms', 'auth', 'pay', 'booking', 'i18n', 'seo', 'host']), ...pick('mobile', ['push', 'stores'])]
+    .filter((a) => (seen.has(a.label) ? false : (seen.add(a.label), true)))
+  const svc: Service = {
+    key: PLANS_KEY, label: 'الباقات', type: 'باقة', from: 0, tierLabel: 'الباقة',
+    tiers: plans.map((p, i) => ({ key: `plan${i}`, label: `باقة ${p.name}`, hint: p.items.slice(0, 2).join('، '), price: Number(p.price.replace(/[^\d]/g, '')) || 0, days: days[i] ?? 15 })),
+    addons,
+    note: 'سعر الباقة سعر بداية، ويتحدد النطاق النهائي في جلسة الاكتشاف.',
+  }
+  svc.from = Math.min(...svc.tiers.map((t) => t.price))
+  return [svc, ...catalog]
+}
+
 /** The calculator's starting point for a plan card: a fitting service and the first tier priced inside that plan. */
 export function presetForPlan(plan: string, catalog: Catalog = SERVICE_PRICING): { service: ServiceKey; tier: string } | null {
   const want: Record<string, Array<RegExp>> = {
-    'الانطلاقة': [/هوي/, /دعائ/, /تصميم/],
-    'النمو': [/^web$/, /ويب|موقع/],
-    'المنشآت': [/^mobile$/, /جوال|تطبيق/, /^software$/],
+    'الانطلاقة': [/^plans$/, /هوي/, /دعائ/, /تصميم/],
+    'النمو': [/^plans$/, /^web$/, /ويب|موقع/],
+    'المنشآت': [/^plans$/, /^mobile$/, /جوال|تطبيق/, /^software$/],
   }
   const services = catalog.filter((c) => !c.monthly)
   const ordered = [

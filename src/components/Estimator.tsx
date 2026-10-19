@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
-import { DEPOSIT_RATE, DURATIONS, defaultInput, estimate, estimateSummary, fmtDays, fmtSAR, getService } from '@/estimate'
+import { DEPOSIT_RATE, DURATIONS, defaultInput, withPlans, PLANS_KEY, estimate, estimateSummary, fmtDays, fmtSAR, getService } from '@/estimate'
 import type { Coupon, EstimateInput, ServiceKey } from '@/estimate'
 import { usePricing } from '@/site-config'
+import { PLANS } from '@/site-content'
 
 type Props = {
   service: ServiceKey
@@ -16,7 +17,8 @@ type Props = {
 }
 
 export function Estimator({ service, onService, onUse, preset, onPlan }: Props) {
-  const catalog = usePricing()
+  const pricing = usePricing()
+  const catalog = useMemo(() => withPlans(pricing, PLANS), [pricing])
   const [input, setInput] = useState<EstimateInput>(() => defaultInput(service, catalog))
   useEffect(() => {
     setInput((cur) => (cur.service === service ? cur : defaultInput(service, catalog)))
@@ -39,7 +41,9 @@ export function Estimator({ service, onService, onUse, preset, onPlan }: Props) 
     | undefined
   const coupon: Coupon | null = check && check.ok ? { code: check.code, kind: check.kind, value: check.value } : null
   const e = useMemo(() => estimate(input, catalog, coupon), [input, catalog, coupon?.code, coupon?.value, coupon?.kind])
-  useEffect(() => { if (touched.current) onPlan?.(e.plan) }, [e.plan])
+  // on the plans service the chosen plan decides, whatever add-ons push the total to
+  const fitPlan = input.service === PLANS_KEY ? (PLANS[s.tiers.findIndex((t) => t.key === input.tier)]?.name ?? e.plan) : e.plan
+  useEffect(() => { if (touched.current) onPlan?.(fitPlan) }, [fitPlan])
   const toggle = (k: string) =>
     edit((v) => ({ ...v, addons: v.addons.includes(k) ? v.addons.filter((a) => a !== k) : [...v.addons, k] }))
 
@@ -128,8 +132,8 @@ export function Estimator({ service, onService, onUse, preset, onPlan }: Props) 
             <div className="est-row"><span>الدفعة الأولى ({DEPOSIT_RATE * 100}%)</span><b><span className="mono">{fmtSAR(e.deposit)}</span> ريال</b></div>
           </>
         )}
-        <div className="est-row"><span>الباقة المناسبة</span><b>{e.plan}</b></div>
-        <button className="btn" type="button" onClick={() => onUse(estimateSummary(input, e, catalog), e.plan, [s.type], e.total, coupon?.code)}>اطلب عرضاً بهذه التفاصيل</button>
+        <div className="est-row"><span>الباقة المناسبة</span><b>{fitPlan}</b></div>
+        <button className="btn" type="button" onClick={() => onUse(estimateSummary(input, e, catalog), fitPlan, [s.type], e.total, coupon?.code)}>اطلب عرضاً بهذه التفاصيل</button>
         <p className="est-note">الأسعار بالريال السعودي ولا تشمل ضريبة القيمة المضافة إن وُجدت. {s.note ?? ''} السعر النهائي يُعتمد بعد جلسة الاكتشاف المجانية.</p>
       </aside>
     </div>

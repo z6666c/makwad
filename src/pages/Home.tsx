@@ -7,7 +7,7 @@ import { Logo } from '@/components/Logo'
 import { FAQ, PLANS, SERVICES, TRACKS, WHY } from '@/site-content'
 import { ARTS, COLORS } from '@/mockups'
 import { Estimator } from '@/components/Estimator'
-import { fmtSAR, presetForPlan } from '@/estimate'
+import { SERVICE_PRICING, fmtSAR, presetForPlan, withPlans } from '@/estimate'
 import type { ServiceKey } from '@/estimate'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { useTitle } from '@/useTitle'
@@ -57,7 +57,7 @@ export default function Home() {
   const [estSvc, setEstSvc] = useState<ServiceKey>('web')
   // start the calculator on the featured plan so the cards and the calculator agree from the first view
   const [preset, setPreset] = useState<{ service: ServiceKey; tier: string; n: number } | null>(() => {
-    const ps = presetForPlan('النمو')
+    const ps = presetForPlan('النمو', withPlans(SERVICE_PRICING, PLANS))
     return ps ? { ...ps, n: 1 } : null
   })
   const priceOf = (k: ServiceKey) => {
@@ -72,7 +72,7 @@ export default function Home() {
   const catalog = usePricing()
   const pickPlan = (name: string) => {
     setPlan(name)
-    const ps = presetForPlan(name, catalog)
+    const ps = presetForPlan(name, withPlans(catalog, PLANS))
     if (ps) setPreset((cur) => ({ ...ps, n: (cur?.n ?? 0) + 1 }))
   }
   const minPrice = Math.min(...catalog.flatMap((c) => c.tiers.map((t) => t.price)), 1500)
