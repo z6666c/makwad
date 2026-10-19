@@ -1130,3 +1130,6 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .sheet .paybox { break-inside: avoid; }
 .sheet-table, .sheet-totals, .sheet-cols { break-inside: avoid; }
 @media (max-width: 640px) { .sheet-cols { grid-template-columns: 1fr; } }
+.vis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; }
+.vis-card { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.vis-card h2 { font-size: 1.15rem; }

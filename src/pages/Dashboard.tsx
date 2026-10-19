@@ -10,7 +10,7 @@ import { useTitle } from '@/useTitle'
 import { DEFAULT_SETTINGS, whatsappLink } from '@/site-config'
 import type { SiteSettings } from '@/site-config'
 import { WorkCard } from '@/pages/Home'
-import { BackupButton, ClientQuotes, ICONS, Icon, InvoicePrint, LaunchChecklist, Overview, PricingPanel, QuotesPanel, draftFromLead } from '@/pages/AdminExtras'
+import { BackupButton, ClientQuotes, ICONS, Icon, InvoicePrint, LaunchChecklist, Overview, PricingPanel, QuotesPanel, VisitorsPanel, draftFromLead } from '@/pages/AdminExtras'
 import type { Quote, Section } from '@/pages/AdminExtras'
 import { fmtSAR } from '@/estimate'
 import { FinancePanel, PaymentChannelsPanel } from '@/pages/Finance'
@@ -120,6 +120,7 @@ const SECTIONS: Array<{ key: Section; label: string; admin?: boolean }> = [
   { key: 'pricing', label: 'الخدمات والأسعار والخصومات', admin: true },
   { key: 'asclient', label: 'معاينة كعميل', admin: true },
   { key: 'content', label: 'محتوى الموقع', admin: true },
+  { key: 'visitors', label: 'الزوار والبحث', admin: true },
   { key: 'users', label: 'المستخدمون والموظفون', admin: true },
   { key: 'settings', label: 'الإعدادات', admin: true },
 ]
@@ -128,7 +129,7 @@ const GROUPS: Array<{ key: string; label: string; items: Array<Section> }> = [
   { key: 'home', label: '', items: ['overview'] },
   { key: 'sales', label: 'المبيعات والعملاء', items: ['leads', 'quotes', 'projects'] },
   { key: 'money', label: 'المالية', items: ['finance', 'channels'] },
-  { key: 'site', label: 'الموقع', items: ['pricing', 'content', 'asclient'] },
+  { key: 'site', label: 'الموقع', items: ['visitors', 'pricing', 'content', 'asclient'] },
   { key: 'admin', label: 'الإدارة', items: ['users', 'settings'] },
 ]
 
@@ -244,6 +245,7 @@ function AdminView() {
           {cur.key === 'pricing' && canAdmin && <PricingPanel />}
           {cur.key === 'asclient' && canAdmin && <AsClient projects={projects} />}
           {cur.key === 'content' && canAdmin && <ContentPanel />}
+          {cur.key === 'visitors' && canAdmin && <VisitorsPanel />}
           {cur.key === 'users' && canAdmin && <UsersPanel />}
           {cur.key === 'settings' && canAdmin && <><SettingsPanel /><BusinessForm /><BackupButton /></>}
         </main>

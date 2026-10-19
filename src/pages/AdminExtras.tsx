@@ -12,7 +12,7 @@ import type { Catalog, Option, Service } from '@/estimate'
 import { COMPANY, DEFAULT_SETTINGS } from '@/site-config'
 import type { SiteSettings } from '@/site-config'
 
-export type Section = 'overview' | 'leads' | 'projects' | 'quotes' | 'finance' | 'channels' | 'pricing' | 'asclient' | 'content' | 'users' | 'settings'
+export type Section = 'overview' | 'leads' | 'projects' | 'quotes' | 'finance' | 'channels' | 'pricing' | 'asclient' | 'content' | 'visitors' | 'users' | 'settings'
 export type Quote = Doc<'quotes'>
 type Lead = Doc<'leads'>
 type Project = Doc<'projects'>
@@ -31,6 +31,7 @@ export const ICONS: Record<Section, string> = {
   channels: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
   pricing: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="8" r="1.5"/>',
   asclient: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  visitors: '<path d="M3 20V10M9 20V4M15 20v-7M21 20V8"/>',
   content: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 20V9"/>',
   users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 20a6.5 6.5 0 0 0-3-5.5"/>',
   settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
@@ -753,6 +754,32 @@ function StampBlock({ s, kind, no, at }: { s: SiteSettings; kind: 'quote' | 'inv
 }
 
 const SCHEDULE: Array<[string, number]> = [['الدفعة الأولى عند البدء', 0.4], ['الدفعة الثانية عند اعتماد التصميم', 0.3], ['الدفعة الأخيرة عند التسليم', 0.3]]
+
+/* =================== VISITORS =================== */
+
+const CF_WA = 'https://dash.cloudflare.com/951488803cf2737b34e0bef48a60da02/web-analytics/overview?siteTag~in=52f5a3d99bcd4817ab596a2313d49842'
+const GSC = 'https://search.google.com/search-console?resource_id=https%3A%2F%2Fmakwad.com%2F'
+
+export function VisitorsPanel() {
+  return (
+    <div className="vis-grid">
+      <div className="panel vis-card">
+        <span className="kicker">زوار الموقع</span>
+        <h2>عدد الزوار والصفحات الأكثر زيارة</h2>
+        <p className="muted">الزيارات ومشاهدات الصفحات، وأكثر الصفحات اللي يركز عليها الزوار، ومن وين جوا (قوقل، واتساب، إنستقرام…)، وأجهزتهم ودولهم. الإحصاءات من Cloudflare، بدون كوكيز ولا بيانات شخصية.</p>
+        <a className="btn" href={CF_WA} target="_blank" rel="noopener noreferrer">فتح تقرير الزوار ↗</a>
+        <small className="muted">يتطلب تسجيل الدخول في Cloudflare. بدأ التسجيل من 19 أكتوبر 2026.</small>
+      </div>
+      <div className="panel vis-card">
+        <span className="kicker">البحث في قوقل</span>
+        <h2>كيف يلقاك الناس في قوقل</h2>
+        <p className="muted">كم مرة ظهر موقعك في نتائج البحث، وكم شخص ضغط عليه، والكلمات اللي بحثوا فيها، وحالة فهرسة الصفحات.</p>
+        <a className="btn ghost" href={GSC} target="_blank" rel="noopener noreferrer">فتح Search Console ↗</a>
+        <small className="muted">الموقع مضاف ومُتحقَّق منه، وخريطة الموقع مرسلة.</small>
+      </div>
+    </div>
+  )
+}
 
 /* =================== INVOICES =================== */
 
