@@ -246,6 +246,25 @@ export function planFor(total: number): string {
   return 'المنشآت'
 }
 
+/** The calculator's starting point for a plan card: a fitting service and the first tier priced inside that plan. */
+export function presetForPlan(plan: string, catalog: Catalog = SERVICE_PRICING): { service: ServiceKey; tier: string } | null {
+  const want: Record<string, Array<RegExp>> = {
+    'الانطلاقة': [/هوي|دعائ|تصميم/],
+    'النمو': [/^web$/, /ويب|موقع/],
+    'المنشآت': [/^mobile$/, /جوال|تطبيق/, /^software$/],
+  }
+  const services = catalog.filter((c) => !c.monthly)
+  const ordered = [
+    ...(want[plan] ?? []).flatMap((re) => services.filter((c) => re.test(c.key) || re.test(c.label) || re.test(c.type ?? ''))),
+    ...services,
+  ]
+  for (const svc of ordered) {
+    const t = svc.tiers.find((x) => planFor(x.price) === plan)
+    if (t) return { service: svc.key, tier: t.key }
+  }
+  return null
+}
+
 export function estimate(input: EstimateInput, catalog: Catalog = SERVICE_PRICING, coupon?: Coupon | null): Estimate {
   const s = getService(input.service, catalog)
   return withCoupon(baseEstimate(input, s), coupon, !!s.monthly)

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { DEPOSIT_RATE, DURATIONS, defaultInput, estimate, estimateSummary, fmtDays, fmtSAR, getService } from '@/estimate'
@@ -9,14 +9,26 @@ type Props = {
   service: ServiceKey
   onService: (k: ServiceKey) => void
   onUse: (summary: string, plan: string, types: Array<string>, amount: number, coupon?: string) => void
+  /** Set by the plan cards; `n` changes on every pick so the same plan can be re-applied. */
+  preset?: { service: ServiceKey; tier: string; n: number } | null
+  /** Called with the fitting plan whenever the visitor changes the calculator. */
+  onPlan?: (plan: string) => void
 }
 
-export function Estimator({ service, onService, onUse }: Props) {
+export function Estimator({ service, onService, onUse, preset, onPlan }: Props) {
   const catalog = usePricing()
   const [input, setInput] = useState<EstimateInput>(() => defaultInput(service, catalog))
   useEffect(() => {
     setInput((cur) => (cur.service === service ? cur : defaultInput(service, catalog)))
   }, [service, catalog])
+  const touched = useRef(false)
+  const edit: typeof setInput = (v) => { touched.current = true; setInput(v) }
+  useEffect(() => {
+    if (!preset) return
+    touched.current = false
+    setInput({ ...defaultInput(preset.service, catalog), tier: preset.tier })
+    onService(preset.service)
+  }, [preset?.n])
   const s = getService(input.service, catalog)
   const [codeText, setCodeText] = useState('')
   const [code, setCode] = useState('')
@@ -27,8 +39,9 @@ export function Estimator({ service, onService, onUse }: Props) {
     | undefined
   const coupon: Coupon | null = check && check.ok ? { code: check.code, kind: check.kind, value: check.value } : null
   const e = useMemo(() => estimate(input, catalog, coupon), [input, catalog, coupon?.code, coupon?.value, coupon?.kind])
+  useEffect(() => { if (touched.current) onPlan?.(e.plan) }, [e.plan])
   const toggle = (k: string) =>
-    setInput((v) => ({ ...v, addons: v.addons.includes(k) ? v.addons.filter((a) => a !== k) : [...v.addons, k] }))
+    edit((v) => ({ ...v, addons: v.addons.includes(k) ? v.addons.filter((a) => a !== k) : [...v.addons, k] }))
 
   return (
     <div className="est">
@@ -39,7 +52,7 @@ export function Estimator({ service, onService, onUse }: Props) {
             {catalog.map((x) => (
               <label key={x.key} className={input.service === x.key ? 'on' : ''}>
                 <input type="radio" name="est-service" value={x.key} checked={input.service === x.key}
-                  onChange={() => { onService(x.key); setInput(defaultInput(x.key, catalog)) }} />
+                  onChange={() => { onService(x.key); edit(defaultInput(x.key, catalog)) }} />
                 {x.label}
               </label>
             ))}
@@ -52,7 +65,7 @@ export function Estimator({ service, onService, onUse }: Props) {
             {s.tiers.map((t) => (
               <label key={t.key} className={input.tier === t.key ? 'on' : ''}>
                 <input type="radio" name="est-tier" value={t.key} checked={input.tier === t.key}
-                  onChange={() => setInput((v) => ({ ...v, tier: t.key }))} />
+                  onChange={() => edit((v) => ({ ...v, tier: t.key }))} />
                 <span><b>{t.label}</b>{t.hint && <small>{t.hint}</small>}</span>
                 <em className="mono">{fmtSAR(t.price)}{s.monthly ? ' / شهر' : ''}</em>
               </label>
@@ -80,7 +93,7 @@ export function Estimator({ service, onService, onUse }: Props) {
               {DURATIONS.map((d) => (
                 <label key={d.months} className={input.months === d.months ? 'on' : ''}>
                   <input type="radio" name="est-months" checked={input.months === d.months}
-                    onChange={() => setInput((v) => ({ ...v, months: d.months }))} />
+                    onChange={() => edit((v) => ({ ...v, months: d.months }))} />
                   {d.label}{d.discount ? ` · خصم ${Math.round(d.discount * 100)}%` : ''}
                 </label>
               ))}
@@ -88,7 +101,7 @@ export function Estimator({ service, onService, onUse }: Props) {
           </fieldset>
         ) : (
           <div className="est-group est-toggles">
-            <label><input type="checkbox" checked={input.urgent} onChange={(ev) => setInput((v) => ({ ...v, urgent: ev.target.checked }))} /> تسليم مستعجل (+25%، مدة أقصر بنحو 30%)</label>
+            <label><input type="checkbox" checked={input.urgent} onChange={(ev) => edit((v) => ({ ...v, urgent: ev.target.checked }))} /> تسليم مستعجل (+25%، مدة أقصر بنحو 30%)</label>
           </div>
         )}
       </div>

@@ -1133,3 +1133,4 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .vis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; }
 .vis-card { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .vis-card h2 { font-size: 1.15rem; }
+.pt-calc { display: inline-block; margin-inline-start: 6px; font-weight: 600; color: var(--accent); white-space: nowrap; }

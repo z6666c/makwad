@@ -7,7 +7,7 @@ import { Logo } from '@/components/Logo'
 import { FAQ, PLANS, SERVICES, TRACKS, WHY } from '@/site-content'
 import { ARTS, COLORS } from '@/mockups'
 import { Estimator } from '@/components/Estimator'
-import { fmtSAR } from '@/estimate'
+import { fmtSAR, presetForPlan } from '@/estimate'
 import type { ServiceKey } from '@/estimate'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { useTitle } from '@/useTitle'
@@ -55,6 +55,7 @@ export default function Home() {
   const [types, setTypes] = useState<Array<string>>([])
   const [message, setMessage] = useState('')
   const [estSvc, setEstSvc] = useState<ServiceKey>('web')
+  const [preset, setPreset] = useState<{ service: ServiceKey; tier: string; n: number } | null>(null)
   const priceOf = (k: ServiceKey) => {
     setEstSvc(k)
     document.getElementById('estimate')?.scrollIntoView({ behavior: 'smooth' })
@@ -65,6 +66,11 @@ export default function Home() {
     | undefined
   const clients = settings.clients ?? []
   const catalog = usePricing()
+  const pickPlan = (name: string) => {
+    setPlan(name)
+    const ps = presetForPlan(name, catalog)
+    if (ps) setPreset((cur) => ({ ...ps, n: (cur?.n ?? 0) + 1 }))
+  }
   const minPrice = Math.min(...catalog.flatMap((c) => c.tiers.map((t) => t.price)), 1500)
   const [amount, setAmount] = useState<number | undefined>(undefined)
   const [coupon, setCoupon] = useState<string | undefined>(undefined)
@@ -194,14 +200,14 @@ export default function Home() {
                     tabIndex={0}
                     aria-pressed={on}
                     aria-label={`اختيار باقة ${p.name}`}
-                    onClick={() => setPlan(p.name)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPlan(p.name) } }}
+                    onClick={() => pickPlan(p.name)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickPlan(p.name) } }}
                   >
                     {p.feat && <span className="badge">الأكثر طلباً</span>}
                     <h3>{p.name}</h3>
                     <div className="price">{p.price}<small>{p.small}</small></div>
                     <ul>{p.items.map((it) => <li key={it}>{it}</li>)}</ul>
-                    <a className={on ? 'btn' : 'btn ghost'} href="#contact" onClick={(e) => { e.stopPropagation(); setPlan(p.name) }}>{p.cta}</a>
+                    <a className={on ? 'btn' : 'btn ghost'} href="#contact" onClick={(e) => { e.stopPropagation(); pickPlan(p.name) }}>{p.cta}</a>
                   </div>
                 )
               })}
@@ -212,7 +218,7 @@ export default function Home() {
                   <span className="kicker">طريقة العمل</span>
                   <h3>مراحل تنفيذ باقة {track.plan}</h3>
                 </div>
-                <p>{track.note} <b>المدة المتوقعة: {track.range}</b></p>
+                <p>{track.note} <b>المدة المتوقعة: {track.range}</b> <a className="pt-calc" href="#estimate">احسب تفاصيل باقة {track.plan} في الحاسبة ↓</a></p>
               </div>
               <div className="process" style={{ ['--n' as string]: track.steps.length }}>
                 {track.steps.map((st, i) => (
@@ -232,7 +238,7 @@ export default function Home() {
               <div><span className="kicker">حاسبة الأسعار</span><h2>احسب سعر مشروعك</h2></div>
               <p>اختر الخدمة ونطاقها والإضافات، وتشوف السعر بنداً بنداً مع الإجمالي والمدة والدفعة الأولى، ثم أرسله لنا بضغطة.</p>
             </div>
-            <Estimator service={estSvc} onService={setEstSvc} onUse={useEstimate} />
+            <Estimator service={estSvc} onService={setEstSvc} onUse={useEstimate} preset={preset} onPlan={setPlan} />
           </section>
 
           <section className="section" id="faq">
