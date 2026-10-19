@@ -249,7 +249,7 @@ export function planFor(total: number): string {
 /** The calculator's starting point for a plan card: a fitting service and the first tier priced inside that plan. */
 export function presetForPlan(plan: string, catalog: Catalog = SERVICE_PRICING): { service: ServiceKey; tier: string } | null {
   const want: Record<string, Array<RegExp>> = {
-    'الانطلاقة': [/هوي|دعائ|تصميم/],
+    'الانطلاقة': [/هوي/, /دعائ/, /تصميم/],
     'النمو': [/^web$/, /ويب|موقع/],
     'المنشآت': [/^mobile$/, /جوال|تطبيق/, /^software$/],
   }

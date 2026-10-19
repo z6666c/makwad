@@ -55,7 +55,11 @@ export default function Home() {
   const [types, setTypes] = useState<Array<string>>([])
   const [message, setMessage] = useState('')
   const [estSvc, setEstSvc] = useState<ServiceKey>('web')
-  const [preset, setPreset] = useState<{ service: ServiceKey; tier: string; n: number } | null>(null)
+  // start the calculator on the featured plan so the cards and the calculator agree from the first view
+  const [preset, setPreset] = useState<{ service: ServiceKey; tier: string; n: number } | null>(() => {
+    const ps = presetForPlan('النمو')
+    return ps ? { ...ps, n: 1 } : null
+  })
   const priceOf = (k: ServiceKey) => {
     setEstSvc(k)
     document.getElementById('estimate')?.scrollIntoView({ behavior: 'smooth' })
