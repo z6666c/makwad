@@ -43,6 +43,8 @@ export default function Login() {
 }
 
 type Step =
+  | { kind: 'code' }
+  | { kind: 'codeSent'; email: string }
   | { kind: 'signIn' }
   | { kind: 'signUp' }
   | { kind: 'forgot' }
@@ -56,13 +58,13 @@ function arabicError(err: unknown, step: Step['kind']): string {
   if (/already exists/i.test(msg)) return 'يوجد حساب بهذا البريد. سجّل الدخول بدلاً من ذلك.'
   if (/TooManyFailedAttempts/i.test(msg)) return 'محاولات كثيرة. انتظر قليلاً ثم حاول مرة أخرى.'
   if (/Invalid password/i.test(msg)) return 'كلمة المرور يجب أن تكون 8 أحرف على الأقل.'
-  if (step === 'verify' || step === 'reset') return 'الرمز غير صحيح أو انتهت صلاحيته.'
+  if (step === 'verify' || step === 'reset' || step === 'codeSent') return 'الرمز غير صحيح أو انتهت صلاحيته.'
   return 'تعذّر إكمال العملية. تحقق من البيانات وحاول مرة أخرى.'
 }
 
 function AuthForms() {
   const { signIn } = useAuthActions()
-  const [step, setStep] = useState<Step>({ kind: 'signIn' })
+  const [step, setStep] = useState<Step>({ kind: 'code' })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -83,6 +85,45 @@ function AuthForms() {
   const go = (s: Step) => { setStep(s); setError(null) }
   const err = error && <div className="sent err" role="alert">{error}</div>
 
+  if (step.kind === 'code') {
+    return (
+      <>
+        <div><h1>تسجيل الدخول</h1><p className="muted">اكتب بريدك ونرسل لك رمز تحقق من 6 أرقام. ما تحتاج تتذكر كلمة مرور.</p></div>
+        <form className="form" onSubmit={(e) => run(e, async (fd) => {
+          await signIn('resend-otp', fd)
+          go({ kind: 'codeSent', email: String(fd.get('email')).trim().toLowerCase() })
+        })}>
+          <div className="field"><label htmlFor="email">البريد الإلكتروني</label><input id="email" name="email" type="email" required dir="ltr" autoComplete="email" /></div>
+          {err}
+          <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الإرسال…' : 'أرسل رمز الدخول'}</button>
+        </form>
+        <p className="auth-switch"><button className="linkish" type="button" onClick={() => go({ kind: 'signIn' })}>الدخول بكلمة المرور</button></p>
+      </>
+    )
+  }
+
+  if (step.kind === 'codeSent') {
+    return (
+      <>
+        <div><h1>رمز التحقق</h1><p className="muted">أرسلنا رمزاً من 6 أرقام إلى <b className="mono">{step.email}</b>. صالح لمدة 15 دقيقة، وإذا ما وصلك شيّك على مجلد الرسائل غير المرغوبة.</p></div>
+        <form className="form" onSubmit={(e) => run(e, async (fd) => { await signIn('resend-otp', fd) })}>
+          <div className="field"><label htmlFor="code">رمز التحقق</label><input id="code" name="code" type="text" inputMode="numeric" pattern="\d{6}" maxLength={6} required dir="ltr" autoComplete="one-time-code" placeholder="000000" autoFocus /></div>
+          <input type="hidden" name="email" value={step.email} />
+          {err}
+          <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ التحقق…' : 'دخول'}</button>
+        </form>
+        <p className="auth-switch">
+          <button className="linkish" type="button" disabled={busy} onClick={async () => {
+            setError(null); setBusy(true)
+            try { const fd = new FormData(); fd.set('email', step.email); await signIn('resend-otp', fd); setError(null) } catch (e2) { setError(arabicError(e2, 'code')) } finally { setBusy(false) }
+          }}>إعادة إرسال الرمز</button>
+          {' · '}
+          <button className="linkish" type="button" onClick={() => go({ kind: 'code' })}>تغيير البريد</button>
+        </p>
+      </>
+    )
+  }
+
   if (step.kind === 'verify') {
     return (
       <>
@@ -94,7 +135,7 @@ function AuthForms() {
           {err}
           <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ التحقق…' : 'تأكيد'}</button>
         </form>
-        <p className="auth-switch"><button className="linkish" type="button" onClick={() => go({ kind: 'signIn' })}>العودة لتسجيل الدخول</button></p>
+        <p className="auth-switch"><button className="linkish" type="button" onClick={() => go({ kind: 'code' })}>العودة لتسجيل الدخول</button></p>
       </>
     )
   }
@@ -159,7 +200,8 @@ function AuthForms() {
       </form>
       <p className="auth-switch">
         {isUp ? 'لديك حساب؟ ' : 'ليس لديك حساب؟ '}
-        <button className="linkish" type="button" onClick={() => go({ kind: isUp ? 'signIn' : 'signUp' })}>{isUp ? 'سجّل الدخول' : 'أنشئ حساباً'}</button>
+        <button className="linkish" type="button" onClick={() => go({ kind: isUp ? 'code' : 'signUp' })}>{isUp ? 'سجّل الدخول' : 'أنشئ حساباً'}</button>
+        {!isUp && <>{' · '}<button className="linkish" type="button" onClick={() => go({ kind: 'code' })}>الدخول برمز على البريد</button></>}
       </p>
     </>
   )
