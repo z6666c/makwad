@@ -7,6 +7,7 @@ import { api } from '@/convex/_generated/api'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { Logo } from '@/components/Logo'
 import { useTitle } from '@/useTitle'
+import { twoStep } from '@/twoStep'
 import { DEFAULT_SETTINGS, whatsappLink } from '@/site-config'
 import type { SiteSettings } from '@/site-config'
 import { WorkCard } from '@/pages/Home'
@@ -65,6 +66,8 @@ export default function DashboardPage() {
 
 function Dashboard() {
   const { signOut } = useAuthActions()
+  // a sign-in whose email code is still pending must not open the dashboard
+  if (twoStep.get()) return <div className="center-screen"><div className="empty"><h3>أكمل التحقق أولاً</h3><p>أدخل رمز التحقق المرسل إلى بريدك.</p><Link className="btn" to="/login">إدخال الرمز</Link></div></div>
   return <DashFrame onSignOut={() => void signOut()} />
 }
 

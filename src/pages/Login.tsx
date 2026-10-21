@@ -1,10 +1,11 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useAuthActions } from '@convex-dev/auth/react'
-import { Authenticated, AuthLoading, Unauthenticated } from 'convex/react'
+import { useConvexAuth } from 'convex/react'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Logo } from '@/components/Logo'
 import { useTitle } from '@/useTitle'
+import { twoStep } from '@/twoStep'
 
 function GoToDashboard() {
   const navigate = useNavigate()
@@ -32,9 +33,7 @@ export default function Login() {
       </aside>
       <main className="auth-main">
         <div className="auth-card">
-          <AuthLoading><p className="muted">جارٍ التحقق من الجلسة…</p></AuthLoading>
-          <Authenticated><GoToDashboard /></Authenticated>
-          <Unauthenticated><AuthForms /></Unauthenticated>
+          <Gate />
           <Link className="back-home" to="/">← العودة إلى الموقع</Link>
         </div>
       </main>
@@ -42,8 +41,15 @@ export default function Login() {
   )
 }
 
+function Gate() {
+  const { isLoading, isAuthenticated } = useConvexAuth()
+  const [pending, setPending] = useState(() => twoStep.get())
+  if (isLoading && !pending) return <p className="muted">جارٍ التحقق من الجلسة…</p>
+  if (isAuthenticated && !pending) return <GoToDashboard />
+  return <AuthForms pending={pending} setPending={(v) => { if (v) twoStep.set(v); else twoStep.clear(); setPending(v) }} />
+}
+
 type Step =
-  | { kind: 'code' }
   | { kind: 'codeSent'; email: string }
   | { kind: 'signIn' }
   | { kind: 'signUp' }
@@ -62,9 +68,9 @@ function arabicError(err: unknown, step: Step['kind']): string {
   return 'تعذّر إكمال العملية. تحقق من البيانات وحاول مرة أخرى.'
 }
 
-function AuthForms() {
-  const { signIn } = useAuthActions()
-  const [step, setStep] = useState<Step>({ kind: 'code' })
+function AuthForms({ pending, setPending }: { pending: string | null; setPending: (v: string | null) => void }) {
+  const { signIn, signOut } = useAuthActions()
+  const [step, setStep] = useState<Step>(() => (pending && pending.includes('@') ? { kind: 'codeSent', email: pending } : { kind: 'signIn' }))
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -76,6 +82,7 @@ function AuthForms() {
     try {
       await fn(fd)
     } catch (err) {
+      if (step.kind === 'signIn') setPending(null)
       setError(arabicError(err, step.kind))
     } finally {
       setBusy(false)
@@ -85,28 +92,11 @@ function AuthForms() {
   const go = (s: Step) => { setStep(s); setError(null) }
   const err = error && <div className="sent err" role="alert">{error}</div>
 
-  if (step.kind === 'code') {
-    return (
-      <>
-        <div><h1>تسجيل الدخول</h1><p className="muted">اكتب بريدك ونرسل لك رمز تحقق من 6 أرقام. ما تحتاج تتذكر كلمة مرور.</p></div>
-        <form className="form" onSubmit={(e) => run(e, async (fd) => {
-          await signIn('resend-otp', fd)
-          go({ kind: 'codeSent', email: String(fd.get('email')).trim().toLowerCase() })
-        })}>
-          <div className="field"><label htmlFor="email">البريد الإلكتروني</label><input id="email" name="email" type="email" required dir="ltr" autoComplete="email" /></div>
-          {err}
-          <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الإرسال…' : 'أرسل رمز الدخول'}</button>
-        </form>
-        <p className="auth-switch"><button className="linkish" type="button" onClick={() => go({ kind: 'signIn' })}>الدخول بكلمة المرور</button></p>
-      </>
-    )
-  }
-
   if (step.kind === 'codeSent') {
     return (
       <>
-        <div><h1>رمز التحقق</h1><p className="muted">أرسلنا رمزاً من 6 أرقام إلى <b className="mono">{step.email}</b>. صالح لمدة 15 دقيقة، وإذا ما وصلك شيّك على مجلد الرسائل غير المرغوبة.</p></div>
-        <form className="form" onSubmit={(e) => run(e, async (fd) => { await signIn('resend-otp', fd) })}>
+        <div><h1>رمز التحقق</h1><p className="muted">آخر خطوة: أرسلنا رمزاً من 6 أرقام إلى <b className="mono">{step.email}</b>. صالح لمدة 15 دقيقة، وإذا ما وصلك شيّك على مجلد الرسائل غير المرغوبة.</p></div>
+        <form className="form" onSubmit={(e) => run(e, async (fd) => { await signIn('resend-otp', fd); setPending(null) })}>
           <div className="field"><label htmlFor="code">رمز التحقق</label><input id="code" name="code" type="text" inputMode="numeric" pattern="\d{6}" maxLength={6} required dir="ltr" autoComplete="one-time-code" placeholder="000000" autoFocus /></div>
           <input type="hidden" name="email" value={step.email} />
           {err}
@@ -115,10 +105,10 @@ function AuthForms() {
         <p className="auth-switch">
           <button className="linkish" type="button" disabled={busy} onClick={async () => {
             setError(null); setBusy(true)
-            try { const fd = new FormData(); fd.set('email', step.email); await signIn('resend-otp', fd); setError(null) } catch (e2) { setError(arabicError(e2, 'code')) } finally { setBusy(false) }
+            try { const fd = new FormData(); fd.set('email', step.email); await signIn('resend-otp', fd); setError(null) } catch (e2) { setError(arabicError(e2, 'codeSent')) } finally { setBusy(false) }
           }}>إعادة إرسال الرمز</button>
           {' · '}
-          <button className="linkish" type="button" onClick={() => go({ kind: 'code' })}>تغيير البريد</button>
+          <button className="linkish" type="button" onClick={() => { setPending(null); go({ kind: 'signIn' }) }}>تغيير البريد</button>
         </p>
       </>
     )
@@ -128,14 +118,14 @@ function AuthForms() {
     return (
       <>
         <div><h1>تأكيد البريد</h1><p className="muted">أرسلنا رمزاً من 6 أرقام إلى <b className="mono">{step.email}</b></p></div>
-        <form className="form" onSubmit={(e) => run(e, async (fd) => { await signIn('resend-otp', fd) })}>
+        <form className="form" onSubmit={(e) => run(e, async (fd) => { await signIn('resend-otp', fd); setPending(null) })}>
           <div className="field"><label htmlFor="code">رمز التحقق</label><input id="code" name="code" type="text" inputMode="numeric" pattern="\d{6}" maxLength={6} required dir="ltr" autoComplete="one-time-code" placeholder="000000" /></div>
           <input type="hidden" name="email" value={step.email} />
           <input type="hidden" name="flow" value="email-verification" />
           {err}
           <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ التحقق…' : 'تأكيد'}</button>
         </form>
-        <p className="auth-switch"><button className="linkish" type="button" onClick={() => go({ kind: 'code' })}>العودة لتسجيل الدخول</button></p>
+        <p className="auth-switch"><button className="linkish" type="button" onClick={() => go({ kind: 'signIn' })}>العودة لتسجيل الدخول</button></p>
       </>
     )
   }
@@ -162,7 +152,7 @@ function AuthForms() {
     return (
       <>
         <div><h1>كلمة مرور جديدة</h1><p className="muted">اكتب الرمز المرسل إلى <b className="mono">{step.email}</b> وكلمة المرور الجديدة.</p></div>
-        <form className="form" onSubmit={(e) => run(e, async (fd) => { await signIn('password', fd) })}>
+        <form className="form" onSubmit={(e) => run(e, async (fd) => { await signIn('password', fd); setPending(null) })}>
           <div className="field"><label htmlFor="code">الرمز</label><input id="code" name="code" type="text" inputMode="numeric" pattern="\d{6}" maxLength={6} required dir="ltr" autoComplete="one-time-code" /></div>
           <div className="field"><label htmlFor="newPassword">كلمة المرور الجديدة</label><input id="newPassword" name="newPassword" type="password" minLength={8} required dir="ltr" autoComplete="new-password" /></div>
           <input type="hidden" name="email" value={step.email} />
@@ -179,11 +169,18 @@ function AuthForms() {
     <>
       <div>
         <h1>{isUp ? 'إنشاء حساب' : 'تسجيل الدخول'}</h1>
-        <p className="muted">{isUp ? 'سجّل بالبريد الذي تتواصل به مع فريق استوديو مكود لترى مشاريعك.' : 'ادخل لمتابعة مشروعك أو لإدارة الطلبات.'}</p>
+        <p className="muted">{isUp ? 'سجّل بالبريد الذي تتواصل به مع فريق استوديو مكود لترى مشاريعك.' : 'اكتب بريدك وكلمة المرور، وبعدها نرسل لك رمز تحقق على البريد.'}</p>
       </div>
       <form className="form" onSubmit={(e) => run(e, async (fd) => {
+        const email = String(fd.get('email')).trim().toLowerCase()
+        setPending('pw') // hold the dashboard until the email code is entered
         const r = await signIn('password', fd)
-        if (!r.signingIn) go({ kind: 'verify', email: String(fd.get('email')).trim().toLowerCase() })
+        if (!r.signingIn) { go({ kind: 'verify', email }); return } // new or unverified account: its email code is the second step
+        await signOut()
+        const otp = new FormData(); otp.set('email', email)
+        await signIn('resend-otp', otp)
+        setPending(email)
+        go({ kind: 'codeSent', email })
       })}>
         {isUp && <div className="field"><label htmlFor="name">الاسم</label><input id="name" name="name" required autoComplete="name" /></div>}
         <div className="field"><label htmlFor="email">البريد الإلكتروني</label><input id="email" name="email" type="email" required dir="ltr" autoComplete="email" /></div>
@@ -200,8 +197,7 @@ function AuthForms() {
       </form>
       <p className="auth-switch">
         {isUp ? 'لديك حساب؟ ' : 'ليس لديك حساب؟ '}
-        <button className="linkish" type="button" onClick={() => go({ kind: isUp ? 'code' : 'signUp' })}>{isUp ? 'سجّل الدخول' : 'أنشئ حساباً'}</button>
-        {!isUp && <>{' · '}<button className="linkish" type="button" onClick={() => go({ kind: 'code' })}>الدخول برمز على البريد</button></>}
+        <button className="linkish" type="button" onClick={() => go({ kind: isUp ? 'signIn' : 'signUp' })}>{isUp ? 'سجّل الدخول' : 'أنشئ حساباً'}</button>
       </p>
     </>
   )
