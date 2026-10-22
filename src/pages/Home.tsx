@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { api } from '@/convex/_generated/api'
 import { Logo } from '@/components/Logo'
@@ -91,7 +91,7 @@ export default function Home() {
     <>
       <header className="site-header">
         <nav className="nav wrap" aria-label="القائمة الرئيسية">
-          <Logo />
+          <div className="brand-col"><Logo /><SealSlot /></div>
           <div className="links">
             {NAV.map(([h, t]) => (
               <a key={h} href={h}>{t}</a>
@@ -518,6 +518,20 @@ const SOCIAL_ICONS: Record<string, ReactNode> = {
   x: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16M20 4L4 20" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" /></svg>,
   tiktok: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /><path d="M14 3c.4 2.6 2.3 4.4 5 4.6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>,
   facebook: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 21v-8h2.7l.4-3.2h-3.1V7.8c0-.9.3-1.6 1.6-1.6h1.7V3.4a22 22 0 0 0-2.5-.1c-2.4 0-4.1 1.5-4.1 4.2v2.3H8.5V13h2.7v8z" fill="currentColor" /></svg>,
+}
+
+/** Moves the Saudi Business Center seal (a static element in index.html) under the header logo while this page is shown. */
+function SealSlot() {
+  const slot = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const seal = document.querySelector<HTMLElement>('.sbc-verify-seal')
+    const el = slot.current
+    if (!seal || !el) return
+    el.appendChild(seal)
+    seal.hidden = false
+    return () => { seal.hidden = true; document.body.appendChild(seal) }
+  }, [])
+  return <div className="seal-slot" ref={slot} />
 }
 
 export function SocialLinks({ withHandles = false }: { withHandles?: boolean }) {
