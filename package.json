@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp dist/index.html dist/404.html && for r in login privacy terms refund dashboard; do mkdir -p dist/$r && cp dist/index.html dist/$r/index.html; done && touch dist/.nojekyll",
+    "build": "vite build && cp dist/index.html dist/404.html && for r in login privacy terms refund dashboard; do mkdir -p dist/$r && cp dist/index.html dist/$r/index.html; done && touch dist/.nojekyll && node scripts/service-html.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

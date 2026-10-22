@@ -13,6 +13,7 @@ import type { Doc } from '@/convex/_generated/dataModel'
 import { useTitle } from '@/useTitle'
 import { toWaNumber } from '@/phone'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
+import { SERVICE_PAGES, serviceFor } from '@/pages/Services'
 import { usePricing, useSettings } from '@/site-config'
 
 const NAV = [
@@ -70,6 +71,11 @@ export default function Home() {
     | undefined
   const clients = settings.clients ?? []
   const catalog = usePricing()
+  useEffect(() => {
+    const k = new URLSearchParams(window.location.search).get('svc')
+    const svc = k ? catalog.find((c) => c.key === k) : undefined
+    if (svc) setPreset((cur) => (cur?.service === svc.key ? cur : { service: svc.key, tier: svc.tiers[0].key, n: (cur?.n ?? 0) + 1 }))
+  }, [catalog])
   const pickPlan = (name: string) => {
     setPlan(name)
     const ps = presetForPlan(name, withPlans(catalog, PLANS))
@@ -151,7 +157,10 @@ export default function Home() {
                     <div className="tags">{(c.tags?.length ? c.tags : st?.tags ?? []).map((t) => <span className="tag" key={t}>{t}</span>)}</div>
                     <div className="svc-foot">
                       <span className="svc-price"><small>يبدأ من</small><b className="mono">{fmtSAR(Math.min(...c.tiers.map((t) => t.price)))}</b><small>ريال{c.monthly ? ' / شهرياً' : ''}</small></span>
-                      <button className="linkish" type="button" onClick={() => priceOf(c.key)}>احسب السعر ←</button>
+                      <span className="svc-links">
+                        {(() => { const pg = SERVICE_PAGES.find((x) => serviceFor(x, [c])); return pg ? <Link className="linkish" to="/services/$slug" params={{ slug: pg.slug }}>التفاصيل</Link> : null })()}
+                        <button className="linkish" type="button" onClick={() => priceOf(c.key)}>احسب السعر ←</button>
+                      </span>
                     </div>
                   </div>
                 )
@@ -284,6 +293,10 @@ export default function Home() {
               <Logo />
               <p>مَكْوَد: حيث تُصنع التطبيقات. نبني تطبيقات الجوال والويب للشركات في المملكة والخليج.</p>
               <SocialLinks />
+            </div>
+            <div>
+              <h4>الخدمات</h4>
+              <ul>{SERVICE_PAGES.map((p) => <li key={p.slug}><Link to="/services/$slug" params={{ slug: p.slug }}>{p.h1}</Link></li>)}</ul>
             </div>
             <div>
               <h4>الشركة</h4>
