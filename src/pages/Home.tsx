@@ -1,10 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import { api } from '@/convex/_generated/api'
 import { Logo } from '@/components/Logo'
-import { FAQ, PLANS, SERVICES, TRACKS, WHY } from '@/site-content'
+import { FAQ, PLANS, SERVICES, SOCIALS, TRACKS, WHY } from '@/site-content'
 import { ARTS, COLORS } from '@/mockups'
 import { Estimator } from '@/components/Estimator'
 import { SERVICE_PRICING, fmtSAR, presetForPlan, withPlans } from '@/estimate'
@@ -283,6 +283,7 @@ export default function Home() {
             <div>
               <Logo />
               <p>مَكْوَد: حيث تُصنع التطبيقات. نبني تطبيقات الجوال والويب للشركات في المملكة والخليج.</p>
+              <SocialLinks />
             </div>
             <div>
               <h4>الشركة</h4>
@@ -512,6 +513,28 @@ function Work({ works, showNote }: { works: Array<Doc<'works'>> | undefined; sho
   )
 }
 
+const SOCIAL_ICONS: Record<string, ReactNode> = {
+  instagram: <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor" /></svg>,
+  x: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16M20 4L4 20" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" /></svg>,
+  tiktok: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /><path d="M14 3c.4 2.6 2.3 4.4 5 4.6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>,
+  facebook: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 21v-8h2.7l.4-3.2h-3.1V7.8c0-.9.3-1.6 1.6-1.6h1.7V3.4a22 22 0 0 0-2.5-.1c-2.4 0-4.1 1.5-4.1 4.2v2.3H8.5V13h2.7v8z" fill="currentColor" /></svg>,
+}
+
+export function SocialLinks({ withHandles = false }: { withHandles?: boolean }) {
+  return (
+    <ul className={withHandles ? 'socials big' : 'socials'} aria-label="حساباتنا في التواصل الاجتماعي">
+      {SOCIALS.map((x) => (
+        <li key={x.key}>
+          <a href={x.url} target="_blank" rel="noopener noreferrer" aria-label={`${x.label} ${x.handle}`} title={`${x.label} ${x.handle}`}>
+            {SOCIAL_ICONS[x.key]}
+            {withHandles && <span><small>{x.label}</small><b dir="ltr">{x.handle}</b></span>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function ContactInfo() {
   const s = useSettings()
   return (
@@ -521,6 +544,7 @@ function ContactInfo() {
       <CopyRow label="واتساب" value={'+' + s.whatsapp} />
       {s.address && <div className="row"><div><span>المقر</span><b>{s.address}</b></div></div>}
       {s.hours && <div className="row"><div><span>ساعات العمل</span><b>{s.hours}</b></div></div>}
+      <div className="row social-row"><div><span>تابعنا</span><SocialLinks withHandles /></div></div>
     </>
   )
 }

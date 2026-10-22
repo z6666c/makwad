@@ -73,3 +73,10 @@ export const FAQ = [
   { q: 'هل أملك الشيفرة المصدرية؟', a: 'نعم، تنتقل ملكية الشيفرة والتصاميم وحسابات المتاجر إلى شركتك بالكامل عند التسليم.' },
   { q: 'ماذا يحدث بعد الإطلاق؟', a: 'كل باقة تشمل فترة دعم فني، وبعدها يمكنك الاشتراك في الصيانة الشهرية للتحديثات وإضافة الميزات.' },
 ]
+
+/** Social accounts shown in the contact section and the footer. Add the Facebook page link here once it is known. */
+export const SOCIALS: Array<{ key: 'instagram' | 'x' | 'tiktok' | 'facebook'; label: string; handle: string; url: string }> = [
+  { key: 'instagram', label: 'انستقرام', handle: '@makwad.sa', url: 'https://www.instagram.com/makwad.sa/' },
+  { key: 'x', label: 'إكس (تويتر)', handle: '@makwad_sa', url: 'https://x.com/makwad_sa' },
+  { key: 'tiktok', label: 'تيك توك', handle: '@makwad.studio', url: 'https://www.tiktok.com/@makwad.studio' },
+]
