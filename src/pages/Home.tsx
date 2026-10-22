@@ -526,8 +526,9 @@ export function SocialLinks({ withHandles = false }: { withHandles?: boolean }) 
       {SOCIALS.map((x) => (
         <li key={x.key}>
           <a href={x.url} target="_blank" rel="noopener noreferrer" aria-label={`${x.label} ${x.handle}`} title={`${x.label} ${x.handle}`}>
-            {SOCIAL_ICONS[x.key]}
+            <i className={`ic ic-${x.key}`}>{SOCIAL_ICONS[x.key]}</i>
             {withHandles && <span><small>{x.label}</small><b dir="ltr">{x.handle}</b></span>}
+            {withHandles && <em aria-hidden="true">↖</em>}
           </a>
         </li>
       ))}
@@ -544,7 +545,7 @@ function ContactInfo() {
       <CopyRow label="واتساب" value={'+' + s.whatsapp} />
       {s.address && <div className="row"><div><span>المقر</span><b>{s.address}</b></div></div>}
       {s.hours && <div className="row"><div><span>ساعات العمل</span><b>{s.hours}</b></div></div>}
-      <div className="row social-row"><div><span>تابعنا</span><SocialLinks withHandles /></div></div>
+      <div className="social-block"><span>تابعنا على حساباتنا</span><SocialLinks withHandles /></div>
     </>
   )
 }
