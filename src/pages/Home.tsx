@@ -520,18 +520,34 @@ const SOCIAL_ICONS: Record<string, ReactNode> = {
   facebook: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 21v-8h2.7l.4-3.2h-3.1V7.8c0-.9.3-1.6 1.6-1.6h1.7V3.4a22 22 0 0 0-2.5-.1c-2.4 0-4.1 1.5-4.1 4.2v2.3H8.5V13h2.7v8z" fill="currentColor" /></svg>,
 }
 
-/** Moves the Saudi Business Center seal (a static element in index.html) under the header logo while this page is shown. */
+/** Moves the Saudi Business Center seal (a static element in index.html) under the header logo while this page is shown.
+ *  A transparent cover stops the seal from opening on mouse-over: it opens on click, and closes when the pointer moves back onto the page, on a click outside, or with Escape. */
 function SealSlot() {
   const slot = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState(false)
   useEffect(() => {
     const seal = document.querySelector<HTMLElement>('.sbc-verify-seal')
     const el = slot.current
     if (!seal || !el) return
-    el.appendChild(seal)
+    el.prepend(seal)
     seal.hidden = false
     return () => { seal.hidden = true; document.body.appendChild(seal) }
   }, [])
-  return <div className="seal-slot" ref={slot} />
+  useEffect(() => {
+    if (!open) return
+    const close = (e: Event) => { if (!slot.current?.contains(e.target as Node)) setOpen(false) }
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    // while the pointer is over the opened seal, events go to its frame; the first move back on our page closes it
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('pointermove', close)
+    document.addEventListener('keydown', esc)
+    return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('pointermove', close); document.removeEventListener('keydown', esc) }
+  }, [open])
+  return (
+    <div className={open ? 'seal-slot open' : 'seal-slot'} ref={slot}>
+      {!open && <button type="button" className="seal-cover" aria-label="عرض شهادة توثيق المتجر" onClick={() => setOpen(true)} />}
+    </div>
+  )
 }
 
 export function SocialLinks({ withHandles = false }: { withHandles?: boolean }) {
