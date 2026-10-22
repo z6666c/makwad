@@ -48,7 +48,7 @@ function usePrefersReducedMotion() {
 }
 
 export default function Home() {
-  useTitle('استوديو مكود | حيث تُصنع التطبيقات')
+  useTitle('استوديو مكود | تصميم وبرمجة تطبيقات الجوال والمواقع في الرياض')
   const [menuOpen, setMenuOpen] = useState(false)
   const [plan, setPlan] = useState('لم أحدد بعد')
   const track = TRACKS.find((t) => t.plan === plan) ?? TRACKS[1]
@@ -137,7 +137,7 @@ export default function Home() {
         <div className="wrap">
           <section className="section" id="services">
             <div className="sec-head">
-              <div><span className="kicker">خدماتنا</span><h2>ماذا نبني</h2></div>
+              <div><span className="kicker">خدماتنا</span><h2>تصميم وبرمجة التطبيقات والمواقع والأنظمة</h2></div>
               <p>خدمات بأسعار واضحة تبدأ من {fmtSAR(minPrice)} ريال. اضغط «احسب السعر» لترى التكلفة بالتفصيل.</p>
             </div>
             <div className="services">
@@ -190,7 +190,7 @@ export default function Home() {
 
           <section className="section" id="plans">
             <div className="sec-head">
-              <div><span className="kicker">الباقات</span><h2>اختر نقطة البداية</h2></div>
+              <div><span className="kicker">الباقات والأسعار</span><h2>اختر نقطة البداية</h2></div>
               <p>أسعار تقديرية تبدأ منها، والعرض النهائي بعد جلسة الاكتشاف المجانية.</p>
             </div>
             <div className="plans">
@@ -239,12 +239,13 @@ export default function Home() {
 
           <section className="section" id="estimate">
             <div className="sec-head">
-              <div><span className="kicker">حاسبة الأسعار</span><h2>احسب سعر مشروعك</h2></div>
+              <div><span className="kicker">حاسبة الأسعار</span><h2>احسب تكلفة تطبيقك أو موقعك</h2></div>
               <p>اختر الخدمة ونطاقها والإضافات، وتشوف السعر بنداً بنداً مع الإجمالي والمدة والدفعة الأولى، ثم أرسله لنا بضغطة.</p>
             </div>
             <Estimator service={estSvc} onService={setEstSvc} onUse={useEstimate} preset={preset} onPlan={setPlan} />
           </section>
 
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }) }} />
           <section className="section" id="faq">
             <div className="faq">
               <div>
