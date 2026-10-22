@@ -1170,5 +1170,5 @@ html.printing .sbc-verify-seal, html.printing iframe[title="SBC Verification"] {
 @media print { iframe[title="SBC Verification"] { display: none !important; } }
 /* verification seal under the header logo */
 .brand-col { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
-.seal-slot { height: 32px; overflow: visible; }
-.seal-slot iframe { transform: scale(.72); transform-origin: right top; display: block; }
+.seal-slot { overflow: visible; }
+.seal-slot iframe { display: block; }
