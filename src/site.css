@@ -1171,7 +1171,7 @@ html.printing .sbc-verify-seal, html.printing iframe[title="SBC Verification"] {
 /* verification seal under the header logo */
 .brand-col { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .seal-slot { position: relative; width: 127px; height: 44px; flex: none; }
-/* the seal grows when opened: let it float over the page instead of pushing the header */
-.seal-slot iframe { position: absolute; top: 0; right: 0; z-index: 60; display: block; max-width: none !important; }
+/* the seal grows when opened: the slot keeps its size so the header does not move, and the frame overflows on top */
+.seal-slot iframe { position: relative; z-index: 60; display: block; }
 /* clip the white corners of the seal frame to its pill shape */
-.seal-slot iframe { border-radius: 22px; overflow: hidden; background: transparent; color-scheme: normal; }
+.seal-slot iframe { border-radius: 22px; }
