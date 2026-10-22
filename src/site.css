@@ -1146,3 +1146,6 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .socials.big small { font-size: .72rem; color: var(--muted); }
 .socials.big b { font-family: var(--f-mono, monospace); font-size: .86rem; font-weight: 500; }
 .social-row > div { width: 100%; }
+.foot .socials, .socials { flex-direction: row !important; }
+.socials a { text-decoration: none; }
+.foot .socials li { margin: 0; }
