@@ -1158,3 +1158,8 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .socials.big b { min-width: 0; font-family: var(--f-body, inherit); font-size: .82rem; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .socials.big a:hover b { color: var(--accent); }
 @media (max-width: 520px) { .socials.big { grid-template-columns: 1fr; } }
+/* follow-us cards: icon above handle so all three fit on one row */
+.socials.big a { flex-direction: column; justify-content: center; gap: 8px; padding: 14px 8px 12px; text-align: center; }
+.socials.big .ic { width: 42px; height: 42px; border-radius: 12px; }
+.socials.big .ic svg { width: 22px; height: 22px; }
+.socials.big b { max-width: 100%; font-size: .8rem; }
