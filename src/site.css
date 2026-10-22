@@ -1136,49 +1136,25 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .pt-calc { display: inline-block; margin-inline-start: 6px; font-weight: 600; color: var(--accent); white-space: nowrap; }
 
 /* social links */
-.socials { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
-.socials a { display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line); color: var(--ink); background: var(--surface); transition: color .2s, border-color .2s, transform .2s; }
+.socials { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; }
+.foot .socials { flex-direction: row; }
+.socials li { margin: 0; }
+.socials a { display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line); color: var(--ink); background: var(--surface); text-decoration: none; transition: color .2s, border-color .2s, transform .2s, box-shadow .2s; }
 .socials a:hover, .socials a:focus-visible { color: var(--accent); border-color: var(--accent); transform: translateY(-2px); }
-.socials svg { width: 20px; height: 20px; }
-.socials.big { margin-top: 8px; gap: 8px; }
-.socials.big a { width: auto; height: auto; padding: 8px 14px 8px 12px; display: inline-flex; gap: 10px; align-items: center; }
-.socials.big span { display: flex; flex-direction: column; line-height: 1.25; }
-.socials.big small { font-size: .72rem; color: var(--muted); }
-.socials.big b { font-family: var(--f-mono, monospace); font-size: .86rem; font-weight: 500; }
-.social-row > div { width: 100%; }
-.foot .socials, .socials { flex-direction: row !important; }
-.socials a { text-decoration: none; }
-.foot .socials li { margin: 0; }
-
-/* social links v2 */
 .socials .ic { display: grid; place-items: center; font-style: normal; }
+.socials svg { width: 20px; height: 20px; }
+/* contact: follow us — brand tile + handle, three in one row */
 .social-block { padding: 18px 0 4px; display: flex; flex-direction: column; gap: 10px; }
 .social-block > span { font-size: .82rem; color: var(--muted); }
-.socials.big { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 0; }
-.socials.big li { display: flex; }
-.socials.big a { flex: 1; width: auto; height: auto; padding: 12px 14px; border-radius: 16px; display: flex; align-items: center; gap: 12px; position: relative; background: var(--surface); border: 1px solid var(--line); }
-.socials.big a:hover, .socials.big a:focus-visible { border-color: var(--accent); box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--accent) 70%, transparent); }
-.socials.big .ic { width: 40px; height: 40px; border-radius: 12px; flex: none; color: #fff; }
-.socials.big .ic svg { width: 22px; height: 22px; }
+.socials.big { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.socials.big a { width: 100%; height: auto; display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 8px; border-radius: 14px; }
+.socials.big a:hover, .socials.big a:focus-visible { box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--accent) 70%, transparent); }
+.socials.big .ic { width: 36px; height: 36px; border-radius: 10px; flex: none; color: #fff; }
+.socials.big .ic svg { width: 20px; height: 20px; }
 .socials.big .ic-instagram { background: radial-gradient(circle at 30% 110%, #FDCB52 0%, #FD5949 40%, #D6249F 65%, #285AEB 100%); }
-.socials.big .ic-x { background: #000; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
-.socials.big .ic-tiktok { background: #000; box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
-.socials.big .ic-tiktok svg { filter: drop-shadow(-1.5px -1px 0 #25F4EE) drop-shadow(1.5px 1px 0 #FE2C55); }
+.socials.big .ic-x, .socials.big .ic-tiktok { background: #000; box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
+.socials.big .ic-tiktok svg { filter: drop-shadow(-1.2px -1px 0 #25F4EE) drop-shadow(1.2px 1px 0 #FE2C55); }
 .socials.big .ic-facebook { background: #1877F2; }
-.socials.big span { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
-.socials.big small { font-size: .74rem; color: var(--muted); }
-.socials.big b { font-family: var(--f-mono, monospace); font-size: .84rem; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.socials.big em { position: absolute; top: 8px; left: 10px; font-style: normal; font-size: .8rem; color: var(--muted); opacity: .6; transition: opacity .2s, color .2s; }
-.socials.big a:hover em { opacity: 1; color: var(--accent); }
-
-/* contact: follow us (icon + handle, one tidy row) */
-.socials.big { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; width: 100%; }
-.socials.big li { min-width: 0; }
-.socials.big a { width: 100%; height: auto; display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
-.socials.big a svg { flex: none; width: 34px; height: 34px; padding: 8px; border-radius: 10px; color: #fff; }
-.socials.big li:nth-child(1) svg { background: linear-gradient(45deg, #F58529, #DD2A7B 55%, #8134AF); }
-.socials.big li:nth-child(2) svg { background: #111; }
-.socials.big li:nth-child(3) svg { background: #111; box-shadow: inset -2px 0 0 #25F4EE, inset 2px 0 0 #FE2C55; }
-.socials.big b { font-family: var(--f-mono, monospace); font-size: .84rem; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.socials.big b { min-width: 0; font-family: var(--f-mono, monospace); font-size: .8rem; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .socials.big a:hover b { color: var(--accent); }
-:root[data-theme="dark"] .socials.big li:nth-child(2) svg, :root[data-theme="dark"] .socials.big li:nth-child(3) svg { background: #000; outline: 1px solid #333; }
+@media (max-width: 520px) { .socials.big { grid-template-columns: 1fr; } }
