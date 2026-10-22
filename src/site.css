@@ -1173,3 +1173,5 @@ html.printing .sbc-verify-seal, html.printing iframe[title="SBC Verification"] {
 .seal-slot { position: relative; width: 127px; height: 44px; flex: none; }
 /* the seal grows when opened: let it float over the page instead of pushing the header */
 .seal-slot iframe { position: absolute; top: 0; right: 0; z-index: 60; display: block; max-width: none !important; }
+/* clip the white corners of the seal frame to its pill shape */
+.seal-slot iframe { border-radius: 22px; overflow: hidden; background: transparent; color-scheme: normal; }
