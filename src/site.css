@@ -1170,3 +1170,15 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .socials.big b { font-family: var(--f-mono, monospace); font-size: .84rem; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .socials.big em { position: absolute; top: 8px; left: 10px; font-style: normal; font-size: .8rem; color: var(--muted); opacity: .6; transition: opacity .2s, color .2s; }
 .socials.big a:hover em { opacity: 1; color: var(--accent); }
+
+/* contact: follow us (icon + handle, one tidy row) */
+.socials.big { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; width: 100%; }
+.socials.big li { min-width: 0; }
+.socials.big a { width: 100%; height: auto; display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.socials.big a svg { flex: none; width: 34px; height: 34px; padding: 8px; border-radius: 10px; color: #fff; }
+.socials.big li:nth-child(1) svg { background: linear-gradient(45deg, #F58529, #DD2A7B 55%, #8134AF); }
+.socials.big li:nth-child(2) svg { background: #111; }
+.socials.big li:nth-child(3) svg { background: #111; box-shadow: inset -2px 0 0 #25F4EE, inset 2px 0 0 #FE2C55; }
+.socials.big b { font-family: var(--f-mono, monospace); font-size: .84rem; font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.socials.big a:hover b { color: var(--accent); }
+:root[data-theme="dark"] .socials.big li:nth-child(2) svg, :root[data-theme="dark"] .socials.big li:nth-child(3) svg { background: #000; outline: 1px solid #333; }

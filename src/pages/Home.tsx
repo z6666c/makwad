@@ -527,7 +527,7 @@ export function SocialLinks({ withHandles = false }: { withHandles?: boolean }) 
         <li key={x.key}>
           <a href={x.url} target="_blank" rel="noopener noreferrer" aria-label={`${x.label} ${x.handle}`} title={`${x.label} ${x.handle}`}>
             <i className={`ic ic-${x.key}`}>{SOCIAL_ICONS[x.key]}</i>
-            {withHandles && <span><small>{x.label}</small><b dir="ltr">{x.handle}</b></span>}
+            {withHandles && <b dir="ltr">{x.handle}</b>}
             {withHandles && <em aria-hidden="true">↖</em>}
           </a>
         </li>
