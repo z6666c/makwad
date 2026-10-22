@@ -1170,5 +1170,6 @@ html.printing .sbc-verify-seal, html.printing iframe[title="SBC Verification"] {
 @media print { iframe[title="SBC Verification"] { display: none !important; } }
 /* verification seal under the header logo */
 .brand-col { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
-.seal-slot { overflow: visible; }
-.seal-slot iframe { display: block; }
+.seal-slot { position: relative; width: 127px; height: 44px; flex: none; }
+/* the seal grows when opened: let it float over the page instead of pushing the header */
+.seal-slot iframe { position: absolute; top: 0; right: 0; z-index: 60; display: block; max-width: none !important; }
