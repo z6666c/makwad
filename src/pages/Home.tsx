@@ -257,7 +257,7 @@ export default function Home() {
                 {FAQ.map((f, i) => (
                   <details key={f.q} open={i === 0}>
                     <summary>{f.q}</summary>
-                    <p>{f.a.replace('1,500 ريال', `${fmtSAR(minPrice)} ريال`)}</p>
+                    <p>{f.a}</p>
                   </details>
                 ))}
               </div>
