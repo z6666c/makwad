@@ -10,7 +10,7 @@ import { fmtSAR } from '@/estimate'
 import type { Catalog, Service } from '@/estimate'
 import PAGES from '@/service-pages.json'
 
-export type ServicePageData = (typeof PAGES)[number]
+export type ServicePageData = (typeof PAGES)[number] & { tiers?: Array<string>; addons?: Array<string>; group?: string }
 export const SERVICE_PAGES = PAGES as Array<ServicePageData>
 
 /** Finds the catalog service a page describes: an exact key, or `re:<pattern>` matched against the label. */
@@ -72,10 +72,14 @@ export function ServicesIndex() {
         <h1>تصميم وبرمجة التطبيقات والمواقع والأنظمة</h1>
         <p className="lead">اختر الخدمة لتشوف تفاصيلها وأسعارها ومدة تنفيذها.</p>
       </div>
+      {([['main', 'الخدمات الأساسية'], ['solution', 'حلول جاهزة لنشاطك']] as const).map(([g, label]) => (
+      <section className="svc-sec" key={g}>
+      <h2>{label}</h2>
       <div className="svc-grid">
-        {SERVICE_PAGES.map((p) => {
+        {SERVICE_PAGES.filter((p) => (p.group ?? 'main') === g).map((p) => {
           const svc = serviceFor(p, catalog)
-          const from = svc ? Math.min(...svc.tiers.map((t) => t.price)) : null
+          const tiers = svc ? (p.tiers ? svc.tiers.filter((t) => p.tiers!.includes(t.key)) : svc.tiers) : []
+          const from = tiers.length ? Math.min(...tiers.map((t) => t.price)) : svc ? Math.min(...svc.tiers.map((t) => t.price)) : null
           return (
             <Link key={p.slug} className="svc-card" to="/services/$slug" params={{ slug: p.slug }}>
               <span className="kicker">{p.kicker}</span>
@@ -86,6 +90,8 @@ export function ServicesIndex() {
           )
         })}
       </div>
+      </section>
+      ))}
     </Shell>
   )
 }
@@ -98,9 +104,12 @@ export function ServiceDetail() {
   if (!page) {
     return <Shell><div className="empty" style={{ margin: '80px auto' }}><h3>الخدمة غير موجودة</h3><Link className="btn" to="/services">كل الخدمات</Link></div></Shell>
   }
-  const svc = serviceFor(page, catalog)
+  const full = serviceFor(page, catalog)
+  // a focused page shows only its own tiers and add-ons; fall back to everything if the catalog changed
+  const pick = <T extends { key: string }>(all: Array<T>, keys?: Array<string>) => { const f = keys ? all.filter((x) => keys.includes(x.key)) : all; return f.length ? f : all }
+  const svc = full ? { ...full, tiers: pick(full.tiers, page.tiers), addons: pick(full.addons, page.addons) } : undefined
   const track = TRACKS.find((t) => t.key === page.track) ?? TRACKS[1]
-  const calc = svc ? `/?svc=${encodeURIComponent(svc.key)}#estimate` : '/#estimate'
+  const calc = svc ? `/?svc=${encodeURIComponent(svc.key)}&tier=${encodeURIComponent(svc.tiers[0].key)}#estimate` : '/#estimate'
   const ld = [
     {
       '@context': 'https://schema.org', '@type': 'Service', name: page.h1, description: page.description, serviceType: page.kicker,

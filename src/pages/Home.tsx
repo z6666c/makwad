@@ -72,9 +72,11 @@ export default function Home() {
   const clients = settings.clients ?? []
   const catalog = usePricing()
   useEffect(() => {
-    const k = new URLSearchParams(window.location.search).get('svc')
+    const q = new URLSearchParams(window.location.search)
+    const k = q.get('svc')
     const svc = k ? catalog.find((c) => c.key === k) : undefined
-    if (svc) setPreset((cur) => (cur?.service === svc.key ? cur : { service: svc.key, tier: svc.tiers[0].key, n: (cur?.n ?? 0) + 1 }))
+    const tier = svc?.tiers.find((t) => t.key === q.get('tier')) ?? svc?.tiers[0]
+    if (svc && tier) setPreset((cur) => (cur?.service === svc.key && cur.tier === tier.key ? cur : { service: svc.key, tier: tier.key, n: (cur?.n ?? 0) + 1 }))
   }, [catalog])
   const pickPlan = (name: string) => {
     setPlan(name)
@@ -158,7 +160,7 @@ export default function Home() {
                     <div className="svc-foot">
                       <span className="svc-price"><small>يبدأ من</small><b className="mono">{fmtSAR(Math.min(...c.tiers.map((t) => t.price)))}</b><small>ريال{c.monthly ? ' / شهرياً' : ''}</small></span>
                       <span className="svc-links">
-                        {(() => { const pg = SERVICE_PAGES.find((x) => serviceFor(x, [c])); return pg ? <Link className="linkish" to="/services/$slug" params={{ slug: pg.slug }}>التفاصيل</Link> : null })()}
+                        {(() => { const pg = SERVICE_PAGES.find((x) => (x.group ?? 'main') === 'main' && serviceFor(x, [c])); return pg ? <Link className="linkish" to="/services/$slug" params={{ slug: pg.slug }}>التفاصيل</Link> : null })()}
                         <button className="linkish" type="button" onClick={() => priceOf(c.key)}>احسب السعر ←</button>
                       </span>
                     </div>
@@ -296,7 +298,7 @@ export default function Home() {
             </div>
             <div>
               <h4>الخدمات</h4>
-              <ul>{SERVICE_PAGES.map((p) => <li key={p.slug}><Link to="/services/$slug" params={{ slug: p.slug }}>{p.h1}</Link></li>)}</ul>
+              <ul>{SERVICE_PAGES.filter((p) => (p.group ?? 'main') === 'main').map((p) => <li key={p.slug}><Link to="/services/$slug" params={{ slug: p.slug }}>{p.h1}</Link></li>)}<li><Link to="/services">كل الخدمات والحلول ←</Link></li></ul>
             </div>
             <div>
               <h4>الشركة</h4>
