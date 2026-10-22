@@ -1163,3 +1163,6 @@ input[type="range"] { accent-color: var(--accent); width: 100%; }
 .socials.big .ic { width: 42px; height: 42px; border-radius: 12px; }
 .socials.big .ic svg { width: 22px; height: 22px; }
 .socials.big b { max-width: 100%; font-size: .8rem; }
+.socials.big { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.socials.big b { font-size: .74rem; }
+@media (max-width: 1100px) { .socials.big { grid-template-columns: repeat(2, minmax(0, 1fr)); } .socials.big b { font-size: .8rem; } }
