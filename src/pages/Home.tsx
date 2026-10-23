@@ -232,6 +232,7 @@ export default function Home() {
                     <h3>{p.name}</h3>
                     <div className="price">{p.price}<small>{p.small}</small></div>
                     <ul>{p.items.map((it) => <li key={it}>{it}</li>)}</ul>
+                    {'note' in p && p.note && <p className="plan-note">{p.note}</p>}
                     <a className={on ? 'btn' : 'btn ghost'} href="#contact" onClick={(e) => { e.stopPropagation(); pickPlan(p.name) }}>{p.cta}</a>
                   </div>
                 )
