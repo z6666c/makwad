@@ -85,7 +85,7 @@ export function ServicesIndex() {
               <span className="kicker">{p.kicker}</span>
               <h2>{p.h1}</h2>
               <p>{p.lead}</p>
-              {from !== null && <span className="svc-from">يبدأ من <b className="mono">{fmtSAR(from)}</b> ريال</span>}
+              {from !== null ? <span className="svc-from">يبدأ من <b className="mono">{fmtSAR(from)}</b> ريال</span> : <span className="svc-from">طلب خاص · <b>تسعير حسب احتياجك</b></span>}
             </Link>
           )
         })}
@@ -110,6 +110,8 @@ export function ServiceDetail() {
   const svc = full ? { ...full, tiers: pick(full.tiers, page.tiers), addons: pick(full.addons, page.addons) } : undefined
   const track = TRACKS.find((t) => t.key === page.track) ?? TRACKS[1]
   const calc = svc ? `/?svc=${encodeURIComponent(svc.key)}&tier=${encodeURIComponent(svc.tiers[0].key)}#estimate` : '/#estimate'
+  // services hidden from the calculator are sold as a custom request with a custom quote
+  const custom = `/?custom=${encodeURIComponent(page.kicker)}#contact`
   const ld = [
     {
       '@context': 'https://schema.org', '@type': 'Service', name: page.h1, description: page.description, serviceType: page.kicker,
@@ -133,7 +135,7 @@ export function ServiceDetail() {
         <h1>{page.h1}</h1>
         <p className="lead">{page.lead}</p>
         <div className="cta-row">
-          <a className="btn" href={calc}>احسب تكلفة مشروعك</a>
+          {svc ? <a className="btn" href={calc}>احسب تكلفة مشروعك</a> : <a className="btn" href={custom}>اطلب عرض سعر خاص</a>}
           <a className="btn ghost" href="/#contact">احجز جلسة اكتشاف مجانية</a>
         </div>
       </div>
@@ -163,6 +165,13 @@ export function ServiceDetail() {
             </>
           )}
           <a className="btn small" href={calc}>احسب السعر بالتفصيل ←</a>
+        </section>
+      )}
+      {!svc && (
+        <section className="svc-sec">
+          <h2>التسعير</h2>
+          <p>هذي الخدمة بطلب خاص، ونسعّرها حسب احتياجك: عدد الوحدات والمستخدمين والصلاحيات والربط مع أنظمتك. بعد جلسة الاكتشاف المجانية توصلك عرض سعر مفصل بالبنود والمدة قبل أي التزام.</p>
+          <a className="btn small" href={custom}>اطلب عرض سعر خاص ←</a>
         </section>
       )}
 

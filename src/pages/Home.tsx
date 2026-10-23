@@ -78,6 +78,14 @@ export default function Home() {
     const tier = svc?.tiers.find((t) => t.key === q.get('tier')) ?? svc?.tiers[0]
     if (svc && tier) setPreset((cur) => (cur?.service === svc.key && cur.tier === tier.key ? cur : { service: svc.key, tier: tier.key, n: (cur?.n ?? 0) + 1 }))
   }, [catalog])
+  // ?custom=<service name> comes from a service page that is quoted by special request
+  useEffect(() => {
+    const c = new URLSearchParams(window.location.search).get('custom')?.trim().slice(0, 80)
+    if (!c) return
+    setPlan('طلب خاص')
+    setTypes(['أخرى'])
+    setMessage((m) => m || `طلب خاص: ${c}\n`)
+  }, [])
   const pickPlan = (name: string) => {
     setPlan(name)
     const ps = presetForPlan(name, withPlans(catalog, PLANS))
@@ -698,7 +706,7 @@ function ContactForm({ plan, setPlan, types, setTypes, message, setMessage, amou
       <div className="field full">
         <label htmlFor="plan">الباقة</label>
         <select id="plan" value={plan} onChange={(e) => setPlan(e.target.value)}>
-          {['لم أحدد بعد', 'الانطلاقة', 'النمو', 'المنشآت'].map((p) => <option key={p}>{p}</option>)}
+          {['لم أحدد بعد', 'الانطلاقة', 'النمو', 'المنشآت', 'طلب خاص'].map((p) => <option key={p}>{p}</option>)}
         </select>
       </div>
       <div className="field full"><label htmlFor="message">نبذة عن الفكرة</label><textarea id="message" name="message" value={message} onChange={(e) => setMessage(e.target.value)} rows={message ? 9 : 4} placeholder="ما فكرة مشروعك، ومن سيستخدمه؟" /></div>
