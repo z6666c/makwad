@@ -254,7 +254,7 @@ export function withPlans(catalog: Catalog, plans: Array<{ name: string; price: 
     return s ? s.addons.filter((a) => keys.includes(a.key)) : []
   }
   const seen = new Set<string>()
-  const addons = [...pick('web', ['cms', 'auth', 'pay', 'booking', 'i18n', 'seo', 'host']), ...pick('mobile', ['push', 'stores'])]
+  const addons = [...pick('web', ['auth', 'pay', 'booking', 'i18n', 'seo', 'host']), ...pick('mobile', ['push', 'stores'])]
     .filter((a) => (seen.has(a.label) ? false : (seen.add(a.label), true)))
   const svc: Service = {
     key: PLANS_KEY, label: 'الباقات', type: 'باقة', from: 0, tierLabel: 'الباقة',
