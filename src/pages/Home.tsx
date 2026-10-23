@@ -85,6 +85,8 @@ export default function Home() {
     setPlan('طلب خاص')
     setTypes(['أخرى'])
     setMessage((m) => m || `طلب خاص: ${c}\n`)
+    // the hash jump runs before the page finishes laying out, so land on the form again
+    window.setTimeout(() => document.getElementById('contact')?.scrollIntoView(), 700)
   }, [])
   const pickPlan = (name: string) => {
     setPlan(name)
