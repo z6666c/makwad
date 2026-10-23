@@ -145,6 +145,12 @@ function SideNav({ sections, cur, counts, go }: { sections: Array<{ key: Section
     try { localStorage.setItem('makwad-nav', JSON.stringify(n)) } catch { /* ignore */ }
     return n
   })
+  // opening a section opens its group once; after that the toggle decides, so the current group can be closed too
+  useEffect(() => {
+    const g = GROUPS.find((x) => x.label && x.items.includes(cur))
+    if (g && open[g.key] !== true) toggle(g.key, true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cur])
   const label = (k: Section) => sections.find((x) => x.key === k)?.label ?? ''
   const groups = GROUPS.map((g) => ({ ...g, items: g.items.filter((k) => sections.some((x) => x.key === k)) })).filter((g) => g.items.length)
   return (
@@ -153,7 +159,7 @@ function SideNav({ sections, cur, counts, go }: { sections: Array<{ key: Section
         {groups.map((g) => {
           if (!g.label) return g.items.map((k) => <NavItem key={k} k={k} label={label(k)} cur={cur} count={counts[k]} go={go} />)
           const hasCur = g.items.includes(cur)
-          const isOpen = hasCur || (open[g.key] ?? false)
+          const isOpen = open[g.key] ?? hasCur
           const total = g.items.reduce((n, k) => n + (counts[k] ?? 0), 0)
           return (
             <div className="side-group" key={g.key}>
