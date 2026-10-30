@@ -565,6 +565,7 @@ table.log td:first-child{font-family:var(--f-mono);white-space:nowrap;width:1%;p
 .tier-box.tier-legend{color:#2a1a06;background:linear-gradient(135deg,rgba(255,231,168,.85),rgba(229,162,69,.6));border-color:#8a5a12}
 .tier-box p{margin:8px 0 0;font-size:13px;color:var(--paper-ink)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+.timeline li.tl-midnight{list-style:none;font-size:12px;font-weight:700;color:var(--sodium,#e5a245);border-top:1px dashed currentColor;padding-top:6px;margin:6px 0}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -1463,7 +1464,7 @@ function boardTap(t,id){
 function timelineHTML(){
  initTL();const locked=!linksDone();
  return `<section class="acc-sec ${locked?'sec-locked':''}"><h4 class="sec-h"><span>${S.tlDone?'✓':'ب'}</span>أعد بناء الليلة</h4>
-  ${locked?`<p class="lead">${ico('lock')} أكمل لوحة الخيوط أولاً.</p>`:`<p class="lead">رتّب الأحداث من الأقدم (أعلى) إلى الأحدث (أسفل). المفكرة تساعدك. ${S.tlDone?'':`الترتيب الصحيح من أول محاولة +${PTS_TL_FIRST}، وكل تحقق خاطئ ${PTS_TL_WRONG}.`}</p>
+  ${locked?`<p class="lead">${ico('lock')} أكمل لوحة الخيوط أولاً.</p>`:`<p class="lead">رتّب الأحداث من الأقدم (أعلى) إلى الأحدث (أسفل). المفكرة تساعدك${TL_EVENTS.some(e=>nightMin(e.t)>=1440)?'، وانتبه: أحداث هذه الليلة تمتد بعد منتصف الليل':''}. ${S.tlDone?'':`الترتيب الصحيح من أول محاولة +${PTS_TL_FIRST}، وكل تحقق خاطئ ${PTS_TL_WRONG}.`}</p>
   <ol class="tl-build ${S.tlDone?'done':''}">${S.tl.map((ix,pos)=>`<li data-p="${pos}"><span class="tl-n">${AR(pos+1)}</span><span class="tl-x">${TL_EVENTS[ix].x}${S.tlDone?` <time>${TL_EVENTS[ix].t}</time>`:''}</span>${S.tlDone?'':`<span class="tl-ctl"><button data-up="${pos}" aria-label="أعلى" ${pos===0?'disabled':''}>▲</button><button data-dn="${pos}" aria-label="أسفل" ${pos===S.tl.length-1?'disabled':''}>▼</button></span>`}</li>`).join('')}</ol>
   ${S.tlDone?'':`<div id="tlMsg">${S.tlMsg||''}</div><button class="btn btn-ghost" style="width:100%" id="tlCheck">تحقّق من الترتيب</button>`}`}
  </section>`;
@@ -4190,15 +4191,16 @@ function renderBoard(v){
 }
 
 /* ================= NOTES ================= */
+const nightMin=t=>{const [h,m]=t.split(':').map(Number);return (h<12?h+24:h)*60+m};
 function renderNotes(v){
  Snd.pencil();
- const tl=S.facts.filter(f=>FACTS[f].t).sort((a,b)=>FACTS[a].t.localeCompare(FACTS[b].t));
+ const tl=S.facts.filter(f=>FACTS[f].t).sort((a,b)=>nightMin(FACTS[a].t)-nightMin(FACTS[b].t));
  const ob=S.facts.filter(f=>!FACTS[f].t);
  v.innerHTML=`<div class="pad"><h2 class="h-sec">مفكرة المحقق</h2>
   <div class="stages">${STAGES.map((st,i)=>{const n=i+1,cls=n<S.stage?'past':n===S.stage?'cur':'next';return `<div class="st ${cls}"><div class="st-h"><span class="ss-n">${n<S.stage?'✓':AR(n)}</span><strong>${st.t}</strong><small>${cls==='past'?'مكتملة':cls==='cur'?'الحالية':'مقفلة'}</small></div>${cls==='cur'?goalsHTML(n):''}</div>`}).join('')}</div>
   <p class="lead" style="margin-top:18px">تُدوَّن تلقائياً كلما اكتشفت شيئاً. رتّب الأحداث في رأسك: من كان حاضراً، ومتى، وأين؟</p>
   <div class="label" style="margin:6px 0 8px">الخط الزمني</div>
-  <ol class="timeline">${tl.map(f=>`<li class="${FACTS[f].key?'key':''}"><time>${FACTS[f].t}</time><span>${FACTS[f].x}</span></li>`).join('')}</ol>
+  <ol class="timeline">${tl.map((f,i)=>`${i&&nightMin(FACTS[f].t)>=1440&&nightMin(FACTS[tl[i-1]].t)<1440?'<li class="tl-midnight">بعد منتصف الليل</li>':''}<li class="${FACTS[f].key?'key':''}"><time>${FACTS[f].t}</time><span>${FACTS[f].x}</span></li>`).join('')}</ol>
   <div class="label" style="margin:22px 0 8px">ملاحظات واستنتاجات</div>
   ${ob.length?`<ul class="notes">${ob.map(f=>`<li>${FACTS[f].x}</li>`).join('')}</ul>`:'<div class="empty">لا ملاحظات بعد. افحص المسرح.</div>'}
   ${S.helps.filter(h=>h[0]==='d').length?`<div class="label" style="margin:22px 0 8px">استنتاجات الملازم فهد</div><ul class="notes">${S.helps.filter(h=>h[0]==='d').map(h=>{const [n,i]=h.slice(1).split('_').map(Number);return `<li>${STAGES[n-1].help[i].x}</li>`}).join('')}</ul>`:''}</div>`;
