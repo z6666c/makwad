@@ -589,6 +589,16 @@ html.wide .sheet{max-width:640px;border-radius:14px;margin-bottom:24px}
 html.wide #game{grid-template-columns:minmax(0,1fr) minmax(330px,min(32%,470px))}
 html.wide #sceneDock{padding:10px 14px 14px}
 .stage.wide{aspect-ratio:3/2;width:min(100cqw,calc(100cqh * 3 / 2))}
+
+/* phones held sideways: compact chrome so the landscape scene gets the height */
+@media (orientation:landscape) and (max-height:560px){
+ html.wide #game{grid-template-columns:minmax(0,1fr) minmax(280px,36%)}
+ html.wide #game .topbar{padding-block:4px}
+ html.wide #game .topbar .sub{display:none}
+ html.wide #sceneDock{padding:4px 8px 6px}
+ html.wide #game .tab span{font-size:11px}
+ html.wide #game .tab{padding-block:4px}
+}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -4095,7 +4105,7 @@ function renderTabs(){
  $('#tabs').onclick=(e)=>{const b=e.target.closest('.tab');if(!b)return;if(lockedTab(b.dataset.t)){toast(`يُفتح في المرحلة ${AR(b.dataset.t==='talk'?2:4)}`);Snd.wrong();return}S.tab=b.dataset.t;if(S.tab!=='scene'&&IMM){IMM=false;$('#game').classList.remove('imm')}if(S.tab==='board')S.newEv=[];S.tab==='scene'?Snd.torch():Snd.tab();save();renderAll()};
 }
 const openScenes=()=>CASE.open||[CASE.init.scene];
-const WIDE_MQ=matchMedia('(min-width:900px) and (min-aspect-ratio:5/4)');let WIDE=WIDE_MQ.matches;
+const WIDE_MQ=matchMedia('(min-width:900px) and (min-aspect-ratio:5/4), (orientation:landscape) and (min-width:640px) and (max-height:560px)');let WIDE=WIDE_MQ.matches;
 function applyWide(){document.documentElement.classList.toggle('wide',WIDE);const d=$('#sceneDock');if(d&&!WIDE){d.innerHTML='';d.dataset.sig=''}}
 (WIDE_MQ.addEventListener?WIDE_MQ.addEventListener('change',onWide):WIDE_MQ.addListener(onWide));
 function onWide(e){WIDE=e.matches;applyWide();if(S&&!$('#game').hidden){if(!WIDE&&S.tab==='board')S.tab='scene';renderAll()}}
