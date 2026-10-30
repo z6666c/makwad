@@ -1,0 +1,23 @@
+{
+  "name": "mohaqqiq",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ملفات المحقق — لعبة تحقيق جنائي عربية",
+  "scripts": {
+    "build": "node scripts/copy-web.mjs",
+    "assets": "npx @capacitor/assets generate --iconBackgroundColor '#0b0e14' --splashBackgroundColor '#0b0e14'",
+    "ios": "npm run build && npx cap sync ios && npx cap open ios",
+    "android": "npm run build && npx cap sync android && npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/ios": "^6.1.2",
+    "@capacitor/splash-screen": "^6.0.2",
+    "@capacitor/status-bar": "^6.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.1.2"
+  }
+}
