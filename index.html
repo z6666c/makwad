@@ -3460,6 +3460,7 @@ CASES.c10={
 };
 
 CASES.c7.premium=0;CASES.c8.premium=0;CASES.c9.premium=0;CASES.c2.premium=1;CASES.c5.premium=1;CASES.c6.premium=1;CASES.c10.premium=1;
+CASES.c1.accQ=["من القاتل؟", "كيف مات؟", "لماذا قتله؟"];CASES.c2.accQ=["من القاتل؟", "كيف ماتت نورة؟", "لماذا قتلها؟"];CASES.c3.accQ=["من أخذ السيف؟", "كيف اختفى السيف؟", "لماذا أخذه؟"];CASES.c4.accQ=["من سرق الألماسة؟", "كيف اختفت «نجمة الخليج»؟", "لماذا سرقها؟"];CASES.c5.accQ=["من القاتل؟", "كيف مات الأستاذ؟", "لماذا قتله؟"];CASES.c6.accQ=["من القاتل؟", "كيف سقط الشيخ؟", "لماذا قتله؟"];CASES.c7.accQ=["من وراء اختفاء برق؟", "ماذا حدث لبرق؟", "لماذا فعلها؟"];CASES.c8.accQ=["من سرق الخنجر؟", "كيف اختفى الخنجر؟", "لماذا سرقته؟"];CASES.c9.accQ=["من القاتل؟", "كيف مات القبطان؟", "لماذا قتله؟"];CASES.c10.accQ=["من القاتل؟", "كيف مات عادل؟", "لماذا قتلته؟"];
 CASES.c1.amb='rain';CASES.c2.amb='murmur';CASES.c3.amb='wind';CASES.c1.feature='لغز الرسالة الممزقة';CASES.c2.feature='هاتف برمز سري · كذبة تكشف كذبة';
 /* ================= PRESSURE ================= */
 const stressOf=id=>(S.stress&&S.stress[id])||0;
@@ -4195,7 +4196,7 @@ function renderNotes(v){
  const ob=S.facts.filter(f=>!FACTS[f].t);
  v.innerHTML=`<div class="pad"><h2 class="h-sec">مفكرة المحقق</h2>
   <div class="stages">${STAGES.map((st,i)=>{const n=i+1,cls=n<S.stage?'past':n===S.stage?'cur':'next';return `<div class="st ${cls}"><div class="st-h"><span class="ss-n">${n<S.stage?'✓':AR(n)}</span><strong>${st.t}</strong><small>${cls==='past'?'مكتملة':cls==='cur'?'الحالية':'مقفلة'}</small></div>${cls==='cur'?goalsHTML(n):''}</div>`}).join('')}</div>
-  <p class="lead" style="margin-top:18px">تُدوَّن تلقائياً كلما اكتشفت شيئاً. رتّب الأحداث في رأسك: من كان في الجناح وقت الوفاة؟</p>
+  <p class="lead" style="margin-top:18px">تُدوَّن تلقائياً كلما اكتشفت شيئاً. رتّب الأحداث في رأسك: من كان حاضراً، ومتى، وأين؟</p>
   <div class="label" style="margin:6px 0 8px">الخط الزمني</div>
   <ol class="timeline">${tl.map(f=>`<li class="${FACTS[f].key?'key':''}"><time>${FACTS[f].t}</time><span>${FACTS[f].x}</span></li>`).join('')}</ol>
   <div class="label" style="margin:22px 0 8px">ملاحظات واستنتاجات</div>
@@ -4205,7 +4206,7 @@ function renderNotes(v){
 
 /* ================= ACCUSE ================= */
 function renderAccuse(v){
- const a=S.acc;const ready=a.s&&a.m&&a.mo;const open=linksDone()&&S.tlDone;
+ const AQ=CASE.accQ||['من الفاعل؟','كيف حدث؟','لماذا؟'];const a=S.acc;const ready=a.s&&a.m&&a.mo;const open=linksDone()&&S.tlDone;
  v.innerHTML=`<div class="pad">${stageStrip()}<h2 class="h-sec">ملف الاتهام</h2>
   ${boardHTML()}
   ${timelineHTML()}
@@ -4213,9 +4214,9 @@ function renderAccuse(v){
   ${open?`<p class="lead">النيابة تحتاج ثلاثة عناصر متماسكة. محاولات متبقية: <strong style="font-family:var(--f-mono)">${DIFF.tries-S.tries}</strong></p>
   <div class="warn">الاتهام الصحيح يمنحك ${PTS.win} نقطة. كل محاولة خاطئة تخصم ${Math.abs(PTS.badAccuse)}.</div>
   ${S.verdict?`<div class="verdict">${S.verdict}</div>`:''}
-  <div class="acc-step"><h4><span>1</span>من القاتل؟</h4><div class="opts">${SUS_ORDER.map(s=>`<button class="opt sus" aria-pressed="${a.s===s}" data-k="s" data-v="${s}">${portrait(s)}<span>${SUS[s].n}</span></button>`).join('')}</div></div>
-  <div class="acc-step"><h4><span>2</span>كيف قُتل؟</h4><div class="opts">${METHODS.map(([k,l])=>`<button class="opt" aria-pressed="${a.m===k}" data-k="m" data-v="${k}">${l}</button>`).join('')}</div></div>
-  <div class="acc-step"><h4><span>3</span>لماذا؟</h4><div class="opts">${MOTIVES.map(([k,l])=>`<button class="opt" aria-pressed="${a.mo===k}" data-k="mo" data-v="${k}">${l}</button>`).join('')}</div></div>
+  <div class="acc-step"><h4><span>1</span>${AQ[0]}</h4><div class="opts">${SUS_ORDER.map(s=>`<button class="opt sus" aria-pressed="${a.s===s}" data-k="s" data-v="${s}">${portrait(s)}<span>${SUS[s].n}</span></button>`).join('')}</div></div>
+  <div class="acc-step"><h4><span>2</span>${AQ[1]}</h4><div class="opts">${METHODS.map(([k,l])=>`<button class="opt" aria-pressed="${a.m===k}" data-k="m" data-v="${k}">${l}</button>`).join('')}</div></div>
+  <div class="acc-step"><h4><span>3</span>${AQ[2]}</h4><div class="opts">${MOTIVES.map(([k,l])=>`<button class="opt" aria-pressed="${a.mo===k}" data-k="mo" data-v="${k}">${l}</button>`).join('')}</div></div>
   <button class="btn btn-primary" style="width:100%" id="btnAccuse" ${ready?'':'disabled style="width:100%;opacity:.45"'}>قدّم الملف إلى النيابة</button>`:`<p class="lead">${ico('lock')} يُفتح بعد إكمال لوحة الخيوط وإعادة بناء الليلة.</p>`}
   </section></div>`;
  bindStrip(v);
