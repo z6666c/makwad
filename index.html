@@ -566,6 +566,25 @@ table.log td:first-child{font-family:var(--f-mono);white-space:nowrap;width:1%;p
 .tier-box p{margin:8px 0 0;font-size:13px;color:var(--paper-ink)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
 .timeline li.tl-midnight{list-style:none;font-size:12px;font-weight:700;color:var(--sodium,#e5a245);border-top:1px dashed currentColor;padding-top:6px;margin:6px 0}
+
+/* ---------- Wide screens (tablet landscape / desktop) ---------- */
+#sceneDock{display:none}
+html.wide #game{display:grid;grid-template-columns:minmax(0,1fr) minmax(380px,min(44%,620px));grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top top" "dock view" "dock tabs"}
+html.wide #game .topbar{grid-area:top}
+html.wide #sceneDock{grid-area:dock;display:flex;flex-direction:column;min-height:0;min-width:0;padding:14px;background:radial-gradient(90% 70% at 50% 40%,#151b28,var(--ink) 75%)}
+html.wide #sceneDock .scene-view{flex:1;min-height:0}
+html.wide #sceneDock .stage{border-radius:10px;box-shadow:0 30px 80px -30px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.06)}
+html.wide #view{grid-area:view;border-inline-start:1px solid var(--line);background:var(--ink)}
+html.wide #game .tabbar{grid-area:tabs;grid-template-columns:repeat(4,1fr);border-inline-start:1px solid var(--line)}
+html.wide #game .tab[data-t="scene"]{display:none}
+html.wide #game.imm{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr);grid-template-areas:"dock"}
+html.wide #game.imm #view{display:none}
+html.wide #game.imm #sceneDock{padding:0}
+html.wide .cases-inner{max-width:1100px}
+html.wide .case-list{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;column-gap:26px}
+html.wide .case-list .tier-h{grid-column:1/-1}
+html.wide .brief-inner,html.wide .end-inner{max-width:760px}
+html.wide .sheet{max-width:640px;border-radius:14px;margin-bottom:24px}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -617,6 +636,7 @@ table.log td:first-child{font-family:var(--f-mono);white-space:nowrap;width:1%;p
       <button class="icon-btn" id="btnMenu" aria-label="القائمة"><svg viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01"/></svg></button>
     </div>
   </header>
+  <div id="sceneDock"></div>
   <main id="view"></main>
   <nav class="tabbar" id="tabs" role="tablist"></nav>
 </section>
@@ -625,7 +645,7 @@ table.log td:first-child{font-family:var(--f-mono);white-space:nowrap;width:1%;p
 <section id="end" class="screen" hidden><div class="end-inner" id="endInner"></div></section>
 
 <script>
-document.documentElement.setAttribute('dir','rtl');document.documentElement.setAttribute('lang','ar');
+document.documentElement.setAttribute('dir','rtl');setTimeout(()=>applyWide(),0);document.documentElement.setAttribute('lang','ar');
 /* ================= DATA ================= */
 const ICON={
  doc:'<path d="M6 3h9l4 4v14H6z M15 3v4h4 M9 12h7 M9 16h7"/>',
@@ -1377,7 +1397,7 @@ function openHelp(){
   const stages=STAGES.slice(0,S.stage);
   body.innerHTML=`<div class="help-head"><div class="fahd">${ico('bulb')}</div><div><h3 class="h-sec" style="font-size:20px;margin:0">الملازم فهد</h3><div class="lead" style="margin:0">مساعدك في القضية. كل مساعدة تُخصم من نقاطك.</div></div><div class="wallets"><div class="wallet"><b>${S.score}</b><small>نقطة</small></div><button class="wallet gold-w" data-store>${coinSVG}<b data-gold-bal>${AR(goldBal())}</b><small>ذهب</small></button></div></div>
   <p class="lead" style="font-size:12px;margin:0 0 10px">ادفع بالنقاط، أو بالذهب لتحافظ على نقاط القضية.</p>
-  ${S.tab==='scene'&&COST.spot?`<div class="help-item"><div><strong>أين أبحث؟</strong><p>يوجّه المصباح إلى دليل لم تجده في ${LOCS[S.scene]}.</p></div><div class="buys"><button class="buy" data-spot ${HOT[S.scene].every(h=>has('found',h[0]))?'disabled':''}>${COST.spot}</button><button class="buy gold" data-spotg ${HOT[S.scene].every(h=>has('found',h[0]))?'disabled':''}>${goldFor(COST.spot)}</button></div></div>`:''}
+  ${(S.tab==='scene'||WIDE)&&COST.spot?`<div class="help-item"><div><strong>أين أبحث؟</strong><p>يوجّه المصباح إلى دليل لم تجده في ${LOCS[S.scene]}.</p></div><div class="buys"><button class="buy" data-spot ${HOT[S.scene].every(h=>has('found',h[0]))?'disabled':''}>${COST.spot}</button><button class="buy gold" data-spotg ${HOT[S.scene].every(h=>has('found',h[0]))?'disabled':''}>${goldFor(COST.spot)}</button></div></div>`:''}
   ${stages.slice().reverse().map((st,ri)=>{const n=S.stage-ri;return `<div class="label" style="margin:16px 0 8px">استنتاجات المرحلة ${AR(n)} · ${st.t}</div>`+st.help.map((h,i)=>{const id=`d${n}_${i}`,got=has('helps',id),prev=i===0||has('helps',`d${n}_${i-1}`);
     return got?`<div class="help-item open"><p>${h.x}</p></div>`:`<div class="help-item"><div><strong>استنتاج ${AR(i+1)}</strong><p>${prev?'ملاحظة من دفتر الملازم فهد.':'افتح الاستنتاج السابق أولاً.'}</p></div><div class="buys"><button class="buy" data-d="${id}" data-c="${h.c}" ${prev?'':'disabled'}>${h.c}</button><button class="buy gold" data-dg="${id}" data-g="${goldFor(h.c)}" ${prev?'':'disabled'}>${goldFor(h.c)}</button></div></div>`}).join('')}).join('')}
   <div class="help-item boost"><div><strong>دفعة نقاط</strong><p>أضف ٥٠ نقطة إلى رصيد القضية.</p></div><button class="buy gold" data-boost>25</button></div>
@@ -3930,16 +3950,22 @@ function renderTabs(){
  $('#tabs').onclick=(e)=>{const b=e.target.closest('.tab');if(!b)return;if(lockedTab(b.dataset.t)){toast(`يُفتح في المرحلة ${AR(b.dataset.t==='talk'?2:4)}`);Snd.wrong();return}S.tab=b.dataset.t;if(S.tab!=='scene'&&IMM){IMM=false;$('#game').classList.remove('imm')}if(S.tab==='board')S.newEv=[];S.tab==='scene'?Snd.torch():Snd.tab();save();renderAll()};
 }
 const openScenes=()=>CASE.open||[CASE.init.scene];
+const WIDE_MQ=matchMedia('(min-width:900px) and (min-aspect-ratio:5/4)');let WIDE=WIDE_MQ.matches;
+function applyWide(){document.documentElement.classList.toggle('wide',WIDE);const d=$('#sceneDock');if(d&&!WIDE){d.innerHTML='';d.dataset.sig=''}}
+(WIDE_MQ.addEventListener?WIDE_MQ.addEventListener('change',onWide):WIDE_MQ.addListener(onWide));
+function onWide(e){WIDE=e.matches;applyWide();if(S&&!$('#game').hidden){if(!WIDE&&S.tab==='board')S.tab='scene';renderAll()}}
 function renderAll(){
  if(lockedTab(S.tab))S.tab='scene';if(!HOT[S.scene]||(S.stage<2&&!openScenes().includes(S.scene)))S.scene=CASE.init.scene;$('#caseName').textContent=CASE.name;$('#score').textContent=S.score;$('#stageName').textContent='المرحلة '+AR(S.stage)+' من '+AR(STAGES.length);$('#clock').textContent=fmtT(S.secs);renderSound();renderTabs();
- stopEngine();const v=$('#view');v.scrollTop=0;Snd.setScene(S.scene);Snd.setStage(S.stage);Snd.setStress(S.tab==='talk'?stressOf(S.sel):0);Snd.setCue({scene:'explore',talk:'talk',board:'board',notes:'notes',accuse:'accuse'}[S.tab]);tickClock();
+ if(WIDE&&S.tab==='scene')S.tab='board';
+ if(WIDE){const dock=$('#sceneDock'),sig=[CUR,S.scene,S.found.length,S.stage,IMM,S.coach?1:0].join('|');if(dock.dataset.sig!==sig||!ENG||!dock.querySelector('#stage')){stopEngine();dock.dataset.sig=sig;renderScene(dock)}}else stopEngine();
+ const v=$('#view');v.scrollTop=0;Snd.setScene(S.scene);Snd.setStage(S.stage);Snd.setStress(S.tab==='talk'?stressOf(S.sel):0);Snd.setCue({scene:'explore',talk:'talk',board:'board',notes:'notes',accuse:'accuse'}[S.tab]);tickClock();
  ({scene:renderScene,talk:renderTalk,board:renderBoard,notes:renderNotes,accuse:renderAccuse})[S.tab](v);
 }
 
 /* ================= SCENE ================= */
 let IMM=false;
 const ICON_EXPAND='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',ICON_SHRINK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
-function setImm(on){IMM=on;$('#game').classList.toggle('imm',on);Snd.tab();if(S.tab==='scene')renderAll()}
+function setImm(on){IMM=on;$('#game').classList.toggle('imm',on);Snd.tab();if(S.tab==='scene'||WIDE)renderAll()}
 function renderScene(v){
  const hs=HOT[S.scene];const n=hs.filter(h=>has('found',h[0])).length;const A=ART[S.scene];
  v.innerHTML=`<div class="scene-view">
