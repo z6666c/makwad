@@ -1224,3 +1224,28 @@ html.printing .sbc-verify-seal, html.printing iframe[title="SBC Verification"] {
 .foot { grid-template-columns: 1.4fr 1.3fr 1fr 1fr; }
 @media (max-width: 860px) { .foot { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 520px) { .foot { grid-template-columns: 1fr; } }
+
+/* visitors panel */
+.vis-head { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+.vis-head h3 { display: flex; align-items: center; gap: 8px; }
+.vis-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.live-dot { width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,.6); animation: livep 2s infinite; display: inline-block; }
+@keyframes livep { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,.55) } 70% { box-shadow: 0 0 0 8px rgba(34,197,94,0) } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0) } }
+@media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+.vis-chart { display: flex; align-items: flex-end; gap: 4px; height: 190px; padding-top: 18px; direction: ltr; overflow-x: auto; }
+.vc-col { flex: 1 0 14px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; }
+.vc-col i { display: block; width: 100%; background: var(--accent); border-radius: 4px 4px 0 0; min-height: 2px; }
+.vc-col small { font-size: .62rem; color: var(--muted); }
+.vc-n { font-size: .62rem; color: var(--muted); min-height: 1em; }
+.vis-list { padding: 18px; }
+.vis-list h3 { font-size: 1rem; margin-bottom: 10px; }
+.vis-list ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.vis-list li { position: relative; display: flex; justify-content: space-between; gap: 10px; padding: 7px 10px; border-radius: 8px; overflow: hidden; font-size: .9rem; }
+.vl-bar { position: absolute; inset-block: 0; inset-inline-start: 0; background: color-mix(in srgb, var(--accent) 16%, transparent); border-radius: 8px; }
+.vl-k, .vis-list li b { position: relative; }
+.vl-k { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vis-connect ol { padding-inline-start: 20px; display: flex; flex-direction: column; gap: 6px; }
+.vis-form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-top: 8px; }
+.vis-form .field { flex: 1 1 280px; display: flex; flex-direction: column; gap: 6px; }
+.vis-foot { font-size: .82rem; }
+.linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); cursor: pointer; text-decoration: underline; }

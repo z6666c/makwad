@@ -1,5 +1,5 @@
 // Admin dashboard: overview, price quotes and the price catalog editor.
-import { useMutation, useQuery } from 'convex/react'
+import { useAction, useMutation, useQuery } from 'convex/react'
 import { useEffect, useMemo, useState } from 'react'
 import type React from 'react'
 import { api } from '@/convex/_generated/api'
@@ -760,22 +760,163 @@ const SCHEDULE: Array<[string, number]> = [['الدفعة الأولى عند ا
 const CF_WA = 'https://dash.cloudflare.com/951488803cf2737b34e0bef48a60da02/web-analytics/overview?siteTag~in=52f5a3d99bcd4817ab596a2313d49842'
 const GSC = 'https://search.google.com/search-console?resource_id=https%3A%2F%2Fmakwad.com%2F'
 
-export function VisitorsPanel() {
+type VisRow = { key: string; views: number; visits: number }
+type VisData = {
+  ok: true; at: number
+  live: { views: number; visits: number }; today: { views: number; visits: number }; week: { views: number; visits: number }; month: { views: number; visits: number }
+  daily: Array<{ date: string; views: number; visits: number }>
+  pages: Array<VisRow>; refs: Array<VisRow>; countries: Array<VisRow>; devices: Array<VisRow>
+}
+type VisRes = VisData | { ok: false; error: string; notConnected?: boolean }
+
+const COUNTRY_AR: Record<string, string> = {
+  'Saudi Arabia': 'السعودية', 'United Arab Emirates': 'الإمارات', Kuwait: 'الكويت', Qatar: 'قطر', Bahrain: 'البحرين', Oman: 'عُمان',
+  Egypt: 'مصر', Jordan: 'الأردن', 'United States': 'أمريكا', 'United Kingdom': 'بريطانيا', Germany: 'ألمانيا', France: 'فرنسا',
+  Netherlands: 'هولندا', Ireland: 'إيرلندا', India: 'الهند', Pakistan: 'باكستان', Turkey: 'تركيا', Morocco: 'المغرب', Iraq: 'العراق', Yemen: 'اليمن',
+}
+const DEVICE_AR: Record<string, string> = { desktop: 'كمبيوتر', mobile: 'جوال', tablet: 'تابلت' }
+const PAGE_AR: Record<string, string> = { '/': 'الصفحة الرئيسية', '/services': 'كل الخدمات', '/login': 'دخول العملاء', '/dashboard': 'لوحة التحكم', '/privacy': 'سياسة الخصوصية', '/terms': 'الشروط' }
+const refLabel = (h: string) => {
+  if (!h) return 'مباشر (بدون مصدر)'
+  const x = h.replace(/^www\./, '')
+  if (/google\./.test(x)) return 'قوقل'
+  if (/instagram/.test(x)) return 'انستقرام'
+  if (/(^|\.)t\.co$|twitter|x\.com/.test(x)) return 'إكس'
+  if (/tiktok/.test(x)) return 'تيك توك'
+  if (/facebook|fb\./.test(x)) return 'فيسبوك'
+  if (/whatsapp|wa\.me/.test(x)) return 'واتساب'
+  if (/bing\./.test(x)) return 'Bing'
+  if (/makwad\.com/.test(x)) return 'من داخل الموقع'
+  return x
+}
+const pageLabel = (p: string) => PAGE_AR[p.replace(/\/$/, '') || '/'] ?? decodeURIComponent(p.replace(/\/$/, '') || '/')
+const n0 = (n: number) => n.toLocaleString('en-US')
+
+function VisList({ title, items, label }: { title: string; items: Array<VisRow>; label: (k: string) => string }) {
+  const max = Math.max(1, ...items.map((i) => i.visits || i.views))
   return (
-    <div className="vis-grid">
-      <div className="panel vis-card">
-        <span className="kicker">زوار الموقع</span>
-        <h2>عدد الزوار والصفحات الأكثر زيارة</h2>
-        <p className="muted">الزيارات ومشاهدات الصفحات، وأكثر الصفحات اللي يركز عليها الزوار، ومن وين جوا (قوقل، واتساب، إنستقرام…)، وأجهزتهم ودولهم. الإحصاءات من Cloudflare، بدون كوكيز ولا بيانات شخصية.</p>
-        <a className="btn" href={CF_WA} target="_blank" rel="noopener noreferrer">فتح تقرير الزوار ↗</a>
-        <small className="muted">يتطلب تسجيل الدخول في Cloudflare. بدأ التسجيل من 19 أكتوبر 2026.</small>
-      </div>
+    <div className="panel vis-list">
+      <h3>{title}</h3>
+      {items.length === 0 ? <p className="muted">لا توجد بيانات في هذه الفترة.</p> : (
+        <ul>{items.map((i) => (
+          <li key={i.key || '-'}>
+            <span className="vl-bar" style={{ width: `${Math.round(((i.visits || i.views) / max) * 100)}%` }} />
+            <span className="vl-k">{label(i.key)}</span>
+            <b className="mono">{n0(i.visits || i.views)}</b>
+          </li>
+        ))}</ul>
+      )}
+    </div>
+  )
+}
+
+function CloudflareConnect() {
+  const connect = useAction(api.analytics.connectCloudflare)
+  const [token, setToken] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  return (
+    <div className="panel panel-pad vis-connect">
+      <span className="kicker">ربط مرة وحدة</span>
+      <h3>اعرض الزوار هنا مباشرة</h3>
+      <p className="muted">نحتاج مفتاح قراءة فقط من Cloudflare، عشان اللوحة تجيب أرقام الزوار بنفسها. المفتاح ينحفظ في الخادم ولا يظهر لأحد.</p>
+      <ol className="muted">
+        <li>افتح <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener noreferrer">صفحة API Tokens في Cloudflare ↗</a> واضغط Create Token.</li>
+        <li>اختر Create Custom Token، وسمّه مثلاً «لوحة مكود».</li>
+        <li>في Permissions اختر: Account ← Account Analytics ← Read.</li>
+        <li>في Account Resources اختر حسابك، ثم Continue to summary ← Create Token.</li>
+        <li>انسخ المفتاح والصقه هنا.</li>
+      </ol>
+      <form className="vis-form" onSubmit={async (e) => {
+        e.preventDefault(); setBusy(true); setErr('')
+        const r = await connect({ token }) as { ok: boolean; error?: string }
+        setBusy(false)
+        if (r.ok) setToken(''); else setErr(r.error ?? 'تعذر الربط')
+      }}>
+        <label className="field"><span>مفتاح Cloudflare</span>
+          <input className="input" type="password" autoComplete="off" dir="ltr" value={token} onChange={(e) => setToken(e.target.value)} placeholder="الصق المفتاح هنا" />
+        </label>
+        <button className="btn" type="submit" disabled={busy || token.trim().length < 20}>{busy ? 'جارٍ التحقق…' : 'ربط Cloudflare'}</button>
+      </form>
+      {err && <div className="sent err" role="alert">{err}</div>}
+    </div>
+  )
+}
+
+export function VisitorsPanel() {
+  const status = useQuery(api.analytics.cloudflareStatus) as { connected: boolean; updatedAt: number | null } | null | undefined
+  const load = useAction(api.analytics.visitors)
+  const disconnect = useMutation(api.analytics.disconnectCloudflare)
+  const [days, setDays] = useState(7)
+  const [data, setData] = useState<VisRes | null>(null)
+  const [busy, setBusy] = useState(false)
+  const connected = !!status?.connected
+  const refresh = async () => { setBusy(true); try { setData(await load({ days }) as VisRes) } catch { setData({ ok: false, error: 'تعذر الاتصال بالخادم.' }) } setBusy(false) }
+  useEffect(() => {
+    if (!connected) return
+    void refresh()
+    const t = window.setInterval(() => { if (document.visibilityState === 'visible') void refresh() }, 60_000)
+    return () => window.clearInterval(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected, days])
+
+  const d = data && data.ok ? data : null
+  const maxDay = d ? Math.max(1, ...d.daily.map((x) => x.visits)) : 1
+  return (
+    <div className="stack">
+      {status === undefined ? <p className="muted">جارٍ التحميل…</p> : !connected ? <CloudflareConnect /> : (
+        <>
+          <div className="panel panel-pad vis-head">
+            <div>
+              <h3>زوار الموقع <span className="live-dot" aria-hidden="true" /> <small className="muted">يتحدث كل دقيقة</small></h3>
+              <p className="muted">{d ? `آخر تحديث ${new Date(d.at).toLocaleTimeString('ar-SA-u-nu-latn', { hour: '2-digit', minute: '2-digit' })}` : busy ? 'جارٍ جلب الأرقام من Cloudflare…' : ''}</p>
+            </div>
+            <div className="vis-actions">
+              <div className="seg" role="group" aria-label="فترة القوائم">
+                {[[1, 'اليوم'], [7, '7 أيام'], [30, '30 يوم']].map(([v, l]) => <button key={v} type="button" aria-pressed={days === v} onClick={() => setDays(v as number)}>{l}</button>)}
+              </div>
+              <button className="btn ghost small" type="button" disabled={busy} onClick={() => void refresh()}>{busy ? 'جارٍ التحديث…' : 'تحديث'}</button>
+            </div>
+          </div>
+          {data && !data.ok && <div className="sent err" role="alert">{data.error}</div>}
+          {d && (
+            <>
+              <div className="kpis">
+                <div className="kpi"><small>آخر 30 دقيقة</small><b>{n0(d.live.visits)}</b><small>{n0(d.live.views)} مشاهدة صفحة</small></div>
+                <div className="kpi"><small>زيارات اليوم</small><b>{n0(d.today.visits)}</b><small>{n0(d.today.views)} مشاهدة صفحة</small></div>
+                <div className="kpi"><small>آخر 7 أيام</small><b>{n0(d.week.visits)}</b><small>{n0(d.week.views)} مشاهدة صفحة</small></div>
+                <div className="kpi"><small>آخر 30 يوم</small><b>{n0(d.month.visits)}</b><small>{n0(d.month.views)} مشاهدة صفحة</small></div>
+              </div>
+              <div className="panel panel-pad">
+                <h3>الزيارات اليومية · آخر 30 يوم</h3>
+                {d.daily.length === 0 ? <p className="muted">لا توجد زيارات مسجلة بعد.</p> : (
+                  <div className="vis-chart" role="img" aria-label="رسم الزيارات اليومية">
+                    {d.daily.map((x) => (
+                      <div key={x.date} className="vc-col" title={`${x.date}: ${x.visits} زيارة، ${x.views} مشاهدة`}>
+                        <span className="vc-n mono">{x.visits || ''}</span>
+                        <i style={{ height: `${Math.max(2, Math.round((x.visits / maxDay) * 100))}%` }} />
+                        <small className="mono">{x.date.slice(8)}</small>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="vis-grid">
+                <VisList title="أكثر الصفحات زيارة" items={d.pages} label={pageLabel} />
+                <VisList title="من وين جوا" items={d.refs} label={refLabel} />
+                <VisList title="الدول" items={d.countries} label={(k) => COUNTRY_AR[k] ?? (k || 'غير معروف')} />
+                <VisList title="الأجهزة" items={d.devices} label={(k) => DEVICE_AR[k] ?? (k || 'غير معروف')} />
+              </div>
+            </>
+          )}
+          <p className="muted vis-foot">الأرقام من Cloudflare Web Analytics بدون كوكيز ولا بيانات شخصية. «زيارة» تعني دخول شخص للموقع، و«مشاهدة صفحة» كل صفحة يفتحها. <a href={CF_WA} target="_blank" rel="noopener noreferrer">التقرير الكامل في Cloudflare ↗</a> · <button type="button" className="linkish" onClick={() => { if (window.confirm('فصل Cloudflare عن اللوحة؟')) void disconnect({}) }}>فصل الربط</button></p>
+        </>
+      )}
       <div className="panel vis-card">
         <span className="kicker">البحث في قوقل</span>
         <h2>كيف يلقاك الناس في قوقل</h2>
         <p className="muted">كم مرة ظهر موقعك في نتائج البحث، وكم شخص ضغط عليه، والكلمات اللي بحثوا فيها، وحالة فهرسة الصفحات.</p>
         <a className="btn ghost" href={GSC} target="_blank" rel="noopener noreferrer">فتح Search Console ↗</a>
-        <small className="muted">الموقع مضاف ومُتحقَّق منه، وخريطة الموقع مرسلة.</small>
       </div>
     </div>
   )
