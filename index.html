@@ -487,7 +487,7 @@ table.log td:first-child{font-family:var(--f-mono);white-space:nowrap;width:1%;p
 .vol-row input{width:100%;accent-color:var(--sodium)}
 .vol-row b{font-family:var(--f-display);color:var(--sodium);text-align:center}
 .stage{isolation:isolate}
-.stage canvas.gl{mix-blend-mode:hard-light;opacity:0;transition:opacity .5s}
+.stage canvas.gl{mix-blend-mode:normal;opacity:0;transition:opacity .5s}
 
 /* ---------- Difficulty picker ---------- */
 .diff-pick{margin:14px 0 4px;padding:12px;border:1.5px dashed rgba(42,34,23,.35);border-radius:4px}
@@ -1338,7 +1338,8 @@ void main(){
  vec2 q=uv-.5;L*=clamp(1.-dot(q,q)*1.25,0.,1.);
  float g=fract(sin(dot(floor(uv*res)+tm,vec2(12.9898,78.233)))*43758.5453);L*=.95+g*.1;
  L=mix(L,L*vec3(1.06,1.,.9),warm);
- gl_FragColor=vec4(clamp(L*.5,0.,1.),1.);
+ vec3 sl=clamp(L*.5,0.,1.);vec3 lo=2.*al*sl;vec3 hi=1.-2.*(1.-al)*(1.-sl);
+ gl_FragColor=vec4(mix(lo,hi,step(.5,sl)),1.);
 }`;
 function makeGL(cv,scene,E){
  let gl;try{gl=cv.getContext('webgl',{alpha:false,antialias:false,premultipliedAlpha:false})}catch(e){}
@@ -1350,7 +1351,7 @@ function makeGL(cv,scene,E){
  const ap=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(ap);gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
  const U={};['tF','tM','tN','oF','oM','oN','fs','res','Lp','Lc','nL','torch','amb','flash','tm','warm'].forEach(n=>U[n]=gl.getUniformLocation(pr,n));
  const G={ready:false};const layers=['far','mid','near'];const tex=[];
- const load=(k,i)=>new Promise(res=>{const img=(E.art||ART[scene])[k].img,TW=E.geo&&E.geo.wide?1350:600;const go=()=>{const c=document.createElement('canvas');c.width=TW;c.height=900;const x=c.getContext('2d');try{x.drawImage(img,0,0,TW,900)}catch(e){}
+ const load=(k,i)=>new Promise(res=>{const img=(E.art||ART[scene])[k].img,TW=E.geo&&E.geo.wide?1800:800;const go=()=>{const c=document.createElement('canvas');c.width=TW;c.height=1200;const x=c.getContext('2d');try{x.drawImage(img,0,0,TW,1200)}catch(e){}
    const t=gl.createTexture();gl.activeTexture(gl.TEXTURE0+i);gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c);
    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
    tex[i]=t;res()};
@@ -1384,7 +1385,7 @@ function startEngine(st,scene,onLit){
  ENG=E;
  const glc=st.querySelector('canvas.gl');try{E.G=glc&&!/[?&]nogl/.test(location.search)?makeGL(glc,scene,E):null}catch(e){E.G=null}
  E.onGL=()=>{lc.style.mixBlendMode='screen'};
- const size=()=>{const r=st.getBoundingClientRect();E.dpr=Math.min(1.75,devicePixelRatio||1);E.W=r.width;E.H=r.height;for(const c of [lc,dc]){if(!c)continue;c.width=Math.round(r.width*E.dpr);c.height=Math.round(r.height*E.dpr)}if(glc){const gd=Math.min(1.25,devicePixelRatio||1);glc.width=Math.round(r.width*gd);glc.height=Math.round(r.height*gd)}
+ const size=()=>{const r=st.getBoundingClientRect();E.dpr=Math.min(1.75,devicePixelRatio||1);E.W=r.width;E.H=r.height;for(const c of [lc,dc]){if(!c)continue;c.width=Math.round(r.width*E.dpr);c.height=Math.round(r.height*E.dpr)}if(glc){const gd=Math.min(1.75,devicePixelRatio||1);glc.width=Math.round(r.width*gd);glc.height=Math.round(r.height*gd)}
   if(!E.tx){E.tx=E.cx=r.width*.5;E.ty=E.cy=r.height*.55}};
  size();E.ro=new ResizeObserver(size);E.ro.observe(st);
  E.setTarget=(x,y)=>{E.tx=x;E.ty=y;E.idle=performance.now()};
@@ -4549,10 +4550,10 @@ function renderScene(v){
   <div class="loc-switch">${Object.entries(LOCS).map(([k,l])=>{const lk=!openScenes().includes(k)&&S.stage<2;return `<button aria-pressed="${S.scene===k}" data-l="${k}" class="${lk?'lk':''}">${lk?ico('lock'):''}${l}</button>`}).join('')}</div></div>
   <div class="stage-wrap"><div class="stage ${GEO.wide?'wide':''}" id="stage">
    <img class="ly far" src="${A.far.url}" alt="">
-   ${FXS(S.scene).storm?'<canvas class="drops"></canvas>':''}
+   
    <img class="ly mid" src="${A.mid.url}" alt="">
    <img class="ly near" src="${A.near.url}" alt="">
-   <canvas class="gl"></canvas>
+   <canvas class="gl"></canvas>${FXS(S.scene).storm?'<canvas class="drops"></canvas>':''}
    <canvas class="light"></canvas>
    ${hs.map(([id,x,y])=>{const f=has('found',id);return `<button class="hs ${f?'found':''}" data-e="${id}" data-n="${ORDER.indexOf(id)}" style="left:${((x+GEO.ox)/GEO.vw*100).toFixed(3)}%;top:${y/6}%" aria-label="${f?EV[id].t:'شيء ما هنا'}"></button>`}).join('')}
    ${S.coach?'<div class="coach">اسحب إصبعك على الغرفة لتحريك المصباح</div>':''}
