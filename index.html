@@ -635,8 +635,21 @@ html.wide #sceneDock{padding:10px 14px 14px}
  #title .title-wrap .case-no{font-size:14px;letter-spacing:.02em}
  #title .title-wrap .row{margin-top:8px}
  #title .title-wrap::before{content:"";display:block;width:56px;height:2px;background:var(--sodium);opacity:.8;margin-bottom:2px}
- .title-credit{position:absolute;bottom:0;inset-inline:0;padding:14px clamp(48px,7vw,140px) calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:flex-start;border-top:1px solid rgba(255,255,255,.06);background:linear-gradient(0deg,rgba(5,7,11,.55),rgba(5,7,11,0))}
+ .title-credit{position:absolute;bottom:0;inset-inline:0;padding:14px clamp(48px,7vw,140px) calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:center;gap:16px;border-top:1px solid rgba(255,255,255,.06);background:linear-gradient(0deg,rgba(5,7,11,.55),rgba(5,7,11,0))}
 }
+.credit .legal{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px 6px;margin-top:6px}
+.credit .legal i{font-style:normal;opacity:.5}
+.credit .legal button{background:none;border:0;padding:8px 4px;margin:-8px 0;font:inherit;color:inherit;cursor:pointer;opacity:.9}
+.credit .legal button:hover{color:var(--sodium)}
+.legal-body h4{margin:18px 0 6px;font-size:15px;color:var(--fg)}
+.legal-body p,.legal-body li{font-size:14px;line-height:1.85;color:var(--muted)}
+.legal-body ul{margin:4px 0;padding-inline-start:18px}
+.legal-body details{border-bottom:1px solid var(--line);padding:10px 0}
+.legal-body summary{cursor:pointer;font-weight:600;color:var(--fg);font-size:15px;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.legal-body summary::after{content:"+";color:var(--sodium);font-weight:700}
+.legal-body details[open] summary::after{content:"−"}
+.legal-body details p{margin:8px 0 2px}
+.legal-body .upd{font-size:12px;opacity:.7;margin-top:14px}
 .credit{margin-top:18px;font-size:12px;color:var(--muted);opacity:.85}
 .credit a.studio{color:inherit;text-decoration:none;cursor:pointer;display:inline-block;padding:9px 2px;margin:-9px 0}
 .credit a.studio:hover{color:var(--sodium)}
@@ -656,7 +669,7 @@ html.wide #sceneDock{padding:10px 14px 14px}
       <button class="btn btn-ghost" id="btnContinue" hidden>متابعة التحقيق</button>
     </div>
   </div>
-  <div class="credit title-credit">جميع الحقوق محفوظة © ٢٠٢٦ لـ <a class="studio" href="https://makwad.com/" target="_blank" rel="noopener">استوديو مكود</a></div>
+  <div class="credit title-credit"><span>جميع الحقوق محفوظة © ٢٠٢٦ لـ <a class="studio" href="https://makwad.com/" target="_blank" rel="noopener">استوديو مكود</a></span><nav class="legal" aria-label="روابط"><button type="button" data-legal="faq">الأسئلة الشائعة</button><i>·</i><button type="button" data-legal="privacy">الخصوصية</button><i>·</i><button type="button" data-legal="copyright">حقوق النشر</button></nav></div>
 </section>
 
 <!-- ============ CASES ============ -->
@@ -668,7 +681,7 @@ html.wide #sceneDock{padding:10px 14px 14px}
     <div id="caseList" class="case-list"></div>
     <div id="medalBox"></div>
     <button class="btn btn-ghost" id="casesBack">رجوع</button>
-    <div class="credit">جميع الحقوق محفوظة © ٢٠٢٦ لـ <a class="studio" href="https://makwad.com/" target="_blank" rel="noopener">استوديو مكود</a></div>
+    <div class="credit"><span>جميع الحقوق محفوظة © ٢٠٢٦ لـ <a class="studio" href="https://makwad.com/" target="_blank" rel="noopener">استوديو مكود</a></span><nav class="legal" aria-label="روابط"><button type="button" data-legal="faq">الأسئلة الشائعة</button><i>·</i><button type="button" data-legal="privacy">الخصوصية</button><i>·</i><button type="button" data-legal="copyright">حقوق النشر</button></nav></div>
   </div>
 </section>
 
@@ -4684,6 +4697,38 @@ function sheet(html,onMount){
  document.body.appendChild(w);onMount&&onMount(w,close);return close;
 }
 
+/* ================= LEGAL & FAQ ================= */
+const LEGAL={
+ faq:['الأسئلة الشائعة',`
+ <details open><summary>كيف ألعب؟</summary><p>اختر قضية من الأرشيف، واقرأ ملفها، ثم ابدأ التحقيق. حرّك المصباح بإصبعك أو بالماوس على المشهد لتجد الأدلة، ثم استجوب المشتبهين، واكشف تناقضاتهم بالأدلة، ورتّب الخط الزمني، وفي النهاية وجّه الاتهام.</p></details>
+ <details><summary>كيف تُفتح المستويات؟</summary><p>اللعبة ستة مستويات، في كل مستوى قضيتان. يُفتح المستوى التالي حين تحلّ قضية من المستوى الذي قبله.</p></details>
+ <details><summary>لماذا لا أرى علامات الأدلة في المسرح؟</summary><p>من المستوى الرابع فما فوق لا تظهر علامات على الأدلة بعد العثور عليها، فعليك أن تتذكر أماكنها. الأدلة كلها محفوظة في «لوحة الأدلة».</p></details>
+ <details><summary>لماذا الكشاف مطفأ؟</summary><p>في المستوى الخامس والأسطوري تبدأ القضية والكشاف مطفأ، وتحتاج إلى حلّ لغز لتشغيله. كل إجابة خاطئة في لغز الكشاف أو في ألغاز الأدلة تُضعف نوره، والإجابة الصحيحة تبقيه ثابتاً.</p></details>
+ <details><summary>هل يُحفظ تقدّمي؟</summary><p>نعم، يُحفظ تلقائياً على جهازك وفي المتصفح نفسه. إذا مسحت بيانات المتصفح أو انتقلت إلى جهاز آخر يبدأ التقدّم من جديد.</p></details>
+ <details><summary>كيف أعيد قضية من البداية؟</summary><p>من أرشيف القضايا اضغط «ابدأ من جديد» على بطاقة القضية.</p></details>
+ <details><summary>هل المتجر يخصم مبالغ حقيقية؟</summary><p>لا. المتجر داخل اللعبة تجريبي فقط، ولا يطلب أي بيانات دفع ولا يخصم أي مبلغ.</p></details>
+ <details><summary>هل الشخصيات والأحداث حقيقية؟</summary><p>لا. كل القضايا والشخصيات من الخيال، وأي تشابه مع أشخاص أو أحداث حقيقية غير مقصود. الأماكن مستوحاة من مدن المملكة فقط.</p></details>
+ <details><summary>هل أقدر أثبّتها على جوالي؟</summary><p>نعم، من نسخة الويب: في iPhone افتح الرابط في Safari ثم «مشاركة» ← «إضافة إلى الشاشة الرئيسية»، وفي Android افتحه في Chrome ثم «تثبيت التطبيق». بعد أول فتح تعمل بدون إنترنت.</p></details>
+ <details><summary>كيف أتواصل معكم؟</summary><p>عبر موقع <a class="studio" href="https://makwad.com/" target="_blank" rel="noopener">استوديو مكود</a>.</p></details>`],
+ privacy:['سياسة الخصوصية',`
+ <p>نحترم خصوصيتك. «ملفات المحقق» لعبة تعمل على جهازك، وهذا ملخّص ما يحدث لبياناتك:</p>
+ <h4>ما الذي نجمعه؟</h4><ul><li>لا نطلب تسجيل دخول ولا إنشاء حساب.</li><li>لا نجمع اسمك أو بريدك أو موقعك أو أي بيانات شخصية.</li><li>لا توجد إعلانات ولا أدوات تتبّع أو تحليلات داخل اللعبة.</li></ul>
+ <h4>ما الذي يُحفظ على جهازك؟</h4><ul><li>تقدّمك في القضايا ونقاطك وأوسمتك ورصيد الذهب التجريبي وإعدادات الصوت، في التخزين المحلي للمتصفح فقط، ولا تُرسل إلى أي خادم.</li><li>نسخة من ملفات اللعبة لتعمل بدون إنترنت.</li></ul>
+ <p>تستطيع حذف كل ذلك في أي وقت بمسح بيانات الموقع من إعدادات المتصفح.</p>
+ <h4>المتجر</h4><p>المتجر تجريبي، لا يطلب بيانات بطاقات ولا يخصم أي مبلغ.</p>
+ <h4>روابط خارجية</h4><p>رابط «استوديو مكود» يفتح موقع الاستوديو، وتخضع زيارته لسياسة خصوصية ذلك الموقع.</p>
+ <h4>الأطفال</h4><p>اللعبة مناسبة لعمر ١٢ سنة فما فوق، ولا تجمع أي بيانات من أي مستخدم.</p>
+ <p class="upd">آخر تحديث: نوفمبر ٢٠٢٦</p>`],
+ copyright:['حقوق النشر',`
+ <p>© ٢٠٢٦ <a class="studio" href="https://makwad.com/" target="_blank" rel="noopener">استوديو مكود</a>. جميع الحقوق محفوظة.</p>
+ <h4>الملكية</h4><p>القصص والقضايا والشخصيات والنصوص والألغاز والتصميم والرسوم والشيفرة البرمجية في «ملفات المحقق» ملك لاستوديو مكود.</p>
+ <h4>الاستخدام المسموح</h4><p>يحق لك اللعب والاستمتاع باللعبة ومشاركة رابطها. لا يجوز نسخ اللعبة أو أجزاء منها أو إعادة نشرها أو بيعها أو تعديلها أو استخدامها تجارياً دون إذن كتابي من الاستوديو.</p>
+ <h4>الصور</h4><p>صور المشاهد والأدلة والشخصيات مولّدة بالذكاء الاصطناعي خصيصاً للعبة، والشخصيات الظاهرة فيها ليست أشخاصاً حقيقيين.</p>
+ <h4>الخطوط</h4><p>الخطوط المستخدمة (Reem Kufi وIBM Plex Sans Arabic وIBM Plex Mono وAref Ruqaa) مرخّصة بموجب SIL Open Font License.</p>
+ <h4>تنويه</h4><p>جميع الأحداث والشخصيات خيالية، وأي تشابه مع أشخاص أو جهات أو وقائع حقيقية محض مصادفة.</p>`]
+};
+function openLegal(k){const [t,b]=LEGAL[k];sheet(`<h3 class="h-sec">${t}</h3><div class="legal-body">${b}</div><div class="row" style="margin-top:16px;justify-content:center"><button class="small-btn" data-close>إغلاق</button></div>`,(w,close)=>{w.querySelector('[data-close]').onclick=close})}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-legal]');if(b){e.preventDefault();openLegal(b.dataset.legal)}});
 /* ================= TORCH GATE (elite & legend) + hidden markers (expert+) ================= */
 const TORCH_TIERS=['elite','legend'],NOMARK_TIERS=['expert','elite','legend'];
 const torchGate=()=>!!(S&&TORCH_TIERS.includes(CUR_D));
