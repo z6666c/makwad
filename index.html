@@ -40,15 +40,14 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--sodium);ou
 .grain{inset:-50%;animation:grain .6s steps(4) infinite}
 @keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-7%,4%)}50%{transform:translate(5%,-6%)}75%{transform:translate(-3%,-8%)}100%{transform:translate(6%,3%)}}
 .screen{position:fixed;inset:0;display:flex;flex-direction:column}
-.title-wrap h1{text-shadow:none}
 
 /* ---------- Title ---------- */
 #title canvas{position:absolute;inset:0;width:100%;height:100%}
 .title-wrap{position:relative;margin-top:auto;padding-block:0 calc(44px + env(safe-area-inset-bottom,0px));padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px;max-width:560px;margin-inline:auto;width:100%}
 .case-no{font-family:var(--f-body);font-size:13px;letter-spacing:0;color:var(--sodium);opacity:.9}
 .title-wrap h1{font-family:var(--f-display);font-weight:700;font-size:clamp(52px,16vw,96px);line-height:1;margin:0;text-wrap:balance;
-  background:linear-gradient(180deg,#f6eddc 10%,#c9b892 60%,#7a6a4c);-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 6px 30px rgba(229,162,69,.25))}
+  color:#e2cfa6;
+  text-shadow:0 1px 0 #ccb385,0 2px 0 #bb9f6e,0 3px 0 #a98a5a,0 4px 0 #957649,0 5px 0 #80633b,0 6px 0 #6b5230,0 7px 0 #574226,0 8px 1px rgba(0,0,0,.35),0 10px 14px rgba(0,0,0,.55),0 18px 34px rgba(0,0,0,.55),0 0 46px rgba(229,162,69,.22)}
 .title-wrap p{margin:0;color:var(--muted);max-width:40ch}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:4px;font-weight:600;font-size:16px;transition:transform .15s, background .2s}
 .btn:active{transform:scale(.97)}
@@ -623,6 +622,21 @@ html.wide #sceneDock{padding:10px 14px 14px}
  html.wide #game .tab{padding-block:4px}
 }
 [hidden]{display:none!important}
+
+/* title: wide screens (iPad landscape, laptop, desktop) — copy block on the right over a soft scrim, tower on the left */
+.title-credit{position:relative;z-index:2;text-align:center;margin:0;padding:0 24px calc(16px + env(safe-area-inset-bottom,0px))}
+#title .title-wrap{z-index:2}
+#title::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(0deg,rgba(5,7,11,.88) 0%,rgba(5,7,11,.6) 28%,rgba(5,7,11,0) 52%)}
+@media (min-width:900px) and (min-aspect-ratio:1/1){
+ #title::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(270deg,rgba(5,7,11,.82) 0%,rgba(5,7,11,.5) 26%,rgba(5,7,11,0) 46%),linear-gradient(0deg,rgba(5,7,11,.45),rgba(5,7,11,0) 16%)}
+ #title .title-wrap{position:absolute;margin:0;top:50%;transform:translateY(-46%);inset-inline-start:clamp(48px,6vw,120px);inset-inline-end:auto;width:min(470px,33vw);max-width:none;padding:0;gap:18px}
+ #title .title-wrap h1{font-size:clamp(64px,6.4vw,112px)}
+ #title .title-wrap p{font-size:17px;line-height:1.8;max-width:34ch}
+ #title .title-wrap .case-no{font-size:14px;letter-spacing:.02em}
+ #title .title-wrap .row{margin-top:8px}
+ #title .title-wrap::before{content:"";display:block;width:56px;height:2px;background:var(--sodium);opacity:.8;margin-bottom:2px}
+ .title-credit{position:absolute;bottom:0;inset-inline:0;padding:14px clamp(48px,7vw,140px) calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:flex-start;border-top:1px solid rgba(255,255,255,.06);background:linear-gradient(0deg,rgba(5,7,11,.55),rgba(5,7,11,0))}
+}
 .credit{margin-top:18px;font-size:12px;color:var(--muted);opacity:.85}
 .credit a.studio{color:inherit;text-decoration:none;cursor:pointer;display:inline-block;padding:9px 2px;margin:-9px 0}
 .credit a.studio:hover{color:var(--sodium)}
@@ -641,8 +655,8 @@ html.wide #sceneDock{padding:10px 14px 14px}
       <button class="btn btn-primary" id="btnOpen">افتح الملفات</button>
       <button class="btn btn-ghost" id="btnContinue" hidden>متابعة التحقيق</button>
     </div>
-    <div class="credit">جميع الحقوق محفوظة © ٢٠٢٦ لـ <a class="studio" href="https://makwad.com/" target="_blank" rel="noopener">استوديو مكود</a></div>
   </div>
+  <div class="credit title-credit">جميع الحقوق محفوظة © ٢٠٢٦ لـ <a class="studio" href="https://makwad.com/" target="_blank" rel="noopener">استوديو مكود</a></div>
 </section>
 
 <!-- ============ CASES ============ -->
@@ -4419,21 +4433,35 @@ const $=(s,r=document)=>r.querySelector(s);
 function renderSound(){$('#btnSound').innerHTML=ico(Snd.on?'snd':'mute');$('#btnSound').setAttribute('aria-label',Snd.on?'إيقاف الصوت':'تشغيل الصوت')}
 
 /* ================= TITLE RAIN ================= */
-const TPH={ok:false,img:null,sign:{"x": 0.582, "y": 0.183, "w": 0.102},fog:[]};
+const TPH={ok:false,img:null,sign:{"x": 0.335, "y": 0.163, "w": 0.109},car:{"x": 0.368, "y": 0.7},fog:[]};
 const TITLE_PHOTO='img/title.jpg';
 if(TITLE_PHOTO){TPH.img=new Image();TPH.img.onload=()=>TPH.ok=true;TPH.img.src=TITLE_PHOTO}
 function drawTitlePhoto(cx,W,H,t,neonOn){
  const im=TPH.img,iw=im.naturalWidth,ih=im.naturalHeight;
  // cover, anchored so the tower stays in view on narrow screens; slow push-in
- const z=1.04+.03*Math.sin(t/9000),sc=Math.max(W/iw,H/ih)*z,dw=iw*sc,dh=ih*sc;
- const fx=TPH.sign.x+TPH.sign.w/2;let ox=W/2-fx*dw;ox=Math.min(0,Math.max(W-dw,ox));const oy=(H-dh)*.55;
+ const wideT=W>=900&&W>H;const z=wideT?1:1.04,sc=Math.max(W/iw,H/ih)*z,dw=iw*sc,dh=ih*sc;
+ const fx=TPH.sign.x+TPH.sign.w/2;let ox=(wideT?W*.36:W/2)-fx*dw;ox=Math.min(0,Math.max(W-dw,ox));const oy=wideT?(H-dh)*.5:(H-dh)*.55;
  cx.drawImage(im,ox,oy,dw,dh);
  // neon sign on the tower's blank board
- const sx=ox+fx*dw,sy=oy+TPH.sign.y*dh,sw=TPH.sign.w*dw,fs=Math.max(11,sw*.2);
+ const sx=ox+fx*dw,sy=oy+TPH.sign.y*dh,sw=TPH.sign.w*dw,fs=Math.max(10,sw*.155);
  cx.font=`700 ${fs}px "Reem Kufi","IBM Plex Sans Arabic",sans-serif`;cx.textAlign='center';cx.textBaseline='middle';
  if(neonOn){cx.shadowColor='rgba(255,80,60,1)';cx.shadowBlur=fs*.9;cx.fillStyle='#ff6a52';cx.fillText('فندق المرسى',sx,sy);cx.shadowBlur=fs*.3;cx.fillStyle='#ffd2c8';cx.fillText('فندق المرسى',sx,sy);cx.shadowBlur=0;
   const ng=cx.createRadialGradient(sx,sy,0,sx,sy,sw*1.6);ng.addColorStop(0,'rgba(255,80,60,.2)');ng.addColorStop(1,'rgba(255,80,60,0)');cx.fillStyle=ng;cx.fillRect(sx-sw*1.6,sy-sw*1.6,sw*3.2,sw*3.2)}
  else{cx.fillStyle='rgba(70,26,22,.9)';cx.fillText('فندق المرسى',sx,sy)}
+ // patrol car light bar: alternating red / blue glow + wet-road reflection
+ {const px=ox+TPH.car.x*dw,py=oy+TPH.car.y*dh,ph=(t/260)%2<1,R0=Math.max(18,dw*.03);cx.globalCompositeOperation='lighter';
+  for(const [c,on,dx] of [['255,40,40',ph,-R0*.35],['40,90,255',!ph,R0*.35]]){const a=on?.85:.18,g=cx.createRadialGradient(px+dx,py,0,px+dx,py,R0*2.2);g.addColorStop(0,`rgba(${c},${a})`);g.addColorStop(1,`rgba(${c},0)`);cx.fillStyle=g;cx.fillRect(px+dx-R0*2.2,py-R0*2.2,R0*4.4,R0*4.4);
+   const r=cx.createLinearGradient(0,py,0,py+dh*.28);r.addColorStop(0,`rgba(${c},${a*.25})`);r.addColorStop(1,`rgba(${c},0)`);cx.fillStyle=r;cx.fillRect(px+dx-R0*.5,py+R0*.5,R0,dh*.28)}
+  cx.globalCompositeOperation='source-over'}
+ // crime-scene tape in the foreground
+ const tape=(x1,y1,x2,y2,th,sw)=>{const L=Math.hypot(x2-x1,y2-y1),a=Math.atan2(y2-y1,x2-x1);cx.save();cx.translate(x1,y1);cx.rotate(a+Math.sin(t/1400+sw)*.002);
+  cx.shadowColor='rgba(0,0,0,.55)';cx.shadowBlur=th*.6;cx.shadowOffsetY=th*.25;cx.fillStyle='#f3c623';cx.fillRect(0,-th/2,L,th);cx.shadowColor='transparent';
+  const sh=cx.createLinearGradient(0,-th/2,0,th/2);sh.addColorStop(0,'rgba(255,255,255,.18)');sh.addColorStop(.5,'rgba(255,255,255,0)');sh.addColorStop(1,'rgba(0,0,0,.22)');cx.fillStyle=sh;cx.fillRect(0,-th/2,L,th);
+  cx.fillStyle='#14110a';cx.fillRect(0,-th/2,L,th*.09);cx.fillRect(0,th/2-th*.09,L,th*.09);
+  cx.beginPath();cx.rect(0,-th/2,L,th);cx.clip();cx.font=`700 ${th*.5}px "Reem Kufi","IBM Plex Sans Arabic",sans-serif`;cx.textAlign='center';cx.textBaseline='middle';cx.direction='rtl';
+  const word='مسرح جريمة  ●  ممنوع الاقتراب',step=cx.measureText(word).width+th*2.2;const n=Math.ceil(L/step)+1,off=(L-(n-1)*step)/2;for(let i=0;i<n;i++){const x=off+i*step;cx.fillText(word,x,th*.04);cx.fillRect(x+step/2-th*.06,-th*.22,th*.12,th*.44)}cx.restore()};
+ if(wideT){const th=Math.max(34,H*.05);tape(-40,H*.835,W+40,H*.885,th,0)}
+ else{const th=Math.max(26,W*.07);tape(-30,H*.40,W+30,H*.44,th,0)}
  // drifting mist
  if(!TPH.fog.length)TPH.fog=Array.from({length:4},(_,i)=>({x:Math.random()*W,y:H*(.55+i*.06),r:W*(.35+Math.random()*.35),v:.1+Math.random()*.2}));
  cx.globalCompositeOperation='lighter';
