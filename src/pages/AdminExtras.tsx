@@ -10,6 +10,7 @@ import { PayMethodsBox } from '@/components/PayMethods'
 import { SERVICE_PRICING, fmtSAR } from '@/estimate'
 import type { Catalog, Option, Service } from '@/estimate'
 import { COMPANY, DEFAULT_SETTINGS } from '@/site-config'
+import SVC_PAGES from '@/service-pages.json'
 import type { SiteSettings } from '@/site-config'
 
 export type Section = 'overview' | 'leads' | 'projects' | 'quotes' | 'finance' | 'channels' | 'pricing' | 'asclient' | 'content' | 'visitors' | 'users' | 'settings'
@@ -775,7 +776,10 @@ const COUNTRY_AR: Record<string, string> = {
   Netherlands: 'هولندا', Ireland: 'إيرلندا', India: 'الهند', Pakistan: 'باكستان', Turkey: 'تركيا', Morocco: 'المغرب', Iraq: 'العراق', Yemen: 'اليمن',
 }
 const DEVICE_AR: Record<string, string> = { desktop: 'كمبيوتر', mobile: 'جوال', tablet: 'تابلت' }
-const PAGE_AR: Record<string, string> = { '/': 'الصفحة الرئيسية', '/services': 'كل الخدمات', '/login': 'دخول العملاء', '/dashboard': 'لوحة التحكم', '/privacy': 'سياسة الخصوصية', '/terms': 'الشروط' }
+const PAGE_AR: Record<string, string> = {
+  '/': 'الصفحة الرئيسية', '/services': 'كل الخدمات', '/login': 'دخول العملاء', '/dashboard': 'لوحة التحكم', '/privacy': 'سياسة الخصوصية', '/terms': 'الشروط والأحكام', '/refund': 'سياسة الاسترداد',
+  ...Object.fromEntries((SVC_PAGES as Array<{ slug: string; h1: string }>).map((x) => [`/services/${x.slug}`, `خدمة: ${x.h1}`])),
+}
 const refLabel = (h: string) => {
   if (!h) return 'مباشر (بدون مصدر)'
   const x = h.replace(/^www\./, '')
@@ -791,8 +795,23 @@ const refLabel = (h: string) => {
 }
 const pageLabel = (p: string) => PAGE_AR[p.replace(/\/$/, '') || '/'] ?? decodeURIComponent(p.replace(/\/$/, '') || '/')
 const n0 = (n: number) => n.toLocaleString('en-US')
+/** Merges rows that end up with the same label (e.g. /dashboard and /dashboard/), biggest first. */
+const mergeRows = (items: Array<VisRow>, label: (k: string) => string) => {
+  const m = new Map<string, VisRow>()
+  for (const i of items) { const k = label(i.key); const o = m.get(k); m.set(k, o ? { key: k, views: o.views + i.views, visits: o.visits + i.visits } : { key: k, views: i.views, visits: i.visits }) }
+  return [...m.values()].sort((a, b) => (b.visits || b.views) - (a.visits || a.views))
+}
+/** One bar per day for the last 30 days, zero when Cloudflare has no row for that day. */
+const fillDays = (daily: Array<{ date: string; views: number; visits: number }>, now: number) => {
+  const by = new Map(daily.map((x) => [x.date, x]))
+  return Array.from({ length: 30 }, (_, i) => {
+    const date = new Date(now - (29 - i) * 86400000).toISOString().slice(0, 10)
+    return by.get(date) ?? { date, views: 0, visits: 0 }
+  })
+}
 
-function VisList({ title, items, label }: { title: string; items: Array<VisRow>; label: (k: string) => string }) {
+function VisList({ title, items: raw, label }: { title: string; items: Array<VisRow>; label: (k: string) => string }) {
+  const items = mergeRows(raw, label)
   const max = Math.max(1, ...items.map((i) => i.visits || i.views))
   return (
     <div className="panel vis-list">
@@ -801,7 +820,7 @@ function VisList({ title, items, label }: { title: string; items: Array<VisRow>;
         <ul>{items.map((i) => (
           <li key={i.key || '-'}>
             <span className="vl-bar" style={{ width: `${Math.round(((i.visits || i.views) / max) * 100)}%` }} />
-            <span className="vl-k">{label(i.key)}</span>
+            <span className="vl-k">{i.key}</span>
             <b className="mono">{n0(i.visits || i.views)}</b>
           </li>
         ))}</ul>
@@ -861,7 +880,8 @@ export function VisitorsPanel() {
   }, [connected, days])
 
   const d = data && data.ok ? data : null
-  const maxDay = d ? Math.max(1, ...d.daily.map((x) => x.visits)) : 1
+  const days30 = d ? fillDays(d.daily, d.at) : []
+  const maxDay = Math.max(1, ...days30.map((x) => x.visits))
   return (
     <div className="stack">
       {status === undefined ? <p className="muted">جارٍ التحميل…</p> : !connected ? <CloudflareConnect /> : (
@@ -889,9 +909,9 @@ export function VisitorsPanel() {
               </div>
               <div className="panel panel-pad">
                 <h3>الزيارات اليومية · آخر 30 يوم</h3>
-                {d.daily.length === 0 ? <p className="muted">لا توجد زيارات مسجلة بعد.</p> : (
+                {d.month.visits === 0 ? <p className="muted">لا توجد زيارات مسجلة بعد.</p> : (
                   <div className="vis-chart" role="img" aria-label="رسم الزيارات اليومية">
-                    {d.daily.map((x) => (
+                    {days30.map((x) => (
                       <div key={x.date} className="vc-col" title={`${x.date}: ${x.visits} زيارة، ${x.views} مشاهدة`}>
                         <span className="vc-n mono">{x.visits || ''}</span>
                         <i style={{ height: `${Math.max(2, Math.round((x.visits / maxDay) * 100))}%` }} />
