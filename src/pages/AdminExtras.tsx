@@ -775,6 +775,12 @@ const COUNTRY_AR: Record<string, string> = {
   Egypt: 'مصر', Jordan: 'الأردن', 'United States': 'أمريكا', 'United Kingdom': 'بريطانيا', Germany: 'ألمانيا', France: 'فرنسا',
   Netherlands: 'هولندا', Ireland: 'إيرلندا', India: 'الهند', Pakistan: 'باكستان', Turkey: 'تركيا', Morocco: 'المغرب', Iraq: 'العراق', Yemen: 'اليمن',
 }
+const regionAr = (() => { try { return new Intl.DisplayNames(['ar'], { type: 'region' }) } catch { return null } })()
+const countryLabel = (k: string) => {
+  if (!k || k === 'XX' || k === 'T1') return 'غير معروف'
+  if (/^[A-Z]{2}$/.test(k)) return k === 'SA' ? 'السعودية' : (regionAr?.of(k) ?? k)
+  return COUNTRY_AR[k] ?? k
+}
 const DEVICE_AR: Record<string, string> = { desktop: 'كمبيوتر', mobile: 'جوال', tablet: 'تابلت' }
 const PAGE_AR: Record<string, string> = {
   '/': 'الصفحة الرئيسية', '/services': 'كل الخدمات', '/login': 'دخول العملاء', '/dashboard': 'لوحة التحكم', '/privacy': 'سياسة الخصوصية', '/terms': 'الشروط والأحكام', '/refund': 'سياسة الاسترداد',
@@ -924,7 +930,7 @@ export function VisitorsPanel() {
               <div className="vis-grid">
                 <VisList title="أكثر الصفحات زيارة" items={d.pages} label={pageLabel} />
                 <VisList title="من وين جوا" items={d.refs} label={refLabel} />
-                <VisList title="الدول" items={d.countries} label={(k) => COUNTRY_AR[k] ?? (k || 'غير معروف')} />
+                <VisList title="الدول" items={d.countries} label={countryLabel} />
                 <VisList title="الأجهزة" items={d.devices} label={(k) => DEVICE_AR[k] ?? (k || 'غير معروف')} />
               </div>
             </>
