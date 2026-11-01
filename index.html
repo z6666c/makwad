@@ -548,7 +548,19 @@ table.log td:first-child{font-family:var(--f-mono);white-space:nowrap;width:1%;p
 .stage-mini .sm-t{font-family:var(--f-display);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .stage-mini .sm-c{font-family:var(--f-mono);font-size:11px;color:var(--sodium)}
 .stage-mini i{position:absolute;bottom:0;inset-inline-start:0;height:2px;background:var(--sodium)}
-.st-hud{position:absolute;top:8px;right:8px;z-index:6;pointer-events:none}
+.st-hud{position:absolute;top:8px;right:8px;z-index:6;pointer-events:none;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:70%}
+.st-hud .tchip{color:#ffd27a}.st-hud .tchip.off{color:#ff8a7a}
+.stage.nomark .hs.found{opacity:0;filter:none}.stage.nomark .hs.found::before,.stage.nomark .hs.found::after{display:none}
+.torch-lock{position:absolute;inset:0;z-index:5;display:grid;place-content:center;gap:12px;text-align:center;padding:24px;background:radial-gradient(circle at 50% 45%,rgba(20,24,32,.55),rgba(3,4,7,.92))}
+.torch-lock p{margin:0;font-size:15px;line-height:1.7;color:var(--fg);max-width:30ch}
+.torch-lock .ico{font-size:34px;opacity:.85}
+.tq-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.tq-opts button{padding:12px 8px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--fg);font:500 15px var(--f-body,inherit);cursor:pointer}
+.tq-opts button:hover{border-color:var(--sodium)}
+.tq-meter{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin:10px 0 2px}.tq-meter i{display:block;height:100%;background:linear-gradient(90deg,#e2a90b,#ffe36a)}
+.brief-warn{margin:14px 0 4px;padding:12px 14px;border-radius:6px;border:1.5px solid #9b2c1f;background:rgba(155,44,31,.08);color:#5a1a12;font-size:14px;line-height:1.75}
+.brief-warn strong{display:block;margin-bottom:4px;color:#8a1f14;font-size:15px}
+.brief-warn ul{margin:6px 0 0;padding-inline-start:18px}
 .st-hud .progress{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(5,7,11,.6);backdrop-filter:blur(4px);font-size:12px;color:var(--fg)}
 .st-btns{position:absolute;top:8px;left:8px;z-index:6;display:flex;gap:6px;direction:ltr}
 .st-b{display:flex;align-items:center;gap:4px;height:36px;min-width:36px;padding:0 10px;border-radius:999px;background:rgba(5,7,11,.62);border:1px solid rgba(233,220,194,.2);color:var(--fg);backdrop-filter:blur(4px)}
@@ -1416,7 +1428,7 @@ function startEngine(st,scene,onLit){
   if(E.second&&t>E.second){E.flash=Math.max(E.flash,.7);E.second=0}
   E.flash*=.9;if(E.flash<.01)E.flash=0;
   const fl=1+Math.sin(t/70)*.012+Math.sin(t/23)*.008+(Math.random()<.01?-.06:0);
-  const R=s*400*DIFF.torch*fl;
+  const R=s*400*DIFF.torch*fl*torchMul();
   // spots
   for(const p of spots){const [px,py]=E.screen(p.x,p.y,p.L);p.el.style.transform=`translate(calc(-50% + ${(px-(p.x+G.ox)*s).toFixed(1)}px),calc(-50% + ${(py-p.y*s).toFixed(1)}px))`;const lit=Math.hypot(px-E.cx,py-E.cy)<R*.7;if(lit!==p.lit){p.lit=lit;p.el.classList.toggle('lit',lit);if(lit&&onLit)onLit(p.id)}}
   // ---- light canvas
@@ -4530,6 +4542,7 @@ function renderBrief(resume){
   <h2>${B.title}</h2><div class="meta">${B.meta}</div>
   ${B.paras.map(x=>`<p>${x}</p>`).join('')}
   ${resume?`<div class="brief-diff">الصعوبة: <strong>${D.label}</strong> · ${AR(D.tries)} محاولات للاتهام · المواجهة الخاطئة ${D.wrong}</div>`:`<div class="tier-box tier-${CUR_D}"><div class="tb-top"><span class="dots">${[1,2,3,4,5].map(j=>`<i class="${j<=DIFFS[CUR_D].dots?'on':''}"></i>`).join('')}</span><span>مستوى القضية</span><b>${DIFFS[CUR_D].label}</b></div><p>${DIFFS[CUR_D].desc} · ${AR(D.tries)} ${D.tries>1?'محاولات':'محاولة'} للاتهام · المواجهة الخاطئة ${D.wrong}${D.clock?` · المهلة ${fmtT(D.clock)}`:''}</p></div>`}
+  ${!resume&&NOMARK_TIERS.includes(CUR_D)?briefWarn():''}
   <ul class="steps">
    <li><b>١</b><span><strong>أربع مراحل:</strong> المسرح، ثم الشهود، ثم كشف الأكاذيب، ثم الاتهام. أنجز أهداف كل مرحلة لتفتح التالية.</span></li>
    <li><b>٢</b><span><strong>اجمع النقاط:</strong> كل دليل وسؤال جديد وتناقض تكشفه يمنحك نقاطاً. اسحب إصبعك لتحريك المصباح، والأدلة لا تلمع، فدقّق بعينك.</span></li>
@@ -4588,7 +4601,7 @@ function renderScene(v){
  v.innerHTML=`<div class="scene-view">
   <div class="scene-bar">${stageStrip(1)}
   <div class="loc-switch">${Object.entries(LOCS).map(([k,l])=>{const lk=!openScenes().includes(k)&&S.stage<2;return `<button aria-pressed="${S.scene===k}" data-l="${k}" class="${lk?'lk':''}">${lk?ico('lock'):''}${l}</button>`}).join('')}</div></div>
-  <div class="stage-wrap"><div class="stage ${GEO.wide?'wide':''}" id="stage">
+  <div class="stage-wrap"><div class="stage ${GEO.wide?'wide':''} ${NOMARK_TIERS.includes(CUR_D)?'nomark':''}" id="stage">
    <img class="ly far" src="${A.far.url}" alt="">
    
    <img class="ly mid" src="${A.mid.url}" alt="">
@@ -4597,7 +4610,8 @@ function renderScene(v){
    <canvas class="light"></canvas>
    ${hs.map(([id,x,y])=>{const f=has('found',id);return `<button class="hs ${f?'found':''}" data-e="${id}" data-n="${ORDER.indexOf(id)}" style="left:${((x+GEO.ox)/GEO.vw*100).toFixed(3)}%;top:${y/6}%" aria-label="${f?EV[id].t:'شيء ما هنا'}"></button>`}).join('')}
    ${S.coach?'<div class="coach">اسحب إصبعك على الغرفة لتحريك المصباح</div>':''}
-   <div class="st-hud"><span class="progress">${LOCS[S.scene]} · <b>${n}/${hs.length}</b></span></div>
+   <div class="st-hud"><span class="progress">${LOCS[S.scene]} · <b>${n}/${hs.length}</b></span>${torchGate()?`<span class="progress tchip ${S.torchOn?'':'off'}" id="tchip">${torchLabel()}</span>`:''}</div>
+   ${torchGate()&&!S.torchOn?'<div class="torch-lock" id="torchLock"><div class="ico">🔦</div><p>الكشاف مطفأ. حلّ اللغز لتشغيله، وكل إجابة خاطئة تُضعف نوره.</p><div><button class="btn btn-primary" id="btnTorch">حلّ اللغز</button></div></div>':''}
    <div class="st-btns">${COST.spot?`<button class="st-b" id="btnHint" aria-label="أين أبحث؟" ${n===hs.length?'disabled':''}>${ico('bulb')}<small>${COST.spot}</small></button>`:''}<button class="st-b" id="btnFull" aria-label="${IMM?'تصغير':'ملء الشاشة'}">${IMM?ICON_SHRINK:ICON_EXPAND}</button></div>
   </div></div></div>`;
  bindStrip(v);v.querySelectorAll('.loc-switch button').forEach(b=>b.onclick=()=>{if(b.classList.contains('lk')){toast(LOCS[b.dataset.l]+' يُفتح في المرحلة ٢');Snd.wrong();return}S.scene=b.dataset.l;Snd.steps();setTimeout(()=>Snd.torch(),700);save();renderAll()});
@@ -4609,10 +4623,11 @@ function renderScene(v){
  const posOf=(id)=>{const h=hs.find(x=>x[0]===id);return E.screen(h[1],h[2],LAYER[id]||'mid')};
  spots.forEach(s=>{
   s.addEventListener('focus',()=>{const [x,y]=posOf(s.dataset.e);E.setTarget(x,y)});
-  s.addEventListener('click',(e)=>{e.stopPropagation();const id=s.dataset.e;const [x,y]=posOf(id);if(discover(id))E.spark(x,y);setTimeout(()=>openEv(id),has('found',id)&&!s.dataset.just?0:0)});
+  s.addEventListener('click',(e)=>{e.stopPropagation();if(torchGate()&&!S.torchOn){openTorchPuzzle();return}const id=s.dataset.e;const [x,y]=posOf(id);if(discover(id))E.spark(x,y);setTimeout(()=>openEv(id),has('found',id)&&!s.dataset.just?0:0)});
  });
  v.querySelectorAll('.st-b').forEach(b=>b.addEventListener('pointerdown',e=>e.stopPropagation()));
  $('#btnFull').onclick=e=>{e.stopPropagation();setImm(!IMM)};
+ {const tl=$('#torchLock');if(tl){tl.addEventListener('pointerdown',e=>e.stopPropagation());$('#btnTorch').onclick=e=>{e.stopPropagation();openTorchPuzzle()}}}
  const hb=$('#btnHint');if(hb)hb.onclick=()=>{if(!spots.some(s=>!has('found',s.dataset.e)))return;if(spend(COST.spot))revealSpot()};
 }
 function discover(id){
@@ -4634,6 +4649,48 @@ function sheet(html,onMount){
  const close=()=>{w.remove();document.removeEventListener('keydown',esc)};
  const esc=e=>{if(e.key==='Escape')close()};document.addEventListener('keydown',esc);
  document.body.appendChild(w);onMount&&onMount(w,close);return close;
+}
+
+/* ================= TORCH GATE (elite & legend) + hidden markers (expert+) ================= */
+const TORCH_TIERS=['elite','legend'],NOMARK_TIERS=['expert','elite','legend'];
+const torchGate=()=>!!(S&&TORCH_TIERS.includes(CUR_D));
+const torchMul=()=>!torchGate()?1:(S.torchOn?(S.torch||1):.02);
+const torchLabel=()=>S.torchOn?`الكشاف ${AR(Math.round((S.torch||1)*100))}٪`:'الكشاف مطفأ';
+function updTorchChip(){const c=$('#tchip');if(c){c.textContent=torchLabel();c.classList.toggle('off',!S.torchOn)}}
+const RIDDLES=[
+ ['شيء كلما أخذتَ منه كَبُر. ما هو؟',['الحفرة','الظل','الشمعة','الدَّين'],0],
+ ['له أسنان كثيرة ولا يَعَضّ. ما هو؟',['السمكة','المشط','الحجر','القط'],1],
+ ['ما الذي يكتب ولا يقرأ؟',['الكتاب','المعلّم','القلم','الدفتر'],2],
+ ['أكمل السلسلة: ٢، ٤، ٨، ١٦، …',['٢٠','٢٤','٣٦','٣٢'],3],
+ ['أكمل السلسلة: ٣، ٦، ١١، ١٨، …',['٢٧','٢٤','٢٥','٢٩'],0],
+ ['أبو خالد له أربعة أبناء: سعد وفهد وناصر. ما اسم الرابع؟',['بدر','خالد','ماجد','لا يمكن معرفته'],1],
+ ['يمشي بلا رجلين ويبكي بلا عينين. ما هو؟',['النهر','الريح','السحاب','الوقت'],2],
+ ['كم مرة تستطيع أن تطرح ٥ من ٢٥؟',['خمس مرات','أربع مرات','ست مرات','مرة واحدة'],3],
+ ['ما الذي يُكسر قبل أن تستعمله؟',['البيضة','الزجاج','القفل','الصمت'],0],
+ ['ساعة تتأخر دقيقة كل ساعة. كم تتأخر في يومين؟',['٢٤ دقيقة','٤٨ دقيقة','ساعة','١٢ دقيقة'],1],
+ ['إذا كان أمس السبت، فما اليوم بعد ثلاثة أيام من الغد؟',['الثلاثاء','الأربعاء','الخميس','الاثنين'],2],
+ ['أيّها لا ينتمي للمجموعة؟',['البصمة','الشاهد','الدليل','المصباح'],3]
+];
+function openTorchPuzzle(){
+ if(!torchGate()||S.torchOn)return;
+ S.tqi=(S.tqi==null?Math.floor(Math.random()*RIDDLES.length):S.tqi);
+ const [q,opts,ans]=RIDDLES[S.tqi%RIDDLES.length];
+ sheet(`<h3 class="h-sec">🔦 شغّل الكشاف</h3><p class="lead">أجب إجابة صحيحة ليشتغل الكشاف. كل خطأ يُضعف نوره ويعطيك لغزاً جديداً.</p>
+  <div class="tq-meter"><i style="width:${Math.round((S.torch||1)*100)}%"></i></div><div style="font-size:12px;color:var(--muted)">قوة النور المتوقعة: ${AR(Math.round((S.torch||1)*100))}٪</div>
+  <p style="font-size:17px;margin:16px 0 4px;line-height:1.7"><strong>${q}</strong></p>
+  <div class="tq-opts">${opts.map((o,i)=>`<button data-i="${i}">${o}</button>`).join('')}</div>`,(w,close)=>{
+  w.querySelectorAll('.tq-opts button').forEach(b=>b.onclick=()=>{
+   if(+b.dataset.i===ans){S.torchOn=true;S.tqi=null;save();close();Snd.unlock();toast(`اشتغل الكشاف · قوته ${AR(Math.round((S.torch||1)*100))}٪`);renderAll()}
+   else{S.torch=Math.max(.5,+((S.torch||1)-.12).toFixed(2));S.tqi=(S.tqi+1+Math.floor(Math.random()*3))%RIDDLES.length;save();Snd.wrong();close();toast(`إجابة خاطئة · ضعف نور الكشاف إلى ${AR(Math.round(S.torch*100))}٪`);setTimeout(openTorchPuzzle,450)}
+  });
+ });
+}
+function torchHit(){if(!torchGate()||!S.torchOn)return;S.torch=Math.max(.5,+((S.torch||1)-.08).toFixed(2));save();updTorchChip();setTimeout(()=>toast(`ضعف نور الكشاف إلى ${AR(Math.round(S.torch*100))}٪`),900)}
+function briefWarn(){
+ const t=TORCH_TIERS.includes(CUR_D);
+ return `<div class="brief-warn"><strong>⚠️ تنبيه قبل أن تبدأ</strong><ul>
+  ${t?'<li>تبدأ <b>والكشاف مطفأ</b>. حلّ لغزاً لتشغيله.</li><li>كل إجابة خاطئة في لغز الكشاف أو في ألغاز الأدلة <b>تُضعف نور الكشاف</b>، والإجابة الصحيحة تُبقيه ثابتاً.</li>':''}
+  <li><b>لا تظهر علامات للأدلة</b> في المسرح بعد العثور عليها. تذكّر أماكنها بنفسك، والأدلة كلها محفوظة في لوحة الأدلة.</li></ul></div>`;
 }
 /* ================= PUZZLE MECHANICS ================= */
 const isPuzzle=e=>!!(e.puzzle||e.pin||e.match||e.cipher||e.dial||e.spot);
@@ -4719,7 +4776,7 @@ function openEv(id){
   const pc=w.querySelector('#pieces');
   if(pc){let seq=[];pc.onclick=(ev)=>{const b=ev.target.closest('.piece');if(!b||b.classList.contains('sel'))return;b.classList.add('sel');seq.push(+b.dataset.i);Snd.tone(600+seq.length*80,.08,.05);
    if(seq.length===e.puzzle.length){if(seq.join()===e.order.join()){if(markSolved(id))reveal()}
-    else{Snd.wrong();pc.classList.add('shake');setTimeout(()=>{pc.classList.remove('shake');pc.querySelectorAll('.piece').forEach(p=>p.classList.remove('sel'));seq=[]},450)}}}}
+    else{Snd.wrong();torchHit();pc.classList.add('shake');setTimeout(()=>{pc.classList.remove('shake');pc.querySelectorAll('.piece').forEach(p=>p.classList.remove('sel'));seq=[]},450)}}}}
   const pin=w.querySelector('#pin');
   if(pin){let code='';const dots=[...pin.querySelectorAll('.pin-dots i')],msg=pin.querySelector('#pinMsg');
    const draw=()=>dots.forEach((d,i)=>d.classList.toggle('on',i<code.length));
@@ -4728,16 +4785,16 @@ function openEv(id){
     if(code.length>=e.pin.length)return;code+=k;draw();Snd.dtmf(k);
     if(code.length===e.pin.length){
      if(code===e.pin){if(markSolved(id))reveal()}
-     else{score(-5);Snd.wrong();msg.textContent='رمز خاطئ. −٥ نقاط';pin.classList.add('shake');setTimeout(()=>{pin.classList.remove('shake');code='';draw()},500)}}};
+     else{score(-5);Snd.wrong();torchHit();msg.textContent='رمز خاطئ. −٥ نقاط';pin.classList.add('shake');setTimeout(()=>{pin.classList.remove('shake');code='';draw()},500)}}};
   }
   const mt=w.querySelector('#match');
   if(mt)mt.onclick=(ev)=>{const b=ev.target.closest('.m-opt');if(!b||b.disabled)return;
    if(b.dataset.k===e.match.answer){b.classList.add('ok');if(markSolved(id))reveal()}
-   else{b.disabled=true;b.classList.add('no');score(e.match.wrong||-8);Snd.wrong();toast('لا تتطابق. دقّق في انقطاعات الخطوط')}};
+   else{b.disabled=true;b.classList.add('no');score(e.match.wrong||-8);Snd.wrong();torchHit();toast('لا تتطابق. دقّق في انقطاعات الخطوط')}};
   const cp=w.querySelector('#cipher');
   if(cp){let k=0;const C=e.cipher,enc=shiftTxt(C.plain,C.key),out=cp.querySelector('#cOut'),kk=cp.querySelector('#cK'),msg=cp.querySelector('#cMsg');
    cp.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{k=(k+(+b.dataset.d)+AB.length)%AB.length;kk.textContent=AR(k);out.textContent=shiftTxt(enc,-k);Snd.ratchet()});
-   cp.querySelector('#cOk').onclick=()=>{if(k===C.key){if(markSolved(id))reveal()}else{score(-5);Snd.wrong();msg.textContent='النص لا يُقرأ بهذه الإزاحة. −٥ نقاط';cp.classList.add('shake');setTimeout(()=>cp.classList.remove('shake'),400)}};
+   cp.querySelector('#cOk').onclick=()=>{if(k===C.key){if(markSolved(id))reveal()}else{score(-5);Snd.wrong();torchHit();msg.textContent='النص لا يُقرأ بهذه الإزاحة. −٥ نقاط';cp.classList.add('shake');setTimeout(()=>cp.classList.remove('shake'),400)}};
   }
   const spb=w.querySelector('#spot .sp-b svg');
   if(spb){const P=e.spot,got=new Set(),marks=spb.querySelector('#spMarks'),msg=w.querySelector('#spMsg');
@@ -4745,7 +4802,7 @@ function openEv(id){
     const i=P.diffs.findIndex((d,k)=>!got.has(k)&&Math.hypot(q.x-d[0],q.y-d[1])<=d[2]*1.5);
     if(i>=0){got.add(i);const d=P.diffs[i];marks.insertAdjacentHTML('beforeend',`<circle cx="${d[0]}" cy="${d[1]}" r="${d[2]}" fill="none" stroke="#ffd23a" stroke-width="1.2"/>`);Snd.found();msg.textContent=`وجدت ${AR(got.size)} من ${AR(P.diffs.length)}`;
      if(got.size===P.diffs.length){if(markSolved(id))reveal()}}
-    else{score(P.wrong||-3);Snd.wrong();marks.insertAdjacentHTML('beforeend',`<g class="sp-x"><path d="M${q.x-2.5} ${q.y-2.5} l5 5 M${q.x+2.5} ${q.y-2.5} l-5 5" stroke="#ff4a3d" stroke-width="1.2"/></g>`);setTimeout(()=>{const x=marks.querySelector('.sp-x');x&&x.remove()},600)}});
+    else{score(P.wrong||-3);Snd.wrong();torchHit();marks.insertAdjacentHTML('beforeend',`<g class="sp-x"><path d="M${q.x-2.5} ${q.y-2.5} l5 5 M${q.x+2.5} ${q.y-2.5} l-5 5" stroke="#ff4a3d" stroke-width="1.2"/></g>`);setTimeout(()=>{const x=marks.querySelector('.sp-x');x&&x.remove()},600)}});
   }
   const dl=w.querySelector('#dial');
   if(dl){const D=e.dial;let n=0,got=[];const rot=dl.querySelector('#dRot'),num=dl.querySelector('#dNum'),slots=[...dl.querySelectorAll('.d-slots span')],msg=dl.querySelector('#dMsg');
@@ -4754,7 +4811,7 @@ function openEv(id){
    dl.querySelector('#dClr').onclick=()=>{got=[];msg.textContent='';draw()};
    dl.querySelector('#dSet').onclick=()=>{got.push(n);Snd.thunk();draw();
     if(got.length===D.combo.length){if(got.join()===D.combo.join()){if(markSolved(id))reveal()}
-     else{score(-5);Snd.wrong();msg.textContent='الخزنة لم تُفتح. −٥ نقاط';dl.classList.add('shake');setTimeout(()=>{dl.classList.remove('shake');got=[];draw()},500)}}};
+     else{score(-5);Snd.wrong();torchHit();msg.textContent='الخزنة لم تُفتح. −٥ نقاط';dl.classList.add('shake');setTimeout(()=>{dl.classList.remove('shake');got=[];draw()},500)}}};
    draw();
   }
  });

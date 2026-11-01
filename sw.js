@@ -1,5 +1,5 @@
 /* ملفات المحقق — offline cache. Version changes whenever the game changes, so players get updates. */
-const V='mohaqqiq-c50326148c';
+const V='mohaqqiq-0bde9494c4';
 const FILES=["./", "index.html", "fonts.css", "manifest.webmanifest", "fonts/arefruqaa-400.woff", "fonts/plexarabic-400.woff", "fonts/plexarabic-500.woff", "fonts/plexarabic-600.woff", "fonts/plexmono-500.woff", "fonts/reemkufi-500.woff", "fonts/reemkufi-700.woff", "icons/apple-touch-icon.png", "icons/favicon-32.png", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png"];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
