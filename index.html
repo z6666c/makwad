@@ -5701,9 +5701,9 @@ function openLogin(after){
    `<div class="acc-phone"><span dir="ltr">+966</span><input class="acc-in" id="accId" type="tel" inputmode="numeric" autocomplete="tel" placeholder="5XXXXXXXX" dir="ltr" maxlength="10"></div>`}
   <div class="acc-msg" id="accMsg"></div>
   <button class="btn btn-primary" id="accGo" style="width:100%">أرسل رمز الدخول</button>
-  <p class="acc-fine">نرسل لك رمز من ٦ أرقام. ما نطلب كلمة مرور، وما نشارك بياناتك مع أحد.</p>`:
-  `<div class="label">رمز الدخول</div><h3 class="h-sec">اكتب الرمز</h3><p class="lead">أرسلنا رمز من ٦ أرقام إلى <b dir="ltr">${who}</b>${mode==='email'?'. وفي نفس الرسالة رابط تقدر تضغطه من هالجهاز بدل الرمز.':''}</p>
-  <input class="acc-in acc-code" id="accCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" dir="ltr">
+  <p class="acc-fine">نرسل لك رمز تحقق. ما نطلب كلمة مرور، وما نشارك بياناتك مع أحد.</p>`:
+  `<div class="label">رمز الدخول</div><h3 class="h-sec">اكتب الرمز</h3><p class="lead">أرسلنا الرمز إلى <b dir="ltr">${who}</b>${mode==='email'?'. وفي نفس الرسالة رابط تقدر تضغطه من هالجهاز بدل الرمز.':''}</p>
+  <input class="acc-in acc-code" id="accCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="••••••••" dir="ltr">
   <div class="acc-msg" id="accMsg"></div>
   <button class="btn btn-primary" id="accVer" style="width:100%">دخول</button>
   <div class="row" style="justify-content:space-between;margin-top:10px"><button class="small-btn" id="accBack">تغيير ${mode==='email'?'الإيميل':'الرقم'}</button><button class="small-btn" id="accResend">أعد الإرسال</button></div>`;
@@ -5715,7 +5715,7 @@ function openLogin(after){
    const rt=window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()?'com.hamad.mohaqqiq://auth':location.origin+location.pathname;
    try{await accFetch('/auth/v1/otp?redirect_to='+encodeURIComponent(rt),{method:'POST',body:JSON.stringify(mode==='email'?{email:who,create_user:true}:{phone:who,create_user:true})},false);stage=2;re();msg(mode==='email'?'الرسالة ممكن تتأخر دقيقة، وشيّك على الرسائل غير المرغوبة.':'وصلك الرمز؟ اكتبه هنا.',true);ACC.waitClose=close}
    catch(e){b.disabled=false;msg(accErr(e.message))}};
-  const verify=async()=>{const c=(w.querySelector('#accCode').value||'').replace(/\D/g,'');if(c.length!==6){msg('الرمز ٦ أرقام');return}
+  const verify=async()=>{const c=(w.querySelector('#accCode').value||'').replace(/\D/g,'');if(c.length<6||c.length>10){msg('اكتب الرمز كامل مثل ما وصلك');return}
    const b=w.querySelector('#accVer');b.disabled=true;b.textContent='جارٍ الدخول…';
    try{const j=await accFetch('/auth/v1/verify',{method:'POST',body:JSON.stringify(mode==='email'?{type:'email',email:who,token:c}:{type:'sms',phone:who,token:c})},false);
     accSetSess(j);Snd.unlock&&Snd.unlock();toast('أهلاً فيك، تقدمك صار محفوظ');close();await accAfterLogin();after&&after()}
@@ -5724,7 +5724,7 @@ function openLogin(after){
   const bind=()=>{w.querySelector('[data-close]').onclick=close;
    w.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;re()});
    const g=w.querySelector('#accGo');if(g)g.onclick=send;const id=w.querySelector('#accId');if(id){id.onkeydown=e=>{if(e.key==='Enter')send()};setTimeout(()=>id.focus(),50)}
-   const v=w.querySelector('#accVer');if(v)v.onclick=verify;const cd=w.querySelector('#accCode');if(cd){cd.oninput=()=>{if(cd.value.replace(/\D/g,'').length===6)verify()};setTimeout(()=>cd.focus(),50)}
+   const v=w.querySelector('#accVer');if(v)v.onclick=verify;const cd=w.querySelector('#accCode');if(cd){cd.oninput=()=>{if(cd.value.replace(/\D/g,'').length===8)verify()};setTimeout(()=>cd.focus(),50)}
    const bk=w.querySelector('#accBack');if(bk)bk.onclick=()=>{stage=1;re()};const rs=w.querySelector('#accResend');if(rs)rs.onclick=send};
   bind();
  });
