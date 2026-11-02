@@ -807,6 +807,15 @@ html.wide #sceneDock{padding:10px 14px 14px}
 .case-card.cc-premium{box-shadow:0 0 0 1.5px #c9a24a,0 10px 30px rgba(201,162,74,.18)}
 .cc-prem{position:absolute;top:-16px;left:20px;background:linear-gradient(180deg,#e2bf68,#bf9136);color:#2a1d05;padding:2px 12px 4px;border-radius:5px 5px 0 0;font-size:12px;font-weight:700;line-height:1.5;letter-spacing:.2px}
 .cc-lock.prem{border-color:rgba(201,162,74,.5);background:rgba(201,162,74,.1)}
+.medal-box{display:block;width:100%;text-align:start;margin-top:18px;padding:14px 16px;border-radius:12px;border:1px solid rgba(229,162,69,.35);background:linear-gradient(160deg,rgba(229,162,69,.12),rgba(255,255,255,.02));color:inherit;cursor:pointer}
+.mb-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.mb-top b{font-family:var(--f-display);font-size:26px;color:var(--sodium)}.mb-top b small{font-size:13px;color:var(--muted);font-family:var(--f-body)}
+.mb-icons{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mb-icons i,.am-icons i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--ink-3);border:1px solid var(--sodium-dim);font-style:normal}
+.mb-icons svg,.am-icons svg{width:16px;height:16px}.mb-empty{font-size:12px;color:var(--muted)}
+.mb-bar{height:6px;border-radius:4px;background:rgba(255,255,255,.08);margin-top:12px;overflow:hidden}.mb-bar i{display:block;height:100%;background:var(--sodium);border-radius:4px}
+.mb-cta{font-size:12.5px;color:var(--sodium);margin-top:8px}
+.md-tabs{display:flex;gap:6px;overflow-x:auto;margin:12px 0 4px;padding-bottom:4px}.md-tabs button{white-space:nowrap;padding:7px 12px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:inherit;font-size:13px}.md-tabs button.on{border-color:var(--sodium);color:var(--sodium);background:rgba(229,162,69,.1)}.md-tabs small{opacity:.7}
+.medal-emo{font-size:20px;line-height:1}.medal em{font-style:normal;font-size:10.5px;color:var(--sodium);margin-top:2px}
+.acc-medals{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:10px;width:100%;margin:12px 0 4px;padding:12px;border-radius:12px;border:1px solid rgba(229,162,69,.35);background:rgba(229,162,69,.08);color:inherit;text-align:start}.acc-medals b{color:var(--sodium);font-size:13px}.am-icons{display:flex;gap:4px;justify-content:flex-end}.am-icons i{width:26px;height:26px}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -4342,9 +4351,47 @@ function checkWinMedals(){
  if(CUR_D==='expert'||CUR_D==='elite'||CUR_D==='legend')award('expert');if(CUR_D==='legend')award('legend');
  if(CASE_IDS.every(id=>META.best[id]))award('all');
 }
+/* ---------- medal groups (cases / events / seasons / premium) ---------- */
+const MEDALS_EV=[
+ ['ev_night','أول ليلة','حلّ قضية الليلة لأول مرة','🌙'],
+ ['ev_streak','المحقق الليلي','حلّ قضية الليلة ٧ ليالٍ متتالية','🏅'],
+ ['ev_week','فكّ السلسلة','حلّ اللغز المتسلسل','🔓'],
+ ['ev_weekfast','قبل الدليل الثالث','حلّ اللغز المتسلسل من دليلين أو أقل','⚡'],
+ ['ev_wit','شاهد عيان','اسمع الشاهد الهارب وحلّ شهادته','⏳'],
+ ['ev_wit3','ذاكرة الشهود','حلّ ثلاث شهادات للشاهد الهارب','🗂️'],
+ ['ev_gift','ضيف المواسم','استلم هدية أي موسم','🎁']];
+const MEDALS_PR=[
+ ['pr_one','صاحب الامتياز','حلّ أي قضية مميزة','★'],
+ ['pr_all','الأرشيف الذهبي','حلّ كل القضايا المميزة','👑']];
+function medalsSeason(){const C=(typeof evCfg==='function'&&EVT.cfg)?evCfg().seasons||[]:[];
+ return Object.entries(typeof SEASON_CASE==='object'?SEASON_CASE:{}).map(([sid,cid])=>{const S0=C.find(x=>x.id===sid)||{},K=SCASES[cid]||{};return ['sc_'+cid,K.t||S0.name||'قضية موسم',`حلّ قضية ${S0.name||'الموسم'}`,S0.icon||'🎉']})}
+function medalGroups(){return [['cases','القضايا',MEDALS],['events','الفعاليات',MEDALS_EV],['seasons','المواسم',medalsSeason()],['premium','المميزة',MEDALS_PR]]}
+function allMedals(){return medalGroups().flatMap(g=>g[2])}
+function syncMedals(pop){
+ const M=(typeof evM==='function')?evM():{done:{},badges:{}},D=M.done||{},got=META.medals=META.medals||{},add=[];
+ const vals=Object.entries(D);const ok=p=>vals.filter(([k,v])=>k.startsWith(p)&&v&&v.ok);
+ const want={ev_night:ok('n').length>0,ev_streak:(M.badges.night||0)>0,ev_week:ok('w').length>0,ev_weekfast:ok('w').some(([k,v])=>v.k<=2),
+  ev_wit:ok('x').length>0,ev_wit3:ok('x').length>=3,ev_gift:Object.keys(D).some(k=>k.startsWith('s')&&!k.startsWith('sc')&&D[k]),
+  pr_one:CASE_ORDER.some(id=>CASES[id].premium&&META.best&&META.best[id]),pr_all:CASE_ORDER.filter(id=>CASES[id].premium).every(id=>META.best&&META.best[id])};
+ Object.keys((M.badges&&M.badges.season)||{}).forEach(cid=>want['sc_'+cid]=true);
+ for(const [id,on] of Object.entries(want))if(on&&!got[id]){got[id]=Date.now();add.push(id)}
+ if(!add.length)return;saveMeta();if(!pop)return;
+ const all=allMedals();add.slice(0,2).forEach((id,i)=>setTimeout(()=>{const m=all.find(x=>x[0]===id);if(!m)return;const d=document.createElement('div');d.className='medal-pop';d.innerHTML=`<div class="medal-ico">${medalIco(m)}</div><div><small>وسام جديد</small><b>${m[1]}</b><span>${m[2]}</span></div>`;document.body.appendChild(d);Snd.medal&&Snd.medal();setTimeout(()=>d.remove(),4200)},i*4500));
+}
+const medalIco=(m,got=true)=>!got?ico('lock'):/^[a-z]+$/.test(m[3])?ico(m[3]):`<span class="medal-emo">${m[3]}</span>`;
+function medalCount(){const got=META.medals||{},all=allMedals();return [all.filter(m=>got[m[0]]).length,all.length]}
 function medalsHTML(){
- const got=META.medals||{};const n=MEDALS.filter(m=>got[m[0]]).length;
- return `<section class="medals"><h3 class="cases-h" style="font-size:24px">الأوسمة <small>${AR(n)} من ${AR(MEDALS.length)}</small></h3><div class="medal-grid">${MEDALS.map(m=>`<div class="medal ${got[m[0]]?'got':''}"><div class="medal-ico">${ico(got[m[0]]?m[3]:'lock')}</div><b>${m[1]}</b><span>${m[2]}</span></div>`).join('')}</div></section>`;
+ syncMedals(false);const got=META.medals||{},[n,T]=medalCount(),all=allMedals();
+ const recent=all.filter(m=>got[m[0]]).sort((a,b)=>got[b[0]]-got[a[0]]).slice(0,5);
+ return `<button class="medal-box" id="medalOpen"><div class="mb-top"><div><div class="label">خزانة الأوسمة</div><b>${AR(n)} <small>من ${AR(T)}</small></b></div><div class="mb-icons">${recent.length?recent.map(m=>`<i>${medalIco(m)}</i>`).join(''):'<span class="mb-empty">حلّ قضيتك الأولى عشان تاخذ أول وسام</span>'}</div></div><div class="mb-bar"><i style="width:${Math.round(n/T*100)}%"></i></div><div class="mb-cta">عرض كل الأوسمة ←</div></button>`;
+}
+function openMedals(tab){
+ syncMedals(false);const got=META.medals||{},G=medalGroups();let cur=tab||'cases';
+ const body=()=>{const g=G.find(x=>x[0]===cur),[n,T]=medalCount();return `<div class="store-head"><div><div class="label">خزانة الأوسمة</div><h3 class="h-sec" style="margin:0">${AR(n)} من ${AR(T)}</h3></div></div>
+  <div class="md-tabs">${G.map(x=>{const c=x[2].filter(m=>got[m[0]]).length;return `<button class="${x[0]===cur?'on':''}" data-t="${x[0]}">${x[1]} <small>${AR(c)}/${AR(x[2].length)}</small></button>`}).join('')}</div>
+  <div class="medal-grid">${g[2].map(m=>`<div class="medal ${got[m[0]]?'got':''}"><div class="medal-ico">${medalIco(m,!!got[m[0]])}</div><b>${m[1]}</b><span>${m[2]}</span>${got[m[0]]?`<em>${new Date(got[m[0]]).toLocaleDateString('ar-SA',{day:'numeric',month:'short'})}</em>`:''}</div>`).join('')||'<p class="lead">ما فيه أوسمة هنا للحين.</p>'}</div>
+  <button class="btn btn-ghost" data-close style="width:100%;margin-top:14px">إغلاق</button>`};
+ sheet(`<div class="mdw">${body()}</div>`,(w,close)=>{const bind=()=>{w.querySelector('[data-close]').onclick=close;w.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{cur=b.dataset.t;Snd.tab&&Snd.tab();w.querySelector('.mdw').innerHTML=body();bind()})};bind()});
 }
 
 /* ================= COUNTDOWN ================= */
@@ -4758,7 +4805,7 @@ function renderCases(){
  $('#caseList').querySelectorAll('[data-unlock]').forEach(b=>b.onclick=()=>unlockCaseGold(b.dataset.unlock));
  $('#caseList').querySelectorAll('[data-store]').forEach(b=>b.onclick=()=>openStore());
  const gb=$('#goldBar');if(gb)gb.innerHTML=`<button class="gold-chip" id="goldChip">${coinSVG}<b data-gold-bal>${AR(goldBal())}</b> ذهب${STORE_PAID?' · المتجر':''}</button>`;const gc=$('#goldChip');if(gc)gc.onclick=()=>openStore();
- $('#medalBox').innerHTML=medalsHTML();
+ $('#medalBox').innerHTML=medalsHTML();{const mo=$('#medalOpen');if(mo)mo.onclick=()=>openMedals()}
  try{renderEvents()}catch(e){}
  try{renderAccChip()}catch(e){}
 }
@@ -5364,7 +5411,7 @@ function renderEvents(){
  h+=card('evt-week','🔓','اللغز المتسلسل · كل خميس · ٦ م لين آخر الجمعة',Wq.t,w.open?`${AR(cl)} من ${AR(evCfg().weekly.clues)} أدلة ظاهرة · دليل جديد كل ساعتين`:'دليل جديد كل ساعتين، وكل ما حليت بدري زادت الجائزة',w.open,w.open?w.b:w.a,wDone,'ادخل اللغز','w');
  h+=card('evt-wit','⏳','الشاهد الهارب · كل اثنين بعد اثنين · يوم كامل',wc?`شاهد من «${CASES[wc].name}»`:'شاهد مجهول',wc?'شاهد يظهر يوم واحد ويختفي، ومعه سر ما انقال':'حلّ أي قضية عشان يجيك شاهد منها',x.open,x.open?x.b:x.a,xDone,'اسمع الشهادة','x');
  const by=(x,y)=>x[0]-y[0];h+=RH.sort(by).map(x=>x[1]).join('')+SH.sort(by).map(x=>x[1]).join('');
- box.innerHTML=h;
+ box.innerHTML=h;setTimeout(()=>syncMedals(true),600);
  $('#evSched').onclick=openSchedule;$('#evBell').onclick=openNotifSettings;
  box.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{const k=b.dataset.ev;Snd.paper&&Snd.paper();if(k==='n')openNight();else if(k==='w')openWeekly();else if(k==='x')openWitness();else if(k.startsWith('s:'))claimSeason(k.slice(2));else if(k.startsWith('c:'))openSeasonCase(k.slice(2))});
  clearInterval(EVT.tick);EVT.tick=setInterval(()=>{if($('#cases').hidden){clearInterval(EVT.tick);return}const now=evNow();if(now==null)return;let flip=false;
@@ -5713,7 +5760,7 @@ function accCollect(){const out={meta:META,cases:{}};try{for(let i=0;i<localStor
 function accMerge(cloud){if(!cloud||!cloud.meta)return;const L=META,C=cloud.meta;
  const best={...(C.best||{})};for(const[k,v]of Object.entries(L.best||{}))if(!best[k]||(v&&v.score>best[k].score))best[k]=v;
  const ev=L.ev||{},cev=C.ev||{};const done={...(cev.done||{}),...(ev.done||{})},sc={...(cev.sc||{}),...(ev.sc||{})};
- const merged={...C,...L,best,gold:Math.max(L.gold==null?60:L.gold,C.gold==null?0:C.gold),premium:!!(L.premium||C.premium),owned:{...(C.owned||{}),...(L.owned||{})},
+ const merged={...C,...L,best,gold:Math.max(L.gold==null?60:L.gold,C.gold==null?0:C.gold),premium:!!(L.premium||C.premium),medals:{...(C.medals||{}),...(L.medals||{})},owned:{...(C.owned||{}),...(L.owned||{})},
   ev:{...cev,...ev,done,sc,badges:{...(cev.badges||{}),...(ev.badges||{})},streak:Math.max(ev.streak||0,cev.streak||0)},purchases:[...(C.purchases||[]),...(L.purchases||[])].slice(-50)};
  META=Object.assign(META,merged);ACC.origSaveMeta();
  for(const[id,v]of Object.entries(cloud.cases||{})){try{if(!localStorage.getItem(keyOf(id))&&v)localStorage.setItem(keyOf(id),JSON.stringify(v))}catch(e){}}}
@@ -5785,6 +5832,7 @@ function openAccount(){
  if(!accUser()){openLogin();return}
  sheet(`<div class="acc-head"><div class="acc-av">${(accName()[0]||'م').toUpperCase()}</div><div><div class="label">حسابي</div><b dir="ltr">${accName()}</b><small id="accSync">${ACC.lastSync?'آخر حفظ '+new Date(ACC.lastSync).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'جاري المزامنة…'}</small></div></div>
   <div class="acc-stats"><span><b>${AR(Object.keys(META.best||{}).length)}</b>قضية محلولة</span><span><b data-gold-bal>${AR(goldBal())}</b>ذهب</span><span><b>${META.premium?'مفعّلة':'—'}</b>الحزمة المميزة</span></div>
+  <button class="acc-medals" id="accMed"><span>🏅 أوسمتي</span><b>${AR(medalCount()[0])} من ${AR(medalCount()[1])}</b><span class="am-icons">${allMedals().filter(m=>(META.medals||{})[m[0]]).sort((a,b)=>META.medals[b[0]]-META.medals[a[0]]).slice(0,6).map(m=>`<i>${medalIco(m)}</i>`).join('')}</span></button>
   <div class="acc-list">
    <button id="accNow">${ico('board')}<span>احفظ تقدمي الحين</span></button>
    ${STORE_PAID?`<button id="accRest">${coinSVG}<span>استعادة المشتريات</span></button>
@@ -5796,6 +5844,7 @@ function openAccount(){
   w.querySelector('[data-close]').onclick=close;
   const pane=w.querySelector('#accPane');
   w.querySelector('#accNtf').onclick=()=>{close();openNotifSettings()};
+  w.querySelector('#accMed').onclick=()=>{close();openMedals()};
   w.querySelector('#accNow').onclick=async()=>{await accPush();w.querySelector('#accSync').textContent=ACC.lastSync?'انحفظ الحين':'ما قدرنا نحفظ، تأكد من الإنترنت';toast(ACC.lastSync?'تقدمك محفوظ':'ما فيه اتصال')};
   if(STORE_PAID)w.querySelector('#accRest').onclick=async()=>{try{await accRestore(false)}catch(e){toast(accErr(e.message))}};
   if(STORE_PAID)w.querySelector('#accOrd').onclick=async()=>{pane.innerHTML='<p class="lead">جاري التحميل…</p>';try{const r=await accFetch('/rest/v1/orders?select=id,items,total_sar,gold,status,created_at&order=created_at.desc&limit=30');
