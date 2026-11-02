@@ -788,6 +788,12 @@ html.wide #sceneDock{padding:10px 14px 14px}
 .ntf-row i{font-style:normal;font-size:22px}.ntf-row div{flex:1;display:flex;flex-direction:column;gap:2px}.ntf-row small{opacity:.65;font-size:12px}
 .ntf-row input{width:22px;height:22px;accent-color:var(--gold,#d4a94a)}.ntf-note{padding:10px 12px;border-radius:10px;background:rgba(212,169,74,.1);border:1px solid rgba(212,169,74,.3);font-size:13px;line-height:1.7;margin:8px 0}
 .evt-bell{margin-inline-start:auto;margin-inline-end:8px}
+.snd-list.all-off{opacity:.45;pointer-events:none}
+.snd-ch{display:grid;grid-template-columns:44px 1fr 46px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.snd-ch .snd-tg{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:20px;cursor:pointer}
+.snd-ch .snd-mid{display:flex;flex-direction:column;gap:2px;min-width:0}.snd-ch small{opacity:.6;font-size:11.5px}
+.snd-ch input{width:100%;accent-color:var(--sodium);margin-top:4px}.snd-v{font-family:var(--f-display);color:var(--sodium);text-align:center;font-size:13px}
+.snd-ch.off .snd-mid{opacity:.45}.snd-ch.off .snd-v{color:inherit;opacity:.6}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -4435,26 +4441,29 @@ loadCase('c1');S=fresh();
 
 /* ================= SOUND ================= */
 const Snd={ctx:null,on:false,cue:null,stage:1,stress:0,scene:null,layers:[],timers:[],loops:{},
- vol:{music:.8,amb:.8,sfx:.9},
+ vol:{music:.8,amb:.8,sfx:.9,inv:.85},mute:{},
  init(){if(this.ctx)return;try{this.ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
-  try{const v=JSON.parse(localStorage.getItem('casefiles_vol'));if(v)Object.assign(this.vol,v)}catch(e){}
+  try{const v=JSON.parse(localStorage.getItem('casefiles_vol'));if(v)Object.assign(this.vol,v)}catch(e){}try{const m=JSON.parse(localStorage.getItem('casefiles_mute'));if(m)this.mute=m}catch(e){}
   const c=this.ctx;this.comp=c.createDynamicsCompressor();this.comp.threshold.value=-14;this.comp.ratio.value=4;this.comp.connect(c.destination);
   this.master=c.createGain();this.master.gain.value=.0001;this.master.connect(this.comp);
   const conv=c.createConvolver(),len=c.sampleRate*2.8,ir=c.createBuffer(2,len,c.sampleRate);
   for(let ch=0;ch<2;ch++){const d=ir.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)}conv.buffer=ir;
   this.rev=c.createGain();this.rev.gain.value=.5;conv.connect(this.rev).connect(this.master);this.revIn=conv;
   this.musLP=c.createBiquadFilter();this.musLP.type='lowpass';this.musLP.frequency.value=900;
-  this.mus=c.createGain();this.mus.gain.value=this.vol.music*.6;this.mus.connect(this.musLP);this.musLP.connect(this.master);this.musLP.connect(conv);
-  this.ambDuck=c.createGain();this.ambDuck.gain.value=1;this.amb=c.createGain();this.amb.gain.value=this.vol.amb;this.amb.connect(this.ambDuck).connect(this.master);
-  this.sfx=c.createGain();this.sfx.gain.value=this.vol.sfx;this.sfx.connect(this.master);
+  this.mus=c.createGain();this.mus.gain.value=this.gv('music');this.mus.connect(this.musLP);this.musLP.connect(this.master);this.musLP.connect(conv);
+  this.ambDuck=c.createGain();this.ambDuck.gain.value=1;this.amb=c.createGain();this.amb.gain.value=this.gv('amb');this.amb.connect(this.ambDuck).connect(this.master);
+  this.sfx=c.createGain();this.sfx.gain.value=this.gv('sfx');this.sfx.connect(this.master);
+  this.inv=c.createGain();this.inv.gain.value=this.gv('inv');this.inv.connect(this.master);
   this.sfxRev=c.createGain();this.sfxRev.gain.value=.35;this.sfx.connect(this.sfxRev).connect(conv);
   this.pinkBuf=this._noise(6,true);this.whiteBuf=this._noise(2,false);
   this.drone=c.createGain();this.drone.gain.value=.0001;this.drone.connect(this.mus);
   [36.71,55.0,73.42].forEach((f,i)=>{const o=c.createOscillator();o.type=i?'triangle':'sine';o.frequency.value=f;o.detune.value=i*4;const g=c.createGain();g.gain.value=i?.25:.6;o.connect(g).connect(this.drone);o.start()});
  },
  _noise(sec,pink){const c=this.ctx,b=c.createBuffer(1,c.sampleRate*sec|0,c.sampleRate),d=b.getChannelData(0);let last=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(pink){last=(last+.02*w)/1.02;d[i]=last*3.5}else d[i]=w}return b},
- setVol(k,v){this.vol[k]=v;try{localStorage.setItem('casefiles_vol',JSON.stringify(this.vol))}catch(e){}if(!this.ctx)return;const t=this.ctx.currentTime;
-  ({music:this.mus,amb:this.amb,sfx:this.sfx})[k].gain.setTargetAtTime(k==='music'?v*.6:v,t,.1)},
+ gv(k){return this.mute[k]?0:(this.vol[k]??.8)*(k==='music'?.6:1)},
+ applyVol(k){if(!this.ctx)return;const n=({music:this.mus,amb:this.amb,sfx:this.sfx,inv:this.inv})[k];n&&n.gain.setTargetAtTime(this.gv(k),this.ctx.currentTime,.1)},
+ setVol(k,v){this.vol[k]=v;if(v>0&&this.mute[k])delete this.mute[k];try{localStorage.setItem('casefiles_vol',JSON.stringify(this.vol));localStorage.setItem('casefiles_mute',JSON.stringify(this.mute))}catch(e){}this.applyVol(k)},
+ setMute(k,m){if(m)this.mute[k]=1;else delete this.mute[k];try{localStorage.setItem('casefiles_mute',JSON.stringify(this.mute))}catch(e){}this.applyVol(k)},
  toggle(force){this.init();if(!this.ctx)return;this.on=force===undefined?!this.on:force;if(this.ctx.state==='suspended')this.ctx.resume();
   const t=this.ctx.currentTime;this.master.gain.cancelScheduledValues(t);this.master.gain.setValueAtTime(Math.max(.0001,this.master.gain.value),t);
   if(this.on){this.master.gain.exponentialRampToValueAtTime(.9,t+1.2);const cu=this.cue;this.cue=null;this.setCue(cu||'title');this.startMusic();const sc=this.scene;this.scene=null;this.setScene(sc||'title')}
@@ -4512,10 +4521,10 @@ const Snd={ctx:null,on:false,cue:null,stage:1,stress:0,scene:null,layers:[],time
  stageUp(){[0,7,12,16].forEach((n,i)=>this.osc('sawtooth',this.hz(n-12),i*.08,2.6,.05,{lp:2200,att:.25,det:6}));this.osc('sine',this.hz(24),.4,2,.04);this.nz(0,1.5,.12,'lowpass',300,{pink:1,att:.02})},
  medal(){[0,4,7,12,16].forEach((n,i)=>this.osc('triangle',392*Math.pow(2,n/12),i*.09,.8,.07));this.osc('sine',1568,.5,1.3,.03)},
  lab(d=2.4){this.osc('sawtooth',120,0,d,.03,{lp:400,att:.2,hold:d-.5});for(let i=0;i<d*5;i++)this.osc('square',1200+Math.random()*800,i*.2,.04,.02);this.osc('sine',1760,d,.5,.06);this.osc('sine',2349,d+.12,.6,.05)},
- tick(loud){this.nz(0,.012,loud?.6:.18,'highpass',5000);this.osc('square',3200,0,.008,loud?.03:.01)},
+ tick(loud,dest){this.nz(0,.012,loud?.6:.18,'highpass',5000,{dest});this.osc('square',3200,0,.008,loud?.03:.01,{dest})},
  horn(d=.9){[233,293].forEach(f=>this.osc('sawtooth',f,0,d,.07,{lp:1400,att:.06,hold:d-.25}))},
- heartJump(){[0,.16,.62].forEach((w,i)=>{this.osc('sine',i<2?78:58,w,.2,i<2?.9:.5,{fEnd:40});this.nz(w,.12,i<2?.45:.25,'lowpass',140,{pink:1})})},
- heart(v=1){const g=Math.min(1,.35+v*.65);this.osc('sine',62,0,.16,.55*g,{fEnd:42});this.nz(0,.1,.25*g,'lowpass',120,{pink:1});this.osc('sine',55,.2,.18,.38*g,{fEnd:38});this.nz(.2,.1,.18*g,'lowpass',110,{pink:1})},
+ heartJump(){const dest=this.inv;[0,.16,.62].forEach((w,i)=>{this.osc('sine',i<2?78:58,w,.2,i<2?.9:.5,{fEnd:40,dest});this.nz(w,.12,i<2?.45:.25,'lowpass',140,{pink:1,dest})})},
+ heart(v=1,dest){dest=dest||this.inv;const g=Math.min(1,.35+v*.65);this.osc('sine',62,0,.16,.55*g,{fEnd:42,dest});this.nz(0,.1,.25*g,'lowpass',120,{pink:1,dest});this.osc('sine',55,.2,.18,.38*g,{fEnd:38,dest});this.nz(.2,.1,.18*g,'lowpass',110,{pink:1,dest})},
  /* ---------- music director ---------- */
  CUES:{title:{lp:700,pl:2600,drone:.12,hb:0,tk:0,perc:0,amb:1},cases:{lp:800,pl:2200,drone:.1,hb:0,tk:0,perc:0,amb:1},brief:{lp:700,pl:3000,drone:.2,hb:0,tk:1,perc:0,amb:.8},
   explore:{lp:950,pl:1300,drone:.08,hb:0,tk:0,perc:0,amb:1},board:{lp:1200,pl:1600,drone:.05,hb:0,tk:0,perc:0,amb:.8},notes:{lp:1000,pl:2000,drone:.05,hb:0,tk:1,perc:0,amb:.8},
@@ -4529,9 +4538,9 @@ const Snd={ctx:null,on:false,cue:null,stage:1,stress:0,scene:null,layers:[],time
    this.loops.pl=setTimeout(pl,(C.pl||1500)*(.7+Math.random()*.6))};pl();
   const hb=()=>{const C=this.CUES[this.cue]||{};let bpm=0;if(C.hb){bpm=this.cue==='accuse'?100:62+this.stress*.85}
    if(this.on&&bpm){this.heart(this.cue==='accuse'?.8:this.stress/100)}this.loops.hb=setTimeout(hb,bpm?60000/bpm:500)};hb();
-  const tk=()=>{const C=this.CUES[this.cue]||{};if(this.on&&C.tk&&!this.urgent)this.tick(false);this.loops.tk=setTimeout(tk,1000)};tk();
+  const tk=()=>{const C=this.CUES[this.cue]||{};if(this.on&&C.tk&&!this.urgent)this.tick(false,this.inv);this.loops.tk=setTimeout(tk,1000)};tk();
   const pc=()=>{const C=this.CUES[this.cue]||{};if(this.on&&(C.perc||(this.cue==='explore'&&this.stage>=4))){const b=this.pb=(this.pb||0)+1;const strong=b%4===1;
-    this.osc('sine',strong?82:65,0,.35,strong?.28:.16,{fEnd:40,dest:this.mus});if(b%8===7)this.nz(0,.25,.15,'bandpass',900,{Q:2,dest:this.mus})}this.loops.pc=setTimeout(pc,this.cue==='accuse'?600:900)};pc();
+    const pd=C.perc?this.inv:this.mus;this.osc('sine',strong?82:65,0,.35,strong?.28:.16,{fEnd:40,dest:pd});if(b%8===7)this.nz(0,.25,.15,'bandpass',900,{Q:2,dest:pd})}this.loops.pc=setTimeout(pc,this.cue==='accuse'?600:900)};pc();
  },
  stopMusic(){this.timers.forEach(t=>clearInterval(t));this.timers=[];Object.values(this.loops).forEach(t=>clearTimeout(t));this.loops={}},
  playChord(){if(!this.on||!this.ctx)return;const c=this.ctx,t=c.currentTime,CH=this.cue==='title'||this.cue==='cases'?[[0,3,7],[-2,1,5],[0,3,7],[1,5,8]]:[[0,4,7],[5,8,12],[1,5,8],[-2,1,5]];
@@ -4569,14 +4578,20 @@ const Snd={ctx:null,on:false,cue:null,stage:1,stress:0,scene:null,layers:[],time
  }
 };
 function openSoundSettings(){
- const row=(k,l)=>`<label class="vol-row"><span>${l}</span><input type="range" id="vol_${k}" min="0" max="100" value="${Math.round(Snd.vol[k]*100)}"><b id="volv_${k}">${AR(Math.round(Snd.vol[k]*100))}</b></label>`;
- sheet(`<h3 class="h-sec">الصوت</h3><p class="lead">الموسيقى تتغير مع ما تفعله: هدوء أثناء البحث، ونبض قلب في الاستجواب يتسارع مع توتر المشتبه، وطبول عند الاتهام.</p><p class="lead" style="font-size:13px">أذن المحقق: في القضايا السهلة والمتوسطة، إن قدّمت دليلاً يخص المشتبه لكنه ليس الدليل المطلوب، يقفز قلبه قفزة واحدة.</p>
-  <button class="btn ${Snd.on?'btn-ghost':'btn-primary'}" id="sndToggle" style="width:100%;margin-bottom:14px">${Snd.on?'إيقاف الصوت':'تشغيل الصوت'}</button>
-  ${row('music','الموسيقى')}${row('amb','أصوات المكان')}${row('sfx','المؤثرات')}
-  <div class="row" style="margin-top:14px;justify-content:center"><button class="small-btn" data-close>تم</button></div>`,(w,close)=>{
+ const CH=[['music','🎵','موسيقى الخلفية','الموسيقى اللي تمشي مع اللعب'],['amb','🌧️','أصوات المكان','مطر، رياح، قطار، نار…'],['sfx','🔊','أصوات اللعب','الضغطات، الأدلة، الأبواب، الختم'],['inv','🫀','مؤثرات التحقيق','نبض المشتبه، دقات الساعة، طبول الاتهام']];
+ const row=([k,ic,l,d])=>{const m=!!Snd.mute[k],v=Math.round((Snd.vol[k]??.8)*100);return `<div class="snd-ch ${m?'off':''}" data-k="${k}"><button class="snd-tg" data-tg="${k}" aria-label="${m?'تشغيل':'إيقاف'} ${l}">${m?'🔇':ic}</button><div class="snd-mid"><b>${l}</b><small>${d}</small><input type="range" id="vol_${k}" min="0" max="100" value="${v}" ${m?'disabled':''}></div><span class="snd-v" id="volv_${k}">${m?'مطفي':AR(v)}</span></div>`};
+ sheet(`<h3 class="h-sec">الصوت</h3><p class="lead" style="font-size:13px">تحكم بكل نوع لحاله: اطفِ اللي ما تبيه، أو خفّض صوته.</p>
+  <button class="btn ${Snd.on?'btn-ghost':'btn-primary'}" id="sndToggle" style="width:100%;margin-bottom:12px">${Snd.on?'إيقاف كل الأصوات':'تشغيل الصوت'}</button>
+  <div class="snd-list ${Snd.on?'':'all-off'}">${CH.map(row).join('')}</div>
+  <p class="lead" style="font-size:12px;margin-top:10px">أذن المحقق: في القضايا السهلة والمتوسطة، إذا قدّمت دليل يخص المشتبه بس مو الدليل المطلوب، يقفز قلبه قفزة وحدة. تسمعه مع «مؤثرات التحقيق».</p>
+  <div class="row" style="margin-top:10px;justify-content:center"><button class="small-btn" data-close>تم</button></div>`,(w,close)=>{
   w.querySelector('[data-close]').onclick=close;
   w.querySelector('#sndToggle').onclick=()=>{Snd.toggle();close();openSoundSettings()};
-  ['music','amb','sfx'].forEach(k=>{const r=w.querySelector('#vol_'+k);r.oninput=()=>{Snd.setVol(k,r.value/100);w.querySelector('#volv_'+k).textContent=AR(r.value)};r.onchange=()=>{if(k==='sfx')Snd.found()}});
+  const test=k=>{if(!Snd.on)return;if(k==='sfx')Snd.found();else if(k==='inv')Snd.heart(.7)};
+  CH.forEach(([k])=>{const r=w.querySelector('#vol_'+k),el=w.querySelector(`.snd-ch[data-k="${k}"]`);
+   r.oninput=()=>{Snd.setVol(k,r.value/100);w.querySelector('#volv_'+k).textContent=AR(r.value)};r.onchange=()=>test(k);
+   w.querySelector(`[data-tg="${k}"]`).onclick=()=>{const m=!Snd.mute[k];Snd.setMute(k,m);const ic=CH.find(c=>c[0]===k)[1];el.classList.toggle('off',m);r.disabled=m;
+    w.querySelector(`[data-tg="${k}"]`).textContent=m?'🔇':ic;w.querySelector('#volv_'+k).textContent=m?'مطفي':AR(Math.round((Snd.vol[k]??.8)*100));if(!m)test(k)}});
  });
 }
 const $=(s,r=document)=>r.querySelector(s);
