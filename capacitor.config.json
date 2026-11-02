@@ -3,10 +3,26 @@
   "appName": "ملفات المحقق",
   "webDir": "www",
   "backgroundColor": "#0b0e14",
-  "ios": { "contentInset": "never", "backgroundColor": "#0b0e14" },
-  "android": { "backgroundColor": "#0b0e14" },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0b0e14"
+  },
+  "android": {
+    "backgroundColor": "#0b0e14"
+  },
   "plugins": {
-    "SplashScreen": { "launchShowDuration": 1200, "backgroundColor": "#0b0e14", "showSpinner": false, "androidScaleType": "CENTER_CROP" },
-    "StatusBar": { "style": "DARK", "overlaysWebView": true }
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#0b0e14",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP"
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "overlaysWebView": true
+    },
+    "CapacitorHttp": {
+      "enabled": true
+    }
   }
 }
