@@ -5702,7 +5702,7 @@ function openLogin(after){
   <div class="acc-msg" id="accMsg"></div>
   <button class="btn btn-primary" id="accGo" style="width:100%">أرسل رمز الدخول</button>
   <p class="acc-fine">نرسل لك رمز من ٦ أرقام. ما نطلب كلمة مرور، وما نشارك بياناتك مع أحد.</p>`:
-  `<div class="label">${mode==='email'?'افتح إيميلك':'رمز الدخول'}</div><h3 class="h-sec">${mode==='email'?'أرسلنا لك رابط الدخول':'اكتب الرمز'}</h3><p class="lead">${mode==='email'?`أرسلنا رسالة إلى <b dir="ltr">${who}</b>. اضغط «Sign in» فيها من نفس الجهاز، وتدخل اللعبة على طول. إذا وصلك رمز من ٦ أرقام، اكتبه هنا:`:`أرسلنا رمز من ٦ أرقام إلى <b dir="ltr">${who}</b>`}</p>
+  `<div class="label">رمز الدخول</div><h3 class="h-sec">اكتب الرمز</h3><p class="lead">أرسلنا رمز من ٦ أرقام إلى <b dir="ltr">${who}</b>${mode==='email'?'. وفي نفس الرسالة رابط تقدر تضغطه من هالجهاز بدل الرمز.':''}</p>
   <input class="acc-in acc-code" id="accCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" dir="ltr">
   <div class="acc-msg" id="accMsg"></div>
   <button class="btn btn-primary" id="accVer" style="width:100%">دخول</button>
