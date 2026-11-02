@@ -6000,7 +6000,7 @@ function openCommunity(tab){
  const plRow=p=>`<div class="cm-row"><button class="cm-rowb" data-p="${p.id}"><span class="cm-av">${p.av}</span><span class="cm-nm"><b>${p.nick}</b><small>${(p.stats&&p.stats.title)||''}</small></span></button><button class="cm-fbtn ${p.following?'on':''}" data-f="${p.id}" data-on="${p.following?1:0}">${p.following?'متابَع ✓':'تابِع'}</button></div>`;
  const fol=()=>`<div class="cm-add"><input id="cmQ" class="acc-in" maxlength="18" placeholder="ابحث باسم المحقق" value="${sq.replace(/"/g,'')}"><button class="btn btn-primary" id="cmSearch">بحث</button></div>
   ${sres?`<div class="label" style="margin-top:10px">نتائج البحث</div><div class="cm-list">${sres.length?sres.map(plRow).join(''):'<p class="lead">ما لقينا أحد بهالاسم.</p>'}</div>`:''}
-  <div class="cm-scope" style="margin-top:12px">${[['following',`أتابعهم · ${AR((COMM.me&&COMM.me.following_n)||0)}`],['followers',`يتابعوني · ${AR((COMM.me&&COMM.me.followers)||0)}`]].map(([k,l])=>`<button class="${k===fk?'on':''}" data-fk="${k}">${l}</button>`).join('')}</div>
+  <div class="cm-scope" style="margin-top:12px">${[['following',`أتابعهم (${AR((COMM.me&&COMM.me.following_n)||0)})`],['followers',`يتابعوني (${AR((COMM.me&&COMM.me.followers)||0)})`]].map(([k,l])=>`<button class="${k===fk?'on':''}" data-fk="${k}">${l}</button>`).join('')}</div>
   <div class="cm-list">${flist==null?'<p class="lead">جاري التحميل…</p>':flist.length?flist.map(plRow).join(''):`<p class="lead">${fk==='following'?'ما تتابع أحد للحين. ابحث باسم محقق وتابعه.':'ما أحد يتابعك للحين.'}</p>`}</div>
   <p class="lead" style="font-size:12px;margin-top:8px">المتابعة من طرف واحد: تشوف ترتيبه وأوسمته. والصداقة بالكود من الطرفين.</p>`;
  const mine=()=>{const st=commStats();return `${profileCard({nick:COMM.me.nickname,av:COMM.me.avatar,stats:st,followers:COMM.me.followers,following_n:COMM.me.following_n})}
@@ -6031,7 +6031,7 @@ function openCommunity(tab){
    const sv=w.querySelector('#cmSave');if(sv)sv.onclick=async()=>{sv.disabled=true;try{COMM.me=await commRpc('set_profile',{p_nick:w.querySelector('#cmNick').value,p_avatar:av});await commPushStats(true);await commFlush();toast('انحفظ ملفك');COMM.lb={};re();if(cur==='board')loadBoard()}catch(e){toast(commErr(e.message));sv.disabled=false}};
    const ad=w.querySelector('#cmAdd');if(ad)ad.onclick=async()=>{const c=w.querySelector('#cmCode').value.trim();if(!c)return;ad.disabled=true;try{const p=await commRpc('add_friend',{p_code:c});toast(`انضاف ${p.nick} لأصدقائك`);friends=null;COMM.lb.friends=null;re();loadFriends()}catch(e){toast(commErr(e.message));ad.disabled=false}};
   };bind();
-  (async()=>{try{COMM.me=await commRpc('my_profile');commPushStats(true);commFlush()}catch(e){toast(accErr(e.message));close();return}re();if(COMM.me.nickname)loadBoard()})();
+  (async()=>{try{COMM.me=await commRpc('my_profile');commPushStats(true);commFlush()}catch(e){toast(accErr(e.message));close();return}re();if(COMM.me.nickname){if(cur==='board')loadBoard();else if(cur==='follow')loadFollows();else if(cur==='friends')loadFriends()}})();
  });
 }
 function profileCard(p){const s=p.stats||{};return `<div class="cm-card"><div class="cm-bigav">${p.av}</div><div class="cm-cardt"><b>${p.nick||''}</b><small>${s.title||commTitle(s.solved||0)}</small></div>
