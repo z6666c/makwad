@@ -655,31 +655,33 @@ html.wide #sceneDock{padding:10px 14px 14px}
 .credit a.studio{color:inherit;text-decoration:none;cursor:pointer;display:inline-block;padding:9px 2px;margin:-9px 0}
 .credit a.studio:hover{color:var(--sodium)}
 /* ---------- Events ---------- */
-#evtBox{display:flex;flex-direction:column;gap:10px;margin:4px 0 10px}
+#evtBox{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 10px}
+#evtBox>.evt-head,#evtBox>.evt-off{grid-column:1/-1}
 .evt-head{display:flex;align-items:center;justify-content:space-between}
 .evt-head b{font-family:var(--f-display);font-size:20px}
 .evt-sched{font-size:13px;color:var(--sodium);border:1px solid rgba(229,162,69,.35);border-radius:20px;padding:4px 14px}
 .evt-off{font-size:13px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:12px;display:flex;gap:8px;align-items:center}
 .evt-off svg{width:16px;height:16px;fill:currentColor}
-.evt-card{position:relative;overflow:hidden;display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,#171d29,#0f131b);border:1px solid var(--line);border-radius:10px;padding:14px}
+.evt-card{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:6px;align-items:stretch;min-width:0;background:linear-gradient(135deg,#171d29,#0f131b);border:1px solid var(--line);border-radius:10px;padding:10px}
 .evt-card.is-open{border-color:rgba(229,162,69,.5);box-shadow:0 0 0 1px rgba(229,162,69,.15),0 14px 40px -18px rgba(229,162,69,.5)}
 .evt-night.is-open{background:linear-gradient(135deg,#1a2238,#0d1120)}
 .evt-week.is-open{background:linear-gradient(135deg,#251c12,#120e09)}
 .evt-wit.is-open{background:linear-gradient(135deg,#2a1414,#120909)}
 .evt-season.is-open{background:linear-gradient(135deg,#13261a,#0a120d)}
-.evt-ic{font-size:26px;line-height:1;width:40px;height:40px;display:grid;place-items:center;background:rgba(255,255,255,.05);border-radius:10px;flex:none}
+.evt-ic{font-size:18px;line-height:1;width:30px;height:30px;display:grid;place-items:center;background:rgba(255,255,255,.05);border-radius:10px;flex:none}
 .evt-body{flex:1;min-width:0}
 .evt-label{font-size:11px;color:var(--muted);font-weight:600}
-.evt-card h4{margin:2px 0 2px;font-family:var(--f-display);font-size:18px;line-height:1.3}
-.evt-sub{font-size:13px;color:#c9bfab}
-.evt-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;flex-wrap:wrap}
-.evt-cd{font-size:12px;color:var(--muted)}
-.evt-cd b{direction:ltr;unicode-bidi:isolate;display:inline-block;font-family:var(--f-mono);color:var(--fg);font-size:14px;margin-inline-start:4px}
+.evt-card h4{margin:2px 0 2px;font-family:var(--f-display);font-size:15px;line-height:1.3}
+.evt-sub{font-size:11.5px;color:#c9bfab;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.evt-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evt-foot{display:flex;flex-direction:column;align-items:stretch;gap:6px;margin-top:6px}
+.evt-cd{font-size:11px;color:var(--muted)}
+.evt-cd b{direction:ltr;unicode-bidi:isolate;display:inline-block;font-family:var(--f-mono);color:var(--fg);font-size:12.5px;margin-inline-start:4px}
 .is-open .evt-cd b{color:var(--sodium)}
-.evt-go{min-height:40px;padding:0 18px;font-size:14px}
+.evt-go{min-height:36px;padding:0 10px;font-size:13px;width:100%}
 .evt-done{font-size:13px;color:#7fc28e;font-weight:600}
 .evt-card.is-closed{opacity:.86}
-.evt-tape{position:absolute;top:12px;left:-34px;transform:rotate(-35deg);background:#f3c623;color:#14110a;font-family:var(--f-display);font-weight:700;font-size:12px;padding:2px 40px;box-shadow:0 4px 10px rgba(0,0,0,.5)}
+.evt-tape{position:absolute;top:8px;left:-38px;transform:rotate(-35deg);background:#f3c623;color:#14110a;font-family:var(--f-display);font-weight:700;font-size:12px;padding:2px 40px;box-shadow:0 4px 10px rgba(0,0,0,.5)}
 .evn-hero{height:150px;border-radius:10px;background-size:cover;background-position:center;position:relative;display:flex;align-items:flex-end;padding:12px;margin:4px 0 12px;overflow:hidden}
 .evn-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.9),rgba(0,0,0,.1) 70%)}
 .evn-hero>div{position:relative}
@@ -5140,9 +5142,9 @@ function endScreen(){
    so changing the phone's clock does not open an event early. Offline → events stay locked. */
 const EVT_URL='https://z6666c.github.io/mohaqqiq-detective/events.json';
 const EVT={off:null,cfg:null,tick:null,qs:new URLSearchParams(location.search)};
-const EV_DEF={night:{from:21,to:24,gold:60,bonus:40,streak:7,streakGold:200},
+const EV_DEF={night:{start:'2026-11-09',from:21,to:24,gold:60,bonus:40,streak:7,streakGold:200},
  weekly:{day:4,from:18,hours:30,every:2,clues:5,gold:[500,400,300,200,100]},
- witness:{day:1,period:14,anchor:'2026-11-02',gold:150},seasons:[]};
+ witness:{day:1,period:14,anchor:'2026-11-09',gold:150},seasons:[]};
 const RIY=3*3600e3,DAY=864e5;
 const evNow=()=>{const f=EVT.qs.get('evnow');if(f){const t=Date.parse(f+'+03:00');if(!isNaN(t))return t}return EVT.off==null?null:Date.now()+EVT.off};
 const rDay=t=>Math.floor((t+RIY)/DAY); /* Riyadh day number */
@@ -5151,7 +5153,7 @@ const rDow=t=>(rDay(t)+4)%7; /* 0=Sunday … 4=Thursday */
 const atR=(day,h)=>day*DAY-RIY+h*3600e3; /* epoch ms of Riyadh day+hour */
 const evM=()=>{META.ev=META.ev||{done:{},streak:0,last:null,badges:{}};return META.ev};
 const fmtLeft=ms=>{ms=Math.max(0,ms);const s=Math.floor(ms/1e3),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60;
- return d?`${AR(d)} يوم ${AR(h)} س`:`${AR(String(h).padStart(2,'0'))}:${AR(String(m).padStart(2,'0'))}:${AR(String(x).padStart(2,'0'))}`};
+ return d?`${AR(d)} ${d>2&&d<11?'أيام':'يوم'} ${AR(h)} س`:`${AR(String(h).padStart(2,'0'))}:${AR(String(m).padStart(2,'0'))}:${AR(String(x).padStart(2,'0'))}`};
 const DOW=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const fmtAt=t=>{const d=new Date(t+RIY);const h=d.getUTCHours(),m=d.getUTCMinutes();const h12=h%12||12;
  return `${DOW[d.getUTCDay()]} ${AR(d.getUTCDate())}/${AR(d.getUTCMonth()+1)} · ${AR(h12)}${m?':'+AR(String(m).padStart(2,'0')):''} ${h<12?'ص':'م'}`};
@@ -5225,10 +5227,10 @@ const CASE_ORDER=['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12'
 
 /* ---------- schedule ---------- */
 function evCfg(){const c=EVT.cfg||{};return {night:{...EV_DEF.night,...c.night},weekly:{...EV_DEF.weekly,...c.weekly},witness:{...EV_DEF.witness,...c.witness},seasons:c.seasons||EV_DEF.seasons}}
-function nightWin(t){const N=evCfg().night,d=rDay(t);let a=atR(d,N.from),b=atR(d,N.to);if(t>=b){a+=DAY;b+=DAY}return {a,b,open:t>=a&&t<b,day:rDay(a),i:rDay(a)%NIGHT.length}}
+function nightWin(t){const N=evCfg().night,st=N.start?rDay(Date.parse(N.start+'T00:00:00+03:00')):-1e9,d=Math.max(rDay(t),st);let a=atR(d,N.from),b=atR(d,N.to);if(t>=b){a+=DAY;b+=DAY}return {a,b,open:t>=a&&t<b,day:rDay(a),i:rDay(a)%NIGHT.length}}
 function weekWin(t){const W=evCfg().weekly;let d=rDay(t);d-=((rDow(t)-W.day)+7)%7;let a=atR(d,W.from),b=a+W.hours*3600e3;if(t>=b){a+=7*DAY;b+=7*DAY}
  const wk=Math.floor(rDay(a)/7);return {a,b,open:t>=a&&t<b,wk,i:wk%WEEKLY.length,clue:k=>a+k*W.every*3600e3}}
-function witWin(t){const W=evCfg().witness,anc=rDay(Date.parse(W.anchor+'T00:00:00+03:00'));const d=rDay(t);let k=Math.floor((d-anc)/W.period);let a=atR(anc+k*W.period,0),b=a+DAY;if(t>=b){k++;a=atR(anc+k*W.period,0);b=a+DAY}
+function witWin(t){const W=evCfg().witness,anc=rDay(Date.parse(W.anchor+'T00:00:00+03:00'));const d=Math.max(rDay(t),anc);let k=Math.floor((d-anc)/W.period);let a=atR(anc+k*W.period,0),b=a+DAY;if(t>=b){k++;a=atR(anc+k*W.period,0);b=a+DAY}
  return {a,b,open:t>=a&&t<b,k}}
 function witCase(k){const solved=CASE_ORDER.filter(id=>META.best&&META.best[id]);if(!solved.length)return null;return solved[((k%solved.length)+solved.length)%solved.length]}
 function seasonsAt(t){return evCfg().seasons.map(s=>({...s,a:Date.parse(s.from+'T00:00:00+03:00'),b:Date.parse(s.to+'T23:59:59+03:00')})).filter(s=>t<s.b)}

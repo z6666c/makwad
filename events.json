@@ -2,7 +2,8 @@
  "v": 1,
  "night": {
   "from": 21,
-  "to": 24
+  "to": 24,
+  "start": "2026-11-09"
  },
  "weekly": {
   "day": 4,
@@ -13,7 +14,7 @@
  "witness": {
   "day": 1,
   "period": 14,
-  "anchor": "2026-11-02"
+  "anchor": "2026-11-09"
  },
  "seasons": [
   {
