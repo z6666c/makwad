@@ -783,7 +783,7 @@ html.wide #sceneDock{padding:10px 14px 14px}
 .qty .rm{width:auto;padding:0 10px;font-size:12px;color:#e0766b;border-color:rgba(224,118,107,.35)}
 .cart-tot{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-top:1px solid var(--line);margin-bottom:10px}
 .cart-tot b{font-size:18px;color:var(--sodium)}
-.evt-rep{display:inline-block;margin:3px 0 4px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:var(--gold,#d4a94a);background:rgba(212,169,74,.12);border:1px solid rgba(212,169,74,.3);line-height:1.6}
+.evt-rep{display:inline-block;margin:3px 0 4px;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;color:var(--gold,#d4a94a);background:rgba(212,169,74,.12);border:1px solid rgba(212,169,74,.3);line-height:1.6}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -5322,10 +5322,10 @@ function renderEvents(){
   <div class="evt-foot"><span class="evt-cd" data-cd="${left}" data-open="${open?1:0}">${open?'تقفل بعد':'تفتح بعد'} <b>${fmtLeft(left-t)}</b></span>${done?'<span class="evt-done">✓ تم</span>':open?`<button class="btn btn-primary evt-go" data-ev="${act}">${btn}</button>`:''}</div></div>${open?'':'<div class="evt-tape">مغلق</div>'}</div>`;
  let h=`<div class="evt-head"><b>الفعاليات</b><button class="evt-sched" id="evSched">الجدول</button></div>`;
  seas.forEach(s=>{const op=t>=s.a;h+=`<div class="evt-card evt-season ${op?'is-open':'is-closed'}"><div class="evt-ic">${s.icon||'🎉'}</div><div class="evt-body"><div class="evt-label">موسم</div><h4>${s.name}</h4><div class="evt-sub">${s.desc||''}</div><div class="evt-foot"><span class="evt-cd" data-cd="${op?s.b:s.a}" data-open="${op?1:0}">${op?'ينتهي بعد':'يبدأ بعد'} <b>${fmtLeft((op?s.b:s.a)-t)}</b></span>${op&&SEASON_CASE[s.id]?(scM(SEASON_CASE[s.id]).done?'<span class="evt-done">✓ القضية انحلّت</span>':`<button class="btn btn-primary evt-go" data-ev="c:${SEASON_CASE[s.id]}">افتح القضية</button>`):''}${op&&s.gift&&!M.done['s'+s.id]?`<button class="btn btn-ghost evt-go" data-ev="s:${s.id}">استلم الهدية · ${AR(s.gift)} ذهب</button>`:''}</div></div>${op?'':'<div class="evt-tape">قريباً</div>'}</div>`});
- h+=card('evt-night','🌙',n.ram?'قضية السحور · ٩ م – ٣ الفجر':'قضية الليلة · كل يوم الساعة ٩ مساءً لين ١٢ الليل',N.t,`${N.place}${M.streak?` · سلسلتك ${AR(M.streak)} ليالٍ`:''}`,n.open,n.open?n.b:n.a,nDone,'افتح القضية','n');
+ h+=card('evt-night','🌙',n.ram?'قضية السحور · ٩ م – ٣ الفجر':'قضية الليلة · كل يوم · ٩ م – ١٢ ص',N.t,`${N.place}${M.streak?` · سلسلتك ${AR(M.streak)} ليالٍ`:''}`,n.open,n.open?n.b:n.a,nDone,'افتح القضية','n');
  const cl=Math.min(evCfg().weekly.clues,Math.max(0,Math.floor((t-w.a)/(evCfg().weekly.every*3600e3))+1));
- h+=card('evt-week','🔓','اللغز المتسلسل · كل خميس الساعة ٦ مساءً لين نهاية الجمعة',Wq.t,w.open?`${AR(cl)} من ${AR(evCfg().weekly.clues)} أدلة ظاهرة · دليل جديد كل ساعتين`:'دليل جديد كل ساعتين، وكل ما حليت بدري زادت الجائزة',w.open,w.open?w.b:w.a,wDone,'ادخل اللغز','w');
- h+=card('evt-wit','⏳','الشاهد الهارب · كل يوم اثنين (أسبوع إيه وأسبوع لا) · من ١٢ الليل لمدة ٢٤ ساعة',wc?`شاهد من «${CASES[wc].name}»`:'شاهد مجهول',wc?'شاهد يظهر يوم واحد ويختفي، ومعه سر ما انقال':'حلّ أي قضية عشان يجيك شاهد منها',x.open,x.open?x.b:x.a,xDone,'اسمع الشهادة','x');
+ h+=card('evt-week','🔓','اللغز المتسلسل · كل خميس · ٦ م لين آخر الجمعة',Wq.t,w.open?`${AR(cl)} من ${AR(evCfg().weekly.clues)} أدلة ظاهرة · دليل جديد كل ساعتين`:'دليل جديد كل ساعتين، وكل ما حليت بدري زادت الجائزة',w.open,w.open?w.b:w.a,wDone,'ادخل اللغز','w');
+ h+=card('evt-wit','⏳','الشاهد الهارب · كل اثنين بعد اثنين · يوم كامل',wc?`شاهد من «${CASES[wc].name}»`:'شاهد مجهول',wc?'شاهد يظهر يوم واحد ويختفي، ومعه سر ما انقال':'حلّ أي قضية عشان يجيك شاهد منها',x.open,x.open?x.b:x.a,xDone,'اسمع الشهادة','x');
  box.innerHTML=h;
  $('#evSched').onclick=openSchedule;
  box.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{const k=b.dataset.ev;Snd.paper&&Snd.paper();if(k==='n')openNight();else if(k==='w')openWeekly();else if(k==='x')openWitness();else if(k.startsWith('s:'))claimSeason(k.slice(2));else if(k.startsWith('c:'))openSeasonCase(k.slice(2))});
