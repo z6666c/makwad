@@ -4517,27 +4517,27 @@ const TPH={ok:false,img:null,sign:{"x": 0.335, "y": 0.163, "w": 0.109},car:{"x":
 const TITLE_PHOTO='img/title.jpg';
 if(TITLE_PHOTO){TPH.img=new Image();TPH.img.onload=()=>TPH.ok=true;TPH.img.src=TITLE_PHOTO}
 function neonSign(cx,txt,x,y,maxW,on){
- /* rooftop hotel sign: warm-white channel letters, gold rule, five stars and a Latin line */
+ /* backlit rooftop lightbox: warm-white panel, deep navy letters, gold stars, Latin line */
  const AF='"Reem Kufi","IBM Plex Sans Arabic",sans-serif',LF='"IBM Plex Sans Arabic",system-ui,sans-serif';
- cx.save();cx.textAlign='center';cx.textBaseline='middle';
- let f1=60;cx.font=`700 ${f1}px ${AF}`;f1=Math.max(9,f1*maxW*.8/cx.measureText(txt).width);
- const f2=Math.max(5,f1*.28),gap=f1*.24,h=f1*.95+gap+f2*1.1,top=y-h/2,y1=top+f1*.47,yr=top+f1*.95+gap*.5,y2=yr+gap*.5+f2*.55;
- const lat='MAKWAD  HOTEL';
- /* halo on the board */
- const hg=cx.createRadialGradient(x,y,0,x,y,maxW*.8);hg.addColorStop(0,'rgba(255,210,150,.22)');hg.addColorStop(1,'rgba(255,210,150,0)');cx.fillStyle=hg;cx.fillRect(x-maxW,y-maxW*.8,maxW*2,maxW*1.6);
- /* Arabic channel letters */
- cx.font=`700 ${f1}px ${AF}`;const w1=cx.measureText(txt).width;
- cx.shadowColor='rgba(255,190,110,.95)';cx.shadowBlur=f1*.55;cx.fillStyle='#ffd79a';cx.fillText(txt,x,y1);
- const lg=cx.createLinearGradient(0,y1-f1*.5,0,y1+f1*.5);lg.addColorStop(0,'#ffffff');lg.addColorStop(.55,'#fff1d6');lg.addColorStop(1,'#ffd49a');
- cx.shadowBlur=f1*.12;cx.fillStyle=lg;cx.fillText(txt,x,y1);cx.shadowBlur=0;
- /* gold rule with five stars */
- const rw=w1*.9,st=f2*.55;cx.strokeStyle='rgba(232,190,120,.85)';cx.lineWidth=Math.max(.8,f1*.03);
- cx.beginPath();cx.moveTo(x-rw/2,yr);cx.lineTo(x-st*4.2,yr);cx.moveTo(x+st*4.2,yr);cx.lineTo(x+rw/2,yr);cx.stroke();
- cx.fillStyle='#ffd68f';cx.shadowColor='rgba(255,200,120,.9)';cx.shadowBlur=st*1.5;
- for(let i=-2;i<=2;i++){const cxs=x+i*st*1.6;cx.beginPath();for(let k=0;k<10;k++){const r=k%2?st*.38:st*.8,an=-Math.PI/2+k*Math.PI/5;cx.lineTo(cxs+r*Math.cos(an),yr+r*Math.sin(an))}cx.closePath();cx.fill()}
+ const pw=maxW*1.0,ph=maxW*.6,px=x-pw/2+maxW*.01,py=y-ph/2-maxW*.045;
+ cx.save();
+ /* light spill around the box */
+ const sp=cx.createRadialGradient(x,py+ph/2,pw*.3,x,py+ph/2,pw*.95);sp.addColorStop(0,'rgba(255,236,200,.28)');sp.addColorStop(1,'rgba(255,236,200,0)');cx.fillStyle=sp;cx.fillRect(x-pw,py-ph*.6,pw*2,ph*2.2);
+ /* panel */
+ const pg=cx.createLinearGradient(0,py,0,py+ph);pg.addColorStop(0,'#fffaf0');pg.addColorStop(.5,'#f6ecd8');pg.addColorStop(1,'#e8d9bb');
+ cx.shadowColor='rgba(255,230,190,.7)';cx.shadowBlur=pw*.06;cx.fillStyle=pg;cx.fillRect(px,py,pw,ph);cx.shadowBlur=0;
+ cx.strokeStyle='rgba(30,26,20,.85)';cx.lineWidth=Math.max(1,pw*.012);cx.strokeRect(px,py,pw,ph);
+ /* inner frame line */
+ cx.strokeStyle='rgba(176,138,72,.75)';cx.lineWidth=Math.max(.6,pw*.004);cx.strokeRect(px+pw*.04,py+ph*.07,pw*.92,ph*.86);
+ cx.textAlign='center';cx.textBaseline='middle';
+ let f1=60;cx.font=`700 ${f1}px ${AF}`;f1=f1*pw*.74/cx.measureText(txt).width;f1=Math.min(f1,ph*.5);cx.font=`700 ${f1}px ${AF}`;
+ const y1=py+ph*.38;x=px+pw/2;cx.fillStyle='#16233a';cx.fillText(txt,x,y1);
+ /* stars between rules */
+ const yr=py+ph*.68,st=ph*.045,w1=cx.measureText(txt).width;
+ cx.strokeStyle='#b08a48';cx.lineWidth=Math.max(.6,ph*.012);cx.beginPath();cx.moveTo(x-w1*.48,yr);cx.lineTo(x-st*5,yr);cx.moveTo(x+st*5,yr);cx.lineTo(x+w1*.48,yr);cx.stroke();
+ cx.fillStyle='#b8893a';for(let i=-2;i<=2;i++){const c=x+i*st*2;cx.beginPath();for(let k=0;k<10;k++){const r=k%2?st*.42:st,an=-Math.PI/2+k*Math.PI/5;cx.lineTo(c+r*Math.cos(an),yr+r*Math.sin(an))}cx.closePath();cx.fill()}
  /* Latin line */
- cx.shadowBlur=f2*.6;cx.fillStyle='#f3dcb4';cx.font=`600 ${f2}px ${LF}`;
- if('letterSpacing' in cx)cx.letterSpacing=`${f2*.35}px`;cx.fillText(lat,x,y2);
+ const f2=ph*.085;cx.font=`600 ${f2}px ${LF}`;if('letterSpacing' in cx)cx.letterSpacing=`${f2*.3}px`;cx.fillStyle='#2b3446';cx.fillText('MAKWAD HOTEL',x,py+ph*.83);
  cx.restore()}
 function drawTitlePhoto(cx,W,H,t,neonOn){
  const im=TPH.img,iw=im.naturalWidth,ih=im.naturalHeight;
