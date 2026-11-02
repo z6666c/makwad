@@ -1806,12 +1806,12 @@ Object.assign(SUS.yusuf,{look:'waiter',rim:'#a9c08a'});
 Object.assign(EV.cup,{labAsk:'يمكن إرسال بقايا القهوة للتحليل.',labFacts:['poison'],labStamp:'سُمّ',labToast:'القضية جريمة قتل'});
 Object.assign(EV.note,{solveFacts:['motive_note'],solveStamp:'دافع'});
 CASES.c1={
- id:'c1',name:'الجناح ٧١٤',city:'جدة',place:'فندق العسوس',
+ id:'c1',name:'الجناح ٧١٤',city:'جدة',place:'فندق مكود',
  blurb:'تاجر مخطوطات يُعثر عليه ميتاً في جناحه بفندق، في ليلة ممطرة. الطبيب يقول قلبه.',
  D:{label:'متوسطة',dots:2,torch:.215,dark:.93,start:30,spot:15,lieHint:30,lieReveal:50,wrong:-10,badLink:-5,tlWrong:-10,tlFirst:40,tlLater:20,tries:3,badAccuse:-40},
  fx:{suite:{storm:1}},
  init:{found:['autopsy'],facts:['death','found'],scene:'suite',sel:'majed'},
- brief:{stamp:'سرّي',title:'وفاة سليمان الهاشمي',meta:'السبت · 23:52 · فندق العسوس، الطابق السابع',
+ brief:{stamp:'سرّي',title:'وفاة سليمان الهاشمي',meta:'السبت · 23:52 · فندق مكود، الطابق السابع',
   paras:['عُثر على تاجر المخطوطات سليمان الهاشمي (61 عاماً) جالساً على أريكة جناحه بلا حراك. اكتشفته ابنته ريم في 23:40. لا جروح ولا آثار اقتحام.',
    'الطبيب الشرعي يرجّح توقف القلب، لكن مساعدك الملازم فهد لاحظ شيئاً لا يستقيم: فنجان واحد على الطاولة، ودلّة تكفي لشخصين.']},
  LOCS,HOT,LAYER,FACTS,EV,ORDER,SUS,SUS_ORDER,METHODS,MOTIVES,ANSWER,STAGES,LIE_HELP,LINKS_REQ,LINK_WHY,BOARD_EV,TL_EVENTS,
@@ -4516,6 +4516,15 @@ function renderSound(){$('#btnSound').innerHTML=ico(Snd.on?'snd':'mute');$('#btn
 const TPH={ok:false,img:null,sign:{"x": 0.335, "y": 0.163, "w": 0.109},car:{"x": 0.368, "y": 0.7},fog:[]};
 const TITLE_PHOTO='img/title.jpg';
 if(TITLE_PHOTO){TPH.img=new Image();TPH.img.onload=()=>TPH.ok=true;TPH.img.src=TITLE_PHOTO}
+function neonSign(cx,txt,x,y,maxW,on){
+ let fs=60;cx.font=`700 ${fs}px "Reem Kufi","IBM Plex Sans Arabic",sans-serif`;fs=Math.max(10,fs*maxW/cx.measureText(txt).width);
+ cx.font=`700 ${fs}px "Reem Kufi","IBM Plex Sans Arabic",sans-serif`;cx.textAlign='center';cx.textBaseline='middle';
+ const w=cx.measureText(txt).width;cx.save();cx.fillStyle='rgba(6,8,12,.82)';cx.fillRect(x-w/2-fs*.35,y-fs*.72,w+fs*.7,fs*1.44);
+ cx.lineJoin='round';cx.lineWidth=Math.max(2,fs*.12);cx.strokeStyle='rgba(20,6,4,.95)';cx.strokeText(txt,x,y);
+ if(on){cx.shadowColor='rgba(255,80,60,1)';cx.shadowBlur=fs*.8;cx.fillStyle='#ff6a52';cx.fillText(txt,x,y);cx.shadowBlur=fs*.25;cx.fillStyle='#ffe6df';cx.fillText(txt,x,y);cx.shadowBlur=0;
+  const ng=cx.createRadialGradient(x,y,0,x,y,w*1.1);ng.addColorStop(0,'rgba(255,80,60,.2)');ng.addColorStop(1,'rgba(255,80,60,0)');cx.fillStyle=ng;cx.fillRect(x-w*1.1,y-w*1.1,w*2.2,w*2.2)}
+ else{cx.fillStyle='#8a3328';cx.fillText(txt,x,y)}
+ cx.restore()}
 function drawTitlePhoto(cx,W,H,t,neonOn){
  const im=TPH.img,iw=im.naturalWidth,ih=im.naturalHeight;
  // cover, anchored so the tower stays in view on narrow screens; slow push-in
@@ -4523,11 +4532,7 @@ function drawTitlePhoto(cx,W,H,t,neonOn){
  const fx=TPH.sign.x+TPH.sign.w/2;let ox=(wideT?W*.36:W/2)-fx*dw;ox=Math.min(0,Math.max(W-dw,ox));const oy=wideT?(H-dh)*.5:(H-dh)*.55;
  cx.drawImage(im,ox,oy,dw,dh);
  // neon sign on the tower's blank board
- const sx=ox+fx*dw,sy=oy+TPH.sign.y*dh,sw=TPH.sign.w*dw,fs=Math.max(10,sw*.155);
- cx.font=`700 ${fs}px "Reem Kufi","IBM Plex Sans Arabic",sans-serif`;cx.textAlign='center';cx.textBaseline='middle';
- if(neonOn){cx.shadowColor='rgba(255,80,60,1)';cx.shadowBlur=fs*.9;cx.fillStyle='#ff6a52';cx.fillText('فندق العسوس',sx,sy);cx.shadowBlur=fs*.3;cx.fillStyle='#ffd2c8';cx.fillText('فندق العسوس',sx,sy);cx.shadowBlur=0;
-  const ng=cx.createRadialGradient(sx,sy,0,sx,sy,sw*1.6);ng.addColorStop(0,'rgba(255,80,60,.2)');ng.addColorStop(1,'rgba(255,80,60,0)');cx.fillStyle=ng;cx.fillRect(sx-sw*1.6,sy-sw*1.6,sw*3.2,sw*3.2)}
- else{cx.fillStyle='rgba(70,26,22,.9)';cx.fillText('فندق العسوس',sx,sy)}
+ const sx=ox+fx*dw,sy=oy+TPH.sign.y*dh,sw=TPH.sign.w*dw;neonSign(cx,'فندق مكود',sx,sy,sw*.92,neonOn);
  // patrol car light bar: alternating red / blue glow + wet-road reflection
  {const px=ox+TPH.car.x*dw,py=oy+TPH.car.y*dh,ph=(t/260)%2<1,R0=Math.max(18,dw*.03);cx.globalCompositeOperation='lighter';
   for(const [c,on,dx] of [['255,40,40',ph,-R0*.35],['40,90,255',!ph,R0*.35]]){const a=on?.85:.18,g=cx.createRadialGradient(px+dx,py,0,px+dx,py,R0*2.2);g.addColorStop(0,`rgba(${c},${a})`);g.addColorStop(1,`rgba(${c},0)`);cx.fillStyle=g;cx.fillRect(px+dx-R0*2.2,py-R0*2.2,R0*4.4,R0*4.4);
@@ -4564,7 +4569,7 @@ function titleRain(){
  const frame=(t)=>{
   if($('#title').hidden)return;
   cx.setTransform(dpr,0,0,dpr,0,0);cx.globalCompositeOperation='source-over';cx.globalAlpha=1;
-  if(TPH.ok&&!reduce&&t>neonT){neonOn=Math.random()<.85?1:0;neonT=t+(neonOn?R_(800,4000):R_(40,160))}
+  if(TPH.ok&&!reduce&&t>neonT){neonOn=Math.random()<.95?1:0;neonT=t+(neonOn?R_(800,4000):R_(40,160))}
   if(TPH.ok){drawTitlePhoto(cx,W,H,t,neonOn)}else{
   const g=cx.createLinearGradient(0,0,0,hz);g.addColorStop(0,'#04060a');g.addColorStop(.6,'#0c1626');g.addColorStop(1,'#2a2230');cx.fillStyle=g;cx.fillRect(0,0,W,hz);
   const halo=cx.createRadialGradient(tower.x+tower.w/2,hz,0,tower.x+tower.w/2,hz,W*.9);halo.addColorStop(0,'rgba(229,140,60,.32)');halo.addColorStop(1,'rgba(229,140,60,0)');cx.fillStyle=halo;cx.fillRect(0,0,W,hz);
@@ -4576,12 +4581,10 @@ function titleRain(){
   const cw=tw/6;for(const [c,r,k] of tower.wins){const wy=ty+40+r*(th-50)/34;if(wy>hz-4)continue;cx.fillStyle=k>.93?'rgba(255,215,150,.95)':k>.6?'rgba(240,180,100,.55)':'rgba(120,150,190,.22)';cx.fillRect(tx+c*cw+cw*.25,wy,cw*.5,(th-50)/34*.55)}
   if((Math.floor(t/800)%2)){cx.fillStyle='#ff3b30';cx.beginPath();cx.arc(tx+tw/2,ty-28,2.2,0,6.28);cx.fill();cx.fillStyle='rgba(255,59,48,.25)';cx.beginPath();cx.arc(tx+tw/2,ty-28,9,0,6.28);cx.fill()}
   // neon sign
-  if(!reduce&&t>neonT){neonOn=Math.random()<.85?1:0;neonT=t+(neonOn?R_(800,4000):R_(40,160))}
+  if(!reduce&&t>neonT){neonOn=Math.random()<.95?1:0;neonT=t+(neonOn?R_(800,4000):R_(40,160))}
   const fs=Math.max(18,tw*.3);cx.font=`700 ${fs}px "Reem Kufi","IBM Plex Sans Arabic",sans-serif`;cx.textAlign='center';cx.textBaseline='middle';
   const sy=ty+18;cx.fillStyle='#080a0e';cx.fillRect(tx-6,sy-fs*.75,tw+12,fs*1.5);
-  if(neonOn){cx.shadowColor='rgba(255,80,60,1)';cx.shadowBlur=24;cx.fillStyle='#ff6a52';cx.fillText('فندق العسوس',tx+tw/2,sy);cx.shadowBlur=8;cx.fillStyle='#ffd2c8';cx.fillText('فندق العسوس',tx+tw/2,sy);cx.shadowBlur=0;
-   const ng=cx.createRadialGradient(tx+tw/2,sy,0,tx+tw/2,sy,tw*1.6);ng.addColorStop(0,'rgba(255,80,60,.22)');ng.addColorStop(1,'rgba(255,80,60,0)');cx.fillStyle=ng;cx.fillRect(tx-tw*1.6,sy-tw*1.6,tw*4.2,tw*3.2)}
-  else{cx.fillStyle='#3a1a16';cx.fillText('فندق العسوس',tx+tw/2,sy)}
+  neonSign(cx,'فندق مكود',tx+tw/2,sy,tw*.92,neonOn);
   for(const b of near){if(b.x+b.w>tx&&b.x<tx+tw)continue;cx.fillStyle='#04060a';cx.fillRect(b.x,hz-b.h,b.w,b.h);for(const [wx,wy,k] of b.wins){if(k<.5)continue;cx.fillStyle='rgba(240,190,110,.55)';cx.fillRect(wx,wy,2,3)}}
   // fog
   cx.globalCompositeOperation='lighter';
@@ -5194,7 +5197,7 @@ const WEEKLY=[
   clues:['الخزنة انفتحت بالرمز بدون كسر، والرمز عند الكل إلا الطبّاخ ووليد.','السارق رمى اللؤلؤة بالبحر بكيس، ونزل بعدين يسبح ويطلّعها.','لحظة انطفاء الأنوار كان السارق على السطح.','بكابينة مساعد القبطان ملابس مبلولة بماء البحر.','الكيس فيه عقدة بحّارة ما يعرفها إلا اللي اشتغل على السطح سنين.'],ans:2}
 ];
 const WITNESS={
- c1:['عامل مواقف فندق العسوس','شفته يطلع بسيارته الساعة ١١:١٤، ووقف عند البوابة يمسح يده بمنديل ورماه بالحاوية. ما كان مستعجل… كان هادي زيادة عن اللزوم.','وش اللي كان ماجد يبي يحميه بالقتل؟',['تقرير مزوّر','دين قديم','سر عائلي'],0],
+ c1:['عامل مواقف فندق مكود','شفته يطلع بسيارته الساعة ١١:١٤، ووقف عند البوابة يمسح يده بمنديل ورماه بالحاوية. ما كان مستعجل… كان هادي زيادة عن اللزوم.','وش اللي كان ماجد يبي يحميه بالقتل؟',['تقرير مزوّر','دين قديم','سر عائلي'],0],
  c2:['حارس رواق الصفا','نورة كانت تقول لي: «إذا صار لي شي، دوّر بأوراق التأمين.» ما فهمت قصدها إلا بعدين.','ليش قتل فيصل نورة؟',['ليخفي احتيال التأمين','عشان لوحة مسروقة','عشان خلاف على الإرث'],0],
  c3:['صاحب دكان الرهونات','طلال جاني قبل الحادثة بأسبوع يسأل: «كم يسوى سيف قديم مطلي فضة؟» قلت له: «جيبه وأقولك.»','ليش أخذ طلال سيف جده؟',['يسدّ دين الرهونات','يبيعه لتاجر أجنبي','يهديه لخطيبته'],0],
  c4:['مضيف القطار الليلي','بالعربة الأخيرة شفت راكب يغيّر غلاف علبة مجوهرات بالحمام، ولما شافني سكّر الباب بسرعة.','وش اللي سرقه ماهر الدوسري؟',['«نجمة الخليج»','ساعة ألماس','وثائق شحن'],0],
