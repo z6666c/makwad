@@ -6,11 +6,15 @@ fail(){ printf "\n\033[1;31m✖ %s\033[0m\n" "$1"; read -p "اضغط Enter لل�
 DIR="$HOME/mohaqqiq-ios"
 
 say "1/6 التحقق من Xcode"
-if ! [ -d /Applications/Xcode.app ]; then
+XC=$(mdfind "kMDItemCFBundleIdentifier == 'com.apple.dt.Xcode'" 2>/dev/null | head -1)
+[ -z "$XC" ] && for p in /Applications/Xcode*.app "$HOME"/Applications/Xcode*.app; do [ -d "$p" ] && XC="$p" && break; done
+if [ -z "$XC" ]; then
   open "macappstores://apps.apple.com/app/xcode/id497799835"
   fail "Xcode غير مثبت. فتحت لك صفحته في App Store: ثبّته وافتحه مرة وحدة ووافق على الشروط، ثم شغّل هذا الملف من جديد."
 fi
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer 2>/dev/null || true
+echo "Xcode: $XC"
+say "بيطلب منك كلمة مرور الماك (ما تظهر وأنت تكتبها، عادي)"
+sudo xcode-select -s "$XC/Contents/Developer"
 xcodebuild -checkFirstLaunchStatus >/dev/null 2>&1 || sudo xcodebuild -runFirstLaunch
 
 say "2/6 التحقق من Node.js"
