@@ -803,6 +803,7 @@ html.wide #sceneDock{padding:10px 14px 14px}
 .menu{top:calc(56px + env(safe-area-inset-top,0px))}
 .cases-top .case-no{white-space:nowrap}#goldBar{flex-wrap:nowrap}#goldBar .acc-chip{margin-inline-start:0;white-space:nowrap}#goldBar .gold-chip{white-space:nowrap}
 @media (max-width:360px){#goldBar .gold-chip{font-size:12px;padding-inline:8px}}
+.earn-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}.earn-list li{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.03);font-size:14px}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -4373,6 +4374,8 @@ let CUR_D='medium';
 /* ================= GOLD ECONOMY (demo store) ================= */
 const GOLD_PACKS=[{id:'g120',gold:120,price:'٤٫٩٩'},{id:'g350',gold:350,bonus:'+١٥٪',price:'١٢٫٩٩'},{id:'g900',gold:900,bonus:'+٣٠٪',price:'٢٩٫٩٩',tag:'الأكثر شراءً'},{id:'g2500',gold:2500,bonus:'+٥٠٪',price:'٦٩٫٩٩',tag:'أفضل قيمة'}];
 const PREMIUM={price:'١٩٫٩٩',goldEach:400};
+/* Paid store switch: false = no purchases anywhere (gold is earned in play). Flip to true when Apple/Google in-app purchase is wired. */
+const STORE_PAID=false;
 const goldFor=pts=>Math.max(2,Math.round(pts/5));
 const goldBal=()=>META.gold==null?60:META.gold;
 function gold(n){META.gold=Math.max(0,goldBal()+n);saveMeta();document.querySelectorAll('[data-gold-bal]').forEach(e=>e.textContent=AR(META.gold))}
@@ -4383,20 +4386,20 @@ const coinSVG=`<svg viewBox="0 0 24 24" class="coin" aria-hidden="true"><circle 
 function openStore(){
  const daily=META.dailyDay!==todayKey();
  sheet(`<div class="store-head"><div><div class="label">المتجر</div><h3 class="h-sec" style="margin:0">ذهب المحقق</h3></div><div class="wallet gold-w">${coinSVG}<b data-gold-bal>${AR(goldBal())}</b><small>ذهب</small></div></div>
-  <div class="demo-note">${ico('lock')} <span><strong>وضع تجريبي:</strong> لا يُخصم أي مبلغ ولا تُطلب بيانات بطاقة. في النسخة المنشورة على المتاجر يتم الدفع عبر نظام Apple أو Google.</span></div>
+  ${STORE_PAID?`<div class="demo-note">${ico('lock')} <span><strong>وضع تجريبي:</strong> لا يُخصم أي مبلغ ولا تُطلب بيانات بطاقة. في النسخة المنشورة على المتاجر يتم الدفع عبر نظام Apple أو Google.</span></div>`:''}
   <p class="lead" style="margin:10px 0">الذهب يشتري التلميحات دون أن يخصم من نقاط قضيتك، ويفتح القضايا المميزة.</p>
   <button class="daily ${daily?'':'used'}" id="dailyBtn" ${daily?'':'disabled'}>${coinSVG}<span><strong>${daily?'مكافأة اليوم: ٢٠ ذهب مجاناً':'استلمت مكافأة اليوم'}</strong><small>${daily?'اضغط للاستلام':'عُد غداً'}</small></span></button>
-  <div class="label" style="margin:16px 0 8px">باقات الذهب</div>
-  <div class="packs">${GOLD_PACKS.map(p=>`<button class="pack ${p.tag?'hot':''}" data-pack="${p.id}">${p.tag?`<i class="tag">${p.tag}</i>`:''}<span class="pk-coins">${coinSVG.repeat(Math.min(4,1+GOLD_PACKS.indexOf(p)))}</span><b>${AR(p.gold)}</b><small>ذهب ${p.bonus?`<em>${p.bonus}</em>`:''}</small><span class="price">${p.price} ر.س</span></button>`).join('')}</div>
+  ${STORE_PAID?`<div class="label" style="margin:16px 0 8px">باقات الذهب</div>
+  <div class="packs">${GOLD_PACKS.map(p=>`<button class="pack ${p.tag?'hot':''}" data-pack="${p.id}">${p.tag?`<i class="tag">${p.tag}</i>`:''}<span class="pk-coins">${coinSVG.repeat(Math.min(4,1+GOLD_PACKS.indexOf(p)))}</span><b>${AR(p.gold)}</b><small>ذهب ${p.bonus?`<em>${p.bonus}</em>`:''}</small><span class="price">${p.price} ر.س</span></button>`).join('')}</div>`:`<div class="label" style="margin:16px 0 8px">كيف تجمع ذهب؟</div><ul class="earn-list"><li>🎁 مكافأة يومية: ٢٠ ذهب</li><li>🔍 حل القضايا، وكل ما كان حلّك أنظف زاد الذهب</li><li>🌙 قضية الليلة واللغز المتسلسل والشاهد الهارب</li><li>🎉 هدايا المواسم وقضاياها</li></ul>`}
   <div class="label" style="margin:16px 0 8px">القضايا المميزة</div>
   ${META.premium?`<div class="premium owned">${ico('board')} <span><strong>حزمة القضايا المميزة مفعّلة</strong><small>ليلة الافتتاح، رمال العلا، موسم الورد، ثلاجة الأحساء، رواشين البلد، برج الأفق</small></span></div>`:
-  `<button class="premium" data-premium>${ico('board')} <span><strong>حزمة الخبير والنخبة والأسطوري</strong><small>ست قضايا: ليلة الافتتاح، رمال العلا، موسم الورد، ثلاجة الأحساء، رواشين البلد، برج الأفق</small></span><span class="price">${PREMIUM.price} ر.س</span></button>`}
-  <div class="row" style="margin-top:16px;justify-content:center"><button class="btn btn-primary" id="stCart" style="flex:1">🛒 السلة · ${AR(cartCount())}</button></div><div class="row" style="margin-top:10px;justify-content:center"><button class="small-btn" id="stRestore">استعادة المشتريات</button><button class="small-btn" data-close>إغلاق</button></div>`,(w,close)=>{
+  !STORE_PAID?`<div class="premium owned">${ico('board')} <span><strong>القضايا المميزة تنفتح بالذهب</strong><small>كل قضية مميزة بـ ${AR(PREMIUM.goldEach)} ذهب، افتحها من صفحة القضايا.</small></span></div>`:`<button class="premium" data-premium>${ico('board')} <span><strong>حزمة الخبير والنخبة والأسطوري</strong><small>ست قضايا: ليلة الافتتاح، رمال العلا، موسم الورد، ثلاجة الأحساء، رواشين البلد، برج الأفق</small></span><span class="price">${PREMIUM.price} ر.س</span></button>`}
+  ${STORE_PAID?`<div class="row" style="margin-top:16px;justify-content:center"><button class="btn btn-primary" id="stCart" style="flex:1">🛒 السلة · ${AR(cartCount())}</button></div>`:''}<div class="row" style="margin-top:10px;justify-content:center">${STORE_PAID?'<button class="small-btn" id="stRestore">استعادة المشتريات</button>':''}<button class="small-btn" data-close>إغلاق</button></div>`,(w,close)=>{
   w.querySelector('[data-close]').onclick=close;
   const d=w.querySelector('#dailyBtn');if(d&&daily)d.onclick=()=>{META.dailyDay=todayKey();gold(20);Snd.medal();toast('+٢٠ ذهب');close();openStore()};
   w.querySelectorAll('[data-pack]').forEach(b=>b.onclick=()=>{cartAdd(b.dataset.pack);const cb=w.querySelector('#stCart');if(cb)cb.innerHTML=`🛒 السلة · ${AR(cartCount())}`});
   const pr=w.querySelector('[data-premium]');if(pr)pr.onclick=()=>{cartAdd('premium');const cb=w.querySelector('#stCart');if(cb)cb.innerHTML=`🛒 السلة · ${AR(cartCount())}`};
-  w.querySelector('#stCart').onclick=()=>{close();openCart()};const sr=w.querySelector('#stRestore');if(sr)sr.onclick=async()=>{if(!accUser()){close();openLogin();return}try{await accRestore(false)}catch(e){toast(accErr(e.message))}};
+  const scb=w.querySelector('#stCart');if(scb)scb.onclick=()=>{close();openCart()};const sr=w.querySelector('#stRestore');if(sr)sr.onclick=async()=>{if(!accUser()){close();openLogin();return}try{await accRestore(false)}catch(e){toast(accErr(e.message))}};
  });
 }
 function confirmBuy(name,price,apply){
@@ -4742,14 +4745,14 @@ function renderCases(){
    <p>${C.blurb}</p>
    <ul class="cc-facts"><li><b>${AR(nSus)}</b> مشتبهين</li><li><b>${AR(nLies)}</b> كذبات</li><li>${DIFFS[recDiff(C)].tries===1?'<b>١</b> محاولة اتهام':'<b>'+AR(DIFFS[recDiff(C)].tries)+'</b> محاولات اتهام'}</li>${C.D.clock?'<li>مع مهلة زمنية</li>':''}${C.feature?`<li class="cc-feat">${C.feature}</li>`:''}</ul>
    ${best?`<div class="cc-best">حُلّت · أفضل نتيجة <b>${best.score}</b> · ${best.rank}${best.diff?' · '+DIFFS[best.diff].label:''}</div>`:''}
-   ${tl?`<div class="cc-lock tl">${ico('lock')} <span>مقفلة · حُلّ قضية من ${TN[prevT]} لفتح هذا المستوى</span></div>`:isLocked(id)?`<div class="cc-lock">${ico('lock')} <span>قضية مميزة</span></div><div class="row"><button class="btn btn-primary" data-unlock="${id}">افتح بـ ${AR(PREMIUM.goldEach)} ذهب</button><button class="btn btn-ghost" data-store>الحزمة · ${PREMIUM.price} ر.س</button></div>`:
+   ${tl?`<div class="cc-lock tl">${ico('lock')} <span>مقفلة · حُلّ قضية من ${TN[prevT]} لفتح هذا المستوى</span></div>`:isLocked(id)?`<div class="cc-lock">${ico('lock')} <span>قضية مميزة</span></div><div class="row"><button class="btn btn-primary" data-unlock="${id}">افتح بـ ${AR(PREMIUM.goldEach)} ذهب</button>${STORE_PAID?`<button class="btn btn-ghost" data-store>الحزمة · ${PREMIUM.price} ر.س</button>`:''}</div>`:
    `<div class="row">${sv?`<button class="btn btn-primary" data-cont="${id}">تابع التحقيق</button><button class="btn btn-ghost" data-start="${id}">ابدأ من جديد</button>`:`<button class="btn btn-primary" data-start="${id}">${best?'العب مرة أخرى':'افتح الملف'}</button>`}</div>`}
   </article>`}).join('');
  $('#caseList').querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>startCase(b.dataset.start,false));
  $('#caseList').querySelectorAll('[data-cont]').forEach(b=>b.onclick=()=>startCase(b.dataset.cont,true));
  $('#caseList').querySelectorAll('[data-unlock]').forEach(b=>b.onclick=()=>unlockCaseGold(b.dataset.unlock));
  $('#caseList').querySelectorAll('[data-store]').forEach(b=>b.onclick=()=>openStore());
- const gb=$('#goldBar');if(gb)gb.innerHTML=`<button class="gold-chip" id="goldChip">${coinSVG}<b data-gold-bal>${AR(goldBal())}</b> ذهب · المتجر</button>`;const gc=$('#goldChip');if(gc)gc.onclick=()=>openStore();
+ const gb=$('#goldBar');if(gb)gb.innerHTML=`<button class="gold-chip" id="goldChip">${coinSVG}<b data-gold-bal>${AR(goldBal())}</b> ذهب${STORE_PAID?' · المتجر':''}</button>`;const gc=$('#goldChip');if(gc)gc.onclick=()=>openStore();
  $('#medalBox').innerHTML=medalsHTML();
  try{renderEvents()}catch(e){}
  try{renderAccChip()}catch(e){}
@@ -5779,8 +5782,8 @@ function openAccount(){
   <div class="acc-stats"><span><b>${AR(Object.keys(META.best||{}).length)}</b>قضية محلولة</span><span><b data-gold-bal>${AR(goldBal())}</b>ذهب</span><span><b>${META.premium?'مفعّلة':'—'}</b>الحزمة المميزة</span></div>
   <div class="acc-list">
    <button id="accNow">${ico('board')}<span>احفظ تقدمي الحين</span></button>
-   <button id="accRest">${coinSVG}<span>استعادة المشتريات</span></button>
-   <button id="accOrd">${ico('board')}<span>طلباتي</span></button>
+   ${STORE_PAID?`<button id="accRest">${coinSVG}<span>استعادة المشتريات</span></button>
+   <button id="accOrd">${ico('board')}<span>طلباتي</span></button>`:''}
    <button id="accNtf"><span>🔔 الإشعارات</span></button>
    <button id="accOut"><span>تسجيل الخروج</span></button>
    <button id="accDel" class="danger"><span>حذف الحساب</span></button></div>
@@ -5789,8 +5792,8 @@ function openAccount(){
   const pane=w.querySelector('#accPane');
   w.querySelector('#accNtf').onclick=()=>{close();openNotifSettings()};
   w.querySelector('#accNow').onclick=async()=>{await accPush();w.querySelector('#accSync').textContent=ACC.lastSync?'انحفظ الحين':'ما قدرنا نحفظ، تأكد من الإنترنت';toast(ACC.lastSync?'تقدمك محفوظ':'ما فيه اتصال')};
-  w.querySelector('#accRest').onclick=async()=>{try{await accRestore(false)}catch(e){toast(accErr(e.message))}};
-  w.querySelector('#accOrd').onclick=async()=>{pane.innerHTML='<p class="lead">جاري التحميل…</p>';try{const r=await accFetch('/rest/v1/orders?select=id,items,total_sar,gold,status,created_at&order=created_at.desc&limit=30');
+  if(STORE_PAID)w.querySelector('#accRest').onclick=async()=>{try{await accRestore(false)}catch(e){toast(accErr(e.message))}};
+  if(STORE_PAID)w.querySelector('#accOrd').onclick=async()=>{pane.innerHTML='<p class="lead">جاري التحميل…</p>';try{const r=await accFetch('/rest/v1/orders?select=id,items,total_sar,gold,status,created_at&order=created_at.desc&limit=30');
    pane.innerHTML=r&&r.length?`<ul class="acc-orders">${r.map(o=>`<li><div><b>${o.items.map(i=>i.title+(i.qty>1?' ×'+AR(i.qty):'')).join('، ')}</b><small>${new Date(o.created_at).toLocaleDateString('ar-SA')} · رقم ${o.id.slice(0,8)}</small></div><span>${fmtSAR(+o.total_sar)} ر.س<i>تجريبي</i></span></li>`).join('')}</ul>`:'<p class="lead">ما عندك طلبات للحين.</p>'}catch(e){pane.innerHTML=`<p class="lead">${accErr(e.message)}</p>`}};
   w.querySelector('#accOut').onclick=async()=>{await accPush();try{await accFetch('/auth/v1/logout',{method:'POST'})}catch(e){}ACC.sess=null;accSaveSess();close();renderAccChip();toast('سجّلت خروج. تقدمك باقي على هالجهاز.')};
   w.querySelector('#accDel').onclick=()=>{pane.innerHTML=`<div class="acc-del"><p>حذف الحساب يمسح تقدمك المحفوظ وطلباتك من السيرفر نهائياً. اللعب على هالجهاز يبقى.</p><button class="btn btn-ghost" id="accDelOk" style="width:100%;color:#e0766b;border-color:#e0766b">أكّد حذف الحساب</button></div>`;
@@ -5799,16 +5802,16 @@ function openAccount(){
 }
 function renderAccChip(){const gb=$('#goldBar');if(!gb)return;let sd=$('#sndChip');if(!sd){sd=document.createElement('button');sd.id='sndChip';sd.className='acc-chip snd-chip';sd.setAttribute('aria-label','إعدادات الصوت');gb.insertBefore(sd,gb.firstChild);sd.onclick=()=>openSoundSettings()}sd.innerHTML=Snd.on?'🔊':'🔇';let b=$('#accChip');if(!b){b=document.createElement('button');b.id='accChip';b.className='acc-chip';gb.appendChild(b);b.onclick=()=>openAccount()}
  const u=accUser();b.innerHTML=u?`<i>${(accName()[0]||'م').toUpperCase()}</i><span>حسابي</span>`:`<span>دخول</span>`;b.classList.toggle('in',!!u);
- let c=$('#cartChip');const n=cartCount();if(n){if(!c){c=document.createElement('button');c.id='cartChip';c.className='acc-chip cart';gb.appendChild(c);c.onclick=()=>openCart()}c.innerHTML=`🛒 <b>${AR(n)}</b>`}else if(c)c.remove()}
+ let c=$('#cartChip');const n=STORE_PAID?cartCount():0;if(n){if(!c){c=document.createElement('button');c.id='cartChip';c.className='acc-chip cart';gb.appendChild(c);c.onclick=()=>openCart()}c.innerHTML=`🛒 <b>${AR(n)}</b>`}else if(c)c.remove()}
 
 /* ---------- cart ---------- */
 const cartGet=()=>{try{return JSON.parse(localStorage.getItem(ACC.CK))||[]}catch(e){return[]}};
 const cartSet=c=>{try{localStorage.setItem(ACC.CK,JSON.stringify(c))}catch(e){}renderAccChip()};
 const cartCount=()=>cartGet().reduce((n,i)=>n+i.qty,0);
 const prodTitle=id=>id==='premium'?'حزمة القضايا المميزة':`${AR((GOLD_PACKS.find(p=>p.id===id)||{}).gold||0)} ذهب`;
-function cartAdd(id){const c=cartGet(),it=c.find(i=>i.id===id);if(id==='premium'&&(META.premium||it)){toast(META.premium?'الحزمة مفعّلة عندك':'الحزمة في السلة');return}
+function cartAdd(id){if(!STORE_PAID){toast('الشراء متوقف حالياً، اجمع الذهب من اللعب');return}const c=cartGet(),it=c.find(i=>i.id===id);if(id==='premium'&&(META.premium||it)){toast(META.premium?'الحزمة مفعّلة عندك':'الحزمة في السلة');return}
  if(it)it.qty=Math.min(10,it.qty+1);else c.push({id,qty:1});cartSet(c);Snd.coin&&Snd.coin();toast(`انضاف للسلة: ${prodTitle(id)}`)}
-function openCart(){
+function openCart(){if(!STORE_PAID){openStore();return}
  const render=w=>{const c=cartGet(),tot=c.reduce((s,i)=>s+ACC.PRICES[i.id]*i.qty,0);
   w.querySelector('.cartw').innerHTML=`<div class="label">السلة</div><h3 class="h-sec">${c.length?'مشترياتك':'السلة فاضية'}</h3>
    ${c.length?`<ul class="cart-list">${c.map(i=>`<li><div><b>${prodTitle(i.id)}</b><small>${fmtSAR(ACC.PRICES[i.id])} ر.س</small></div><div class="qty">${i.id==='premium'?'':`<button data-dec="${i.id}">−</button><span>${AR(i.qty)}</span><button data-inc="${i.id}">+</button>`}<button class="rm" data-rm="${i.id}">حذف</button></div></li>`).join('')}</ul>
