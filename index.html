@@ -816,6 +816,25 @@ html.wide #sceneDock{padding:10px 14px 14px}
 .md-tabs{display:flex;gap:6px;overflow-x:auto;margin:12px 0 4px;padding-bottom:4px}.md-tabs button{white-space:nowrap;padding:7px 12px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:inherit;font-size:13px}.md-tabs button.on{border-color:var(--sodium);color:var(--sodium);background:rgba(229,162,69,.1)}.md-tabs small{opacity:.7}
 .medal-emo{font-size:20px;line-height:1}.medal-ico .medal-emo{font-size:30px}.mb-icons i,.am-icons i{color:var(--sodium)}.mb-icons svg,.am-icons svg{stroke:currentColor;fill:none}.medal em{font-style:normal;font-size:10.5px;color:var(--sodium);margin-top:2px}
 .acc-medals{display:grid;grid-template-columns:auto auto 1fr;align-items:center;gap:10px;width:100%;margin:12px 0 4px;padding:12px;border-radius:12px;border:1px solid rgba(229,162,69,.35);background:rgba(229,162,69,.08);color:inherit;text-align:start}.acc-medals b{color:var(--sodium);font-size:13px}.am-icons{display:flex;gap:4px;justify-content:flex-end}.am-icons i{width:26px;height:26px}
+.cm-code{text-align:center;border:1px dashed var(--sodium-dim);border-radius:10px;padding:6px 10px}.cm-code small{display:block;font-size:11px;color:var(--muted)}.cm-code b{font-family:monospace;font-size:17px;color:var(--sodium);letter-spacing:2px}
+.cm-scope{display:flex;gap:6px;flex-wrap:wrap}.cm-scope button{padding:6px 12px;border-radius:18px;border:1px solid var(--line);background:none;color:inherit;font-size:12.5px}.cm-scope button.on{border-color:var(--sodium);color:var(--sodium)}
+.cm-mine{padding:10px 12px;border-radius:10px;background:rgba(229,162,69,.1);border:1px solid rgba(229,162,69,.3);font-size:13px;margin-bottom:8px}.cm-mine b{color:var(--sodium)}
+.cm-list{display:grid;gap:6px;margin-top:6px}
+.cm-row{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:inherit;text-align:start}
+.cm-row.me{border-color:var(--sodium)}.cm-rowb{display:flex;align-items:center;gap:10px;flex:1;background:none;border:0;color:inherit;text-align:start;padding:0;min-width:0}
+.cm-rk{width:26px;text-align:center;font-family:var(--f-display);color:var(--sodium)}.cm-av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--ink-3);font-size:18px;flex:none}
+.cm-nm{flex:1;display:flex;flex-direction:column;min-width:0}.cm-nm b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cm-nm small{font-size:11.5px;color:var(--muted)}
+.cm-pts{text-align:center;font-family:var(--f-display);color:var(--sodium);font-size:16px}.cm-pts small{display:block;font-family:var(--f-body);font-size:10.5px;color:var(--muted)}
+.cm-fbtn{flex:none;padding:6px 12px;border-radius:16px;border:1px solid var(--sodium);background:var(--sodium);color:#1a1205;font-size:12.5px;font-weight:700}.cm-fbtn.on{background:none;color:var(--sodium)}
+.cm-add{display:flex;gap:8px;align-items:center}.cm-add .acc-in{flex:1;margin:0}
+.cm-avs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.cm-avs button{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--ink-3);font-size:20px}.cm-avs button.on{border-color:var(--sodium);box-shadow:0 0 0 2px rgba(229,162,69,.3)}
+.cm-hint{display:block;font-size:12px;margin-top:4px}.cm-hint.ok{color:#6fcf8f}.cm-hint.no{color:#e07a6a}
+.cm-card{text-align:center;padding:16px;border-radius:14px;border:1px solid rgba(229,162,69,.3);background:linear-gradient(160deg,rgba(229,162,69,.1),rgba(255,255,255,.02))}
+.cm-bigav{width:70px;height:70px;margin:0 auto 8px;border-radius:50%;display:grid;place-items:center;font-size:36px;background:var(--ink-3);border:2px solid var(--sodium-dim)}
+.cm-cardt b{display:block;font-family:var(--f-display);font-size:22px}.cm-cardt small{color:var(--sodium);font-size:13px}
+.cm-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 16px;margin-top:12px}.cm-stats span{display:flex;flex-direction:column;font-size:11.5px;color:var(--muted)}.cm-stats b{font-family:var(--f-display);font-size:18px;color:var(--fg)}
+.cm-medals{display:flex;justify-content:center;gap:6px;margin-top:12px}.cm-medals i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--ink-3);border:1px solid var(--sodium-dim);font-style:normal;color:var(--sodium)}.cm-medals svg{width:16px;height:16px;stroke:currentColor;fill:none}
+.cm-fm{text-align:center;font-size:12.5px;color:var(--sodium);margin:8px 0 0}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -5450,7 +5469,7 @@ function openNight(){
    const ok=pick===C.ans,ok2=ok&&why===C.key,N=evCfg().night;let g=0;
    if(ok){g=N.gold+(ok2?N.bonus:0);M.streak=(M.last===n.day-1?M.streak:0)+1;M.last=n.day}else{M.streak=0;M.last=n.day}
    let badge='';if(ok&&M.streak>0&&M.streak%N.streak===0){g+=N.streakGold;M.badges.night=(M.badges.night||0)+1;badge=`<div class="evr-badge">🏅 شارة «المحقق الليلي» · ${AR(N.streak)} ليالٍ متتالية · +${AR(N.streakGold)} ذهب</div>`}
-   M.done[key]={ok,ok2,g};if(g)gold(g);saveMeta();ok?(Snd.win&&Snd.win()):(Snd.fail&&Snd.fail());
+   M.done[key]={ok,ok2,g};if(g)gold(g);saveMeta();typeof commSubmit==='function'&&commSubmit('n',n.day,ok,g);ok?(Snd.win&&Snd.win()):(Snd.fail&&Snd.fail());
    w.querySelector('.evn').innerHTML=`<div class="evr ${ok?'good':'bad'}"><div class="evr-stamp">${ok?'حُلّت':'أُغلقت'}</div><h3>${ok?(ok2?'اتهام صحيح ودليل صحيح':'المتّهم صحيح… والدليل لا'):'الفاعل أفلت هالمرة'}</h3>
     <p>الفاعل: <b>${C.sus[C.ans][0]}</b>. ${C.why}</p>${g?`<div class="evr-gold">${coinSVG} +${AR(g)} ذهب</div>`:''}${badge}<p class="evr-next">قضية الليلة الجاية تفتح بكرة الساعة ٩ م.</p><button class="btn btn-primary" data-close style="width:100%">تم</button></div>`;
    w.querySelector('[data-close]').onclick=close;renderEvents()};
@@ -5471,7 +5490,7 @@ function openWeekly(){
   const bind=()=>{w.querySelectorAll('.evw-o').forEach(b=>b.onclick=()=>{pick=+b.dataset.o;Snd.tab&&Snd.tab();w.querySelector('.evw').innerHTML=body();bind()});
    w.querySelector('[data-close]').onclick=close;
    const go=w.querySelector('#evwGo');if(go)go.onclick=()=>{const T=evNow();if(T==null||!weekWin(T).open||weekWin(T).wk!==W.wk){close();toast('انتهى وقت اللغز');renderEvents();return}
-    const k=shown(),ok=pick===R.ans,g=ok?cfg.gold[k-1]:0;M.done[key]={ok,k,g};if(g)gold(g);saveMeta();ok?(Snd.win&&Snd.win()):(Snd.fail&&Snd.fail());
+    const k=shown(),ok=pick===R.ans,g=ok?cfg.gold[k-1]:0;M.done[key]={ok,k,g};if(g)gold(g);saveMeta();typeof commSubmit==='function'&&commSubmit('w',W.wk,ok,g);ok?(Snd.win&&Snd.win()):(Snd.fail&&Snd.fail());
     w.querySelector('.evw').innerHTML=`<div class="evr ${ok?'good':'bad'}"><div class="evr-stamp">${ok?'حُلّ':'خطأ'}</div><h3>${ok?`حليته من ${AR(k)} ${k===1?'دليل':'أدلة'}`:'مو هو'}</h3><p>${ok?'':`الحل: <b>${R.opts[R.ans][0]}</b>. `}${R.clues.join(' ')}</p>${g?`<div class="evr-gold">${coinSVG} +${AR(g)} ذهب</div>`:''}<p class="evr-next">اللغز الجاي يفتح الخميس الساعة ٦ م.</p><button class="btn btn-primary" data-close style="width:100%">تم</button></div>`;
     w.querySelector('[data-close]').onclick=close;renderEvents()}};
   bind();
@@ -5487,7 +5506,7 @@ function openWitness(){
   <div class="label">${Wt[2]}</div><div class="evw-opts">${[0,1,2].map(j=>(j+X.k)%3).map(i=>`<button class="evw-o" data-o="${i}"><b>${Wt[3][i]}</b></button>`).join('')}</div>
   <p class="lead" style="margin-top:10px">الشاهد يختفي ${fmtAt(X.b)}.</p></div>`,(w,close)=>{
   w.querySelectorAll('.evw-o').forEach(b=>b.onclick=()=>{const T=evNow();if(T==null||!witWin(T).open){close();toast('الشاهد اختفى');renderEvents();return}
-   const ok=+b.dataset.o===Wt[4],g=ok?evCfg().witness.gold:0;M.done[key]={ok,g};if(g)gold(g);saveMeta();ok?(Snd.win&&Snd.win()):(Snd.fail&&Snd.fail());
+   const ok=+b.dataset.o===Wt[4],g=ok?evCfg().witness.gold:0;M.done[key]={ok,g};if(g)gold(g);saveMeta();typeof commSubmit==='function'&&commSubmit('x',X.k,ok,g);ok?(Snd.win&&Snd.win()):(Snd.fail&&Snd.fail());
    w.querySelector('.evx').innerHTML=`<div class="evr ${ok?'good':'bad'}"><div class="evr-stamp">${ok?'مؤكَّد':'خطأ'}</div><h3>${ok?'ربطت الشهادة بالقضية':'ما ربطتها صح'}</h3><p>${CASES[id].end.win}.</p>${g?`<div class="evr-gold">${coinSVG} +${AR(g)} ذهب</div>`:''}<p class="evr-next">الشاهد الجاي يظهر ${fmtAt(witWin(T+DAY).a)}.</p><button class="btn btn-primary" data-close style="width:100%">تم</button></div>`;
    w.querySelector('[data-close]').onclick=close;renderEvents()});
  });
@@ -5849,6 +5868,7 @@ function openAccount(){
    <button id="accNow">${ico('board')}<span>احفظ تقدمي الحين</span></button>
    ${STORE_PAID?`<button id="accRest">${coinSVG}<span>استعادة المشتريات</span></button>
    <button id="accOrd">${ico('board')}<span>طلباتي</span></button>`:''}
+   <button id="accComm"><span>👥 مجتمع المحققين</span></button>
    <button id="accNtf"><span>🔔 الإشعارات</span></button>
    <button id="accOut"><span>تسجيل الخروج</span></button>
    <button id="accDel" class="danger"><span>حذف الحساب</span></button></div>
@@ -5857,6 +5877,7 @@ function openAccount(){
   const pane=w.querySelector('#accPane');
   w.querySelector('#accNtf').onclick=()=>{close();openNotifSettings()};
   w.querySelector('#accMed').onclick=()=>{close();openMedals()};
+  w.querySelector('#accComm').onclick=()=>{close();openCommunity('me')};
   w.querySelector('#accNow').onclick=async()=>{await accPush();w.querySelector('#accSync').textContent=ACC.lastSync?'انحفظ الحين':'ما قدرنا نحفظ، تأكد من الإنترنت';toast(ACC.lastSync?'تقدمك محفوظ':'ما فيه اتصال')};
   if(STORE_PAID)w.querySelector('#accRest').onclick=async()=>{try{await accRestore(false)}catch(e){toast(accErr(e.message))}};
   if(STORE_PAID)w.querySelector('#accOrd').onclick=async()=>{pane.innerHTML='<p class="lead">جاري التحميل…</p>';try{const r=await accFetch('/rest/v1/orders?select=id,items,total_sar,gold,status,created_at&order=created_at.desc&limit=30');
@@ -5866,7 +5887,7 @@ function openAccount(){
    pane.querySelector('#accDelOk').onclick=async()=>{try{await accFetch('/rest/v1/rpc/delete_my_account',{method:'POST',body:'{}'});ACC.sess=null;accSaveSess();close();renderAccChip();toast('انحذف الحساب')}catch(e){toast(accErr(e.message))}}};
  });
 }
-function renderAccChip(){const gb=$('#goldBar');if(!gb)return;let sd=$('#sndChip');if(!sd){sd=document.createElement('button');sd.id='sndChip';sd.className='acc-chip snd-chip';sd.setAttribute('aria-label','إعدادات الصوت');gb.insertBefore(sd,gb.firstChild);sd.onclick=()=>openSoundSettings()}sd.innerHTML=Snd.on?'🔊':'🔇';let b=$('#accChip');if(!b){b=document.createElement('button');b.id='accChip';b.className='acc-chip';gb.appendChild(b);b.onclick=()=>openAccount()}
+function renderAccChip(){const gb=$('#goldBar');if(!gb)return;let sd=$('#sndChip');if(!sd){sd=document.createElement('button');sd.id='sndChip';sd.className='acc-chip snd-chip';sd.setAttribute('aria-label','إعدادات الصوت');gb.insertBefore(sd,gb.firstChild);sd.onclick=()=>openSoundSettings()}sd.innerHTML=Snd.on?'🔊':'🔇';let cc=$('#commChip');if(!cc){cc=document.createElement('button');cc.id='commChip';cc.className='acc-chip snd-chip';cc.setAttribute('aria-label','مجتمع المحققين');sd.after(cc);cc.onclick=()=>openCommunity()}cc.innerHTML='👥';let b=$('#accChip');if(!b){b=document.createElement('button');b.id='accChip';b.className='acc-chip';gb.appendChild(b);b.onclick=()=>openAccount()}
  const u=accUser();b.innerHTML=u?`<i>${(accName()[0]||'م').toUpperCase()}</i><span>حسابي</span>`:`<span>دخول</span>`;b.classList.toggle('in',!!u);
  let c=$('#cartChip');const n=STORE_PAID?cartCount():0;if(n){if(!c){c=document.createElement('button');c.id='cartChip';c.className='acc-chip cart';gb.appendChild(c);c.onclick=()=>openCart()}c.innerHTML=`🛒 <b>${AR(n)}</b>`}else if(c)c.remove()}
 
@@ -5948,6 +5969,90 @@ async function openNotifSettings(){
 }
 (function(){const go=()=>setTimeout(()=>ntfSync(),2500);if(document.readyState==='complete')go();else addEventListener('load',go);
  try{const A=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.App;A&&A.addListener('appStateChange',s=>{if(s.isActive)ntfSync()})}catch(e){}})();
+
+/* ================= COMMUNITY (phase 1: profiles, weekly leaderboard, friends by code — no messaging) ================= */
+const COMM={me:null,lb:{},avatars:['🕵️','🦅','🐺','🦉','🐆','🌙','🔍','🗝️','🎩','🧭','⚖️','🐎'],pushedSig:''};
+const commWeek=t=>Math.floor(rDay(t==null?((typeof evNow==='function'&&evNow())||Date.now()):t)/7);
+const commTitle=n=>n>=12?'عقل المدينة':n>=9?'مفتش':n>=6?'محقق أول':n>=3?'محقق':n>=1?'محقق متدرب':'مستجد';
+const commRpc=(fn,body)=>accFetch('/rest/v1/rpc/'+fn,{method:'POST',body:JSON.stringify(body||{})});
+const commErr=m=>/nick_taken/.test(m)?'الاسم محجوز، جرّب اسم ثاني':/nick_len/.test(m)?'الاسم من ٢ إلى ١٨ حرف':/nick_chars/.test(m)?'استخدم حروف وأرقام بس':/nick_bad/.test(m)?'اختر اسم لائق':/code_not_found/.test(m)?'ما لقينا محقق بهالكود':/code_self/.test(m)?'هذا كودك أنت':/blocked/.test(m)?'ما تقدر تتابع هالمحقق':/follow_self/.test(m)?'هذا أنت':accErr(m);
+function commStats(){const solved=Object.keys(META.best||{}).length,[n,T]=medalCount(),got=META.medals||{};
+ return {solved,title:commTitle(solved),medals:n,mtotal:T,top:allMedals().filter(m=>got[m[0]]).sort((a,b)=>got[b[0]]-got[a[0]]).slice(0,6).map(m=>m[0]),streak:(evM().streak||0)}}
+async function commPushStats(force){if(!accUser())return;const st=commStats(),sig=JSON.stringify(st);if(!force&&sig===COMM.pushedSig)return;try{await commRpc('push_stats',{p_stats:st});COMM.pushedSig=sig}catch(e){}}
+function commSubmit(ev,period,ok,pts){META.commQ=META.commQ||[];META.commQ.push([ev,period,commWeek(),!!ok,pts|0]);META.commQ=META.commQ.slice(-60);saveMeta();commFlush()}
+async function commFlush(){if(!accUser()||!(META.commQ||[]).length)return;const q=[...META.commQ];for(const [ev,p,w,ok,pts] of q){try{await commRpc('submit_event',{p_ev:ev,p_period:p,p_week:w,p_ok:ok,p_pts:pts});META.commQ=META.commQ.filter(x=>!(x[0]===ev&&x[1]===p))}catch(e){break}}saveMeta();commPushStats()}
+const medalChips=ids=>(ids||[]).map(id=>allMedals().find(m=>m[0]===id)).filter(Boolean).map(m=>`<i title="${m[1]}">${medalIco(m)}</i>`).join('');
+function openCommunity(tab){
+ if(!accUser()){openLogin(()=>openCommunity(tab));return}
+ let cur=tab||'board',scope='all',busy=true,friends=null;
+ const head=()=>`<div class="store-head"><div><div class="label">مجتمع المحققين</div><h3 class="h-sec" style="margin:0">${COMM.me&&COMM.me.nickname?`${COMM.me.avatar} ${COMM.me.nickname}`:'أهلاً بك'}</h3></div>${COMM.me&&COMM.me.code?`<div class="cm-code"><small>كودك</small><b dir="ltr">${COMM.me.code}</b></div>`:''}</div>
+  <div class="md-tabs">${[['board','الترتيب'],['follow','المتابعة'],['friends','أصدقائي'],['me','ملفي']].map(([k,l])=>`<button class="${k===cur?'on':''}" data-t="${k}">${l}</button>`).join('')}</div>`;
+ const row=(p,i)=>`<button class="cm-row ${p.me?'me':''}" data-p="${p.id}"><span class="cm-rk">${AR(p.rank||i+1)}</span><span class="cm-av">${p.av}</span><span class="cm-nm"><b>${p.nick}</b><small>${p.me?'أنت':''}</small></span><span class="cm-pts">${AR(p.pts)}<small>نقطة</small></span></button>`;
+ const board=()=>{const L=COMM.lb[scope];if(!L)return '<p class="lead">جاري التحميل…</p>';
+  return `<div class="cm-scope">${[['all','الكل'],['following','اللي أتابعهم'],['friends','أصدقائي']].map(([k,l])=>`<button class="${k===scope?'on':''}" data-s="${k}">${l}</button>`).join('')}</div>
+  <p class="lead" style="font-size:12.5px;margin:6px 0 10px">ترتيب هالأسبوع من قضية الليلة واللغز المتسلسل والشاهد الهارب. النقاط = الذهب اللي كسبته منها، ويتجدد كل خميس.</p>
+  ${L.me?`<div class="cm-mine">ترتيبك <b>${AR(L.me.rank)}</b> · ${AR(L.me.pts)} نقطة · حليت ${AR(L.me.solved)}</div>`:'<div class="cm-mine">ما لك نقاط هالأسبوع. حل قضية الليلة عشان تدخل الترتيب.</div>'}
+  <div class="cm-list">${L.top.length?L.top.map(row).join(''):'<p class="lead">ما فيه أحد بالترتيب للحين.</p>'}</div>`};
+ const fr=()=>`<div class="cm-add"><input id="cmCode" class="acc-in" dir="ltr" maxlength="8" placeholder="كود صديقك" autocapitalize="characters"><button class="btn btn-primary" id="cmAdd">أضف</button></div>
+  <p class="lead" style="font-size:12.5px;margin:6px 0 10px">عطِ صديقك كودك <b dir="ltr">${(COMM.me&&COMM.me.code)||''}</b> أو خذ كوده وأضفه هنا.</p>
+  <div class="cm-list">${friends==null?'<p class="lead">جاري التحميل…</p>':friends.length?friends.map(f=>`<button class="cm-row" data-p="${f.id}"><span class="cm-av">${f.av}</span><span class="cm-nm"><b>${f.nick}</b><small>${(f.stats&&f.stats.title)||''}</small></span><span class="cm-pts">${AR((f.stats&&f.stats.solved)||0)}<small>قضية</small></span></button>`).join(''):'<p class="lead">ما عندك أصدقاء للحين.</p>'}</div>`;
+ let fk='following',flist=null,sres=null,sq='';
+ const plRow=p=>`<div class="cm-row"><button class="cm-rowb" data-p="${p.id}"><span class="cm-av">${p.av}</span><span class="cm-nm"><b>${p.nick}</b><small>${(p.stats&&p.stats.title)||''}</small></span></button><button class="cm-fbtn ${p.following?'on':''}" data-f="${p.id}" data-on="${p.following?1:0}">${p.following?'متابَع ✓':'تابِع'}</button></div>`;
+ const fol=()=>`<div class="cm-add"><input id="cmQ" class="acc-in" maxlength="18" placeholder="ابحث باسم المحقق" value="${sq.replace(/"/g,'')}"><button class="btn btn-primary" id="cmSearch">بحث</button></div>
+  ${sres?`<div class="label" style="margin-top:10px">نتائج البحث</div><div class="cm-list">${sres.length?sres.map(plRow).join(''):'<p class="lead">ما لقينا أحد بهالاسم.</p>'}</div>`:''}
+  <div class="cm-scope" style="margin-top:12px">${[['following',`أتابعهم · ${AR((COMM.me&&COMM.me.following_n)||0)}`],['followers',`يتابعوني · ${AR((COMM.me&&COMM.me.followers)||0)}`]].map(([k,l])=>`<button class="${k===fk?'on':''}" data-fk="${k}">${l}</button>`).join('')}</div>
+  <div class="cm-list">${flist==null?'<p class="lead">جاري التحميل…</p>':flist.length?flist.map(plRow).join(''):`<p class="lead">${fk==='following'?'ما تتابع أحد للحين. ابحث باسم محقق وتابعه.':'ما أحد يتابعك للحين.'}</p>`}</div>
+  <p class="lead" style="font-size:12px;margin-top:8px">المتابعة من طرف واحد: تشوف ترتيبه وأوسمته. والصداقة بالكود من الطرفين.</p>`;
+ const mine=()=>{const st=commStats();return `${profileCard({nick:COMM.me.nickname,av:COMM.me.avatar,stats:st,followers:COMM.me.followers,following_n:COMM.me.following_n})}
+  <div class="label" style="margin-top:14px">عدّل ملفك</div>
+  <input id="cmNick" class="acc-in" maxlength="18" value="${(COMM.me.nickname||'').replace(/"/g,'')}" placeholder="اسمك المستعار">
+  <div class="cm-avs">${COMM.avatars.map(a=>`<button class="${a===COMM.me.avatar?'on':''}" data-av="${a}">${a}</button>`).join('')}</div>
+  <button class="btn btn-primary" id="cmSave" style="width:100%;margin-top:10px">احفظ</button>
+  <p class="lead" style="font-size:12px;margin-top:8px">يشوف المحققين اسمك المستعار وصورتك ورتبتك وأوسمتك بس. إيميلك ورقمك ما يطلعون لأحد.</p>`};
+ const body=()=>head()+(!COMM.me?'<p class="lead">جاري التحميل…</p>':!COMM.me.nickname?setup():cur==='board'?board():cur==='follow'?fol():cur==='friends'?fr():mine())+`<button class="btn btn-ghost" data-close style="width:100%;margin-top:14px">إغلاق</button>`;
+ const setup=()=>`<p class="lead">اختر اسم مستعار وصورة، وهي اللي يشوفها المحققين في الترتيب. إيميلك ما يطلع لأحد.</p>
+  <input id="cmNick" class="acc-in" maxlength="18" placeholder="اسمك المستعار (مثل: صقر_نجد)">
+  <div class="cm-avs">${COMM.avatars.map((a,i)=>`<button class="${i===0?'on':''}" data-av="${a}">${a}</button>`).join('')}</div>
+  <button class="btn btn-primary" id="cmSave" style="width:100%;margin-top:10px">ادخل المجتمع</button>`;
+ sheet(`<div class="cmw">${body()}</div>`,(w,close)=>{
+  const re=()=>{w.querySelector('.cmw').innerHTML=body();bind()};
+  const loadBoard=async()=>{try{COMM.lb[scope]=await commRpc('leaderboard',{p_week:commWeek(),p_scope:scope})}catch(e){COMM.lb[scope]={top:[],me:null}}if(cur==='board')re()};
+  const loadFollows=async()=>{flist=null;try{flist=await commRpc('my_follows',{p_kind:fk})}catch(e){flist=[]}if(cur==='follow')re()};
+  const loadFriends=async()=>{try{friends=await commRpc('my_friends')}catch(e){friends=[]}if(cur==='friends')re()};
+  const bind=()=>{w.querySelector('[data-close]').onclick=close;
+   w.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{cur=b.dataset.t;Snd.tab&&Snd.tab();re();if(cur==='board'&&!COMM.lb[scope])loadBoard();if(cur==='friends')loadFriends();if(cur==='follow')loadFollows()});
+   w.querySelectorAll('[data-fk]').forEach(b=>b.onclick=()=>{fk=b.dataset.fk;re();loadFollows()});
+   const sb=w.querySelector('#cmSearch'),qi=w.querySelector('#cmQ');if(sb){const go=async()=>{sq=qi.value.trim();if(sq.length<2){toast('اكتب حرفين على الأقل');return}sb.disabled=true;try{sres=await commRpc('search_players',{p_q:sq})}catch(e){sres=[]}re()};sb.onclick=go;qi.onkeydown=e=>{if(e.key==='Enter')go()}}
+   w.querySelectorAll('[data-f]').forEach(b=>b.onclick=async()=>{const id=b.dataset.f,on=b.dataset.on==='1';b.disabled=true;try{await commRpc(on?'unfollow':'follow',{p_id:id});const upd=L=>L&&L.forEach(x=>{if(x.id===id)x.following=!on});upd(sres);upd(flist);COMM.me=await commRpc('my_profile');Snd.tab&&Snd.tab();re()}catch(e){toast(commErr(e.message));b.disabled=false}});
+   w.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{scope=b.dataset.s;re();loadBoard()});
+   w.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>openPlayer(b.dataset.p,()=>{COMM.lb={};openCommunity(cur)}));
+   let av=(COMM.me&&COMM.me.avatar)||COMM.avatars[0];w.querySelectorAll('[data-av]').forEach(b=>b.onclick=()=>{av=b.dataset.av;w.querySelectorAll('[data-av]').forEach(x=>x.classList.toggle('on',x===b))});
+   const ni=w.querySelector('#cmNick');if(ni){let tm;const hint=document.createElement('small');hint.className='cm-hint';ni.after(hint);ni.oninput=()=>{clearTimeout(tm);const v=ni.value.trim();if(v.length<2){hint.textContent='';return}tm=setTimeout(async()=>{if(COMM.me&&v===COMM.me.nickname){hint.textContent='';return}try{const ok=await commRpc('nick_free',{p_nick:v});hint.textContent=ok?'✓ الاسم متاح':'✗ الاسم محجوز';hint.className='cm-hint '+(ok?'ok':'no')}catch(e){}},450)}}
+   const sv=w.querySelector('#cmSave');if(sv)sv.onclick=async()=>{sv.disabled=true;try{COMM.me=await commRpc('set_profile',{p_nick:w.querySelector('#cmNick').value,p_avatar:av});await commPushStats(true);await commFlush();toast('انحفظ ملفك');COMM.lb={};re();if(cur==='board')loadBoard()}catch(e){toast(commErr(e.message));sv.disabled=false}};
+   const ad=w.querySelector('#cmAdd');if(ad)ad.onclick=async()=>{const c=w.querySelector('#cmCode').value.trim();if(!c)return;ad.disabled=true;try{const p=await commRpc('add_friend',{p_code:c});toast(`انضاف ${p.nick} لأصدقائك`);friends=null;COMM.lb.friends=null;re();loadFriends()}catch(e){toast(commErr(e.message));ad.disabled=false}};
+  };bind();
+  (async()=>{try{COMM.me=await commRpc('my_profile');commPushStats(true);commFlush()}catch(e){toast(accErr(e.message));close();return}re();if(COMM.me.nickname)loadBoard()})();
+ });
+}
+function profileCard(p){const s=p.stats||{};return `<div class="cm-card"><div class="cm-bigav">${p.av}</div><div class="cm-cardt"><b>${p.nick||''}</b><small>${s.title||commTitle(s.solved||0)}</small></div>
+  <div class="cm-stats"><span><b>${AR(s.solved||0)}</b>قضية</span><span><b>${AR(s.medals||0)}</b>وسام</span><span><b>${AR(s.streak||0)}</b>ليالي متتالية</span>${p.followers!=null?`<span><b>${AR(p.followers)}</b>متابِع</span><span><b>${AR(p.following_n||0)}</b>يتابع</span>`:''}</div>
+  ${(s.top||[]).length?`<div class="cm-medals">${medalChips(s.top)}</div>`:''}</div>`}
+async function openPlayer(id,back){let P=null;try{P=await commRpc('get_profile',{p_id:id})}catch(e){toast(accErr(e.message));return}if(!P){toast('الملف غير متاح');return}
+ const view=()=>`${profileCard(P)}${P.follows_me&&!P.me?'<p class="cm-fm">يتابعك</p>':''}${P.friend?'<p class="cm-fm">🤝 صديقك</p>':''}
+  ${P.me?'':P.blocked?'<button class="btn btn-ghost" id="ppUnblock" style="width:100%;margin-top:12px">إلغاء الحظر</button>':`<button class="btn ${P.following?'btn-ghost':'btn-primary'}" id="ppFollow" style="width:100%;margin-top:12px">${P.following?'إلغاء المتابعة':'تابِع'}</button>`}
+  <div class="row" style="margin-top:8px;gap:8px">${!P.me&&P.friend?'<button class="btn btn-ghost" id="ppRm" style="flex:1">إزالة من أصدقائي</button>':''}<button class="btn btn-ghost" id="ppBack" style="flex:1">رجوع</button></div>
+  ${P.me?'':`<div class="row" style="margin-top:10px;justify-content:center;gap:8px">${P.blocked?'':'<button class="small-btn" id="ppBlock">حظر</button>'}<button class="small-btn" id="ppRep">بلّغ عن اسم غير لائق</button></div>`}`;
+ sheet(`<div class="ppw">${view()}</div>`,(w,close)=>{
+  const re=()=>{w.querySelector('.ppw').innerHTML=view();bind()};
+  const bind=()=>{
+   w.querySelector('#ppBack').onclick=()=>{close();back&&back()};
+   const fo=w.querySelector('#ppFollow');if(fo)fo.onclick=async()=>{fo.disabled=true;try{P=await commRpc(P.following?'unfollow':'follow',{p_id:id});Snd.tab&&Snd.tab();toast(P.following?`تتابع ${P.nick} الحين`:'ألغيت المتابعة');re()}catch(e){toast(commErr(e.message));fo.disabled=false}};
+   const rm=w.querySelector('#ppRm');if(rm)rm.onclick=async()=>{try{await commRpc('remove_friend',{p_id:id});toast('انشال من أصدقائك');P.friend=false;re()}catch(e){toast(accErr(e.message))}};
+   const bl=w.querySelector('#ppBlock');if(bl)bl.onclick=async()=>{if(bl.dataset.sure!=='1'){bl.dataset.sure='1';bl.textContent='متأكد؟ اضغط مرة ثانية';return}try{await commRpc('block_player',{p_id:id,p_on:true});toast('انحظر. ما يقدر يتابعك ولا تشوفون بعض');P.blocked=true;P.following=false;P.friend=false;re()}catch(e){toast(accErr(e.message))}};
+   const ub=w.querySelector('#ppUnblock');if(ub)ub.onclick=async()=>{try{await commRpc('block_player',{p_id:id,p_on:false});P.blocked=false;toast('انلغى الحظر');re()}catch(e){toast(accErr(e.message))}};
+   const rp=w.querySelector('#ppRep');if(rp)rp.onclick=async()=>{try{await commRpc('report_profile',{p_id:id,p_reason:'nickname'});toast('وصلنا بلاغك، شكراً');rp.disabled=true}catch(e){toast(accErr(e.message))}};
+  };bind();
+ })}
 
 /* ================= BOOT ================= */
 buildArt();
