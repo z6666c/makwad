@@ -835,6 +835,10 @@ html.wide #sceneDock{padding:10px 14px 14px}
 .cm-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 16px;margin-top:12px}.cm-stats span{display:flex;flex-direction:column;font-size:11.5px;color:var(--muted)}.cm-stats b{font-family:var(--f-display);font-size:18px;color:var(--fg)}
 .cm-medals{display:flex;justify-content:center;gap:6px;margin-top:12px}.cm-medals i{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--ink-3);border:1px solid var(--sodium-dim);font-style:normal;color:var(--sodium)}.cm-medals svg{width:16px;height:16px;stroke:currentColor;fill:none}
 .cm-fm{text-align:center;font-size:12.5px;color:var(--sodium);margin:8px 0 0}
+.ref-card{margin-top:16px;padding:14px;border-radius:14px;border:1px solid rgba(229,162,69,.45);background:linear-gradient(160deg,rgba(229,162,69,.16),rgba(255,255,255,.02))}
+.ref-top{display:flex;justify-content:space-between;align-items:center;gap:10px}.ref-top b{display:block;font-family:var(--f-display);font-size:26px;color:var(--sodium)}.ref-top small{font-size:12.5px;color:var(--muted)}.ref-gift{font-size:40px}
+.ref-code{text-align:center;font-size:13px;margin:8px 0 0}.ref-code b{font-family:monospace;color:var(--sodium);letter-spacing:2px;font-size:15px}
+.ref-stats{display:flex;justify-content:space-around;margin-top:12px}.ref-stats span{display:flex;flex-direction:column;align-items:center;font-size:11.5px;color:var(--muted)}.ref-stats b{font-family:var(--f-display);font-size:20px;color:var(--fg)}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -5804,7 +5808,7 @@ ACC.origSaveMeta=saveMeta;saveMeta=function(){ACC.origSaveMeta();accSchedule()};
 const _accSave=save;save=function(){_accSave();accSchedule()};
 async function accAfterLogin(){
  try{await accFetch('/rest/v1/profiles?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({id:accUser().id})})}catch(e){}
- try{await accPull()}catch(e){}try{await accRestore(true)}catch(e){}await accPush();
+ try{await accPull()}catch(e){}try{await accRestore(true)}catch(e){}await accPush();typeof refAutoClaim==='function'&&refAutoClaim();
  document.querySelectorAll('[data-gold-bal]').forEach(e=>e.textContent=AR(goldBal()));if(!$('#cases').hidden)renderCases();renderAccChip()}
 async function accRestore(silent){const r=await accFetch(`/rest/v1/entitlements?select=product_id`);let n=0;
  (r||[]).forEach(e=>{if(e.product_id==='premium'&&!META.premium){META.premium=true;n++}});ACC.origSaveMeta();if(!silent)toast(n?'رجعت مشترياتك':'مشترياتك كلها مفعّلة');if(n&&!$('#cases').hidden)renderCases();return n}
@@ -6008,7 +6012,7 @@ function openCommunity(tab){
   <input id="cmNick" class="acc-in" maxlength="18" value="${(COMM.me.nickname||'').replace(/"/g,'')}" placeholder="اسمك المستعار">
   <div class="cm-avs">${COMM.avatars.map(a=>`<button class="${a===COMM.me.avatar?'on':''}" data-av="${a}">${a}</button>`).join('')}</div>
   <button class="btn btn-primary" id="cmSave" style="width:100%;margin-top:10px">احفظ</button>
-  <p class="lead" style="font-size:12px;margin-top:8px">يشوف المحققين اسمك المستعار وصورتك ورتبتك وأوسمتك بس. إيميلك ورقمك ما يطلعون لأحد.</p>`};
+  <p class="lead" style="font-size:12px;margin-top:8px">يشوف المحققين اسمك المستعار وصورتك ورتبتك وأوسمتك بس. إيميلك ورقمك ما يطلعون لأحد.</p>${refCard()}`};
  const body=()=>head()+(!COMM.me?'<p class="lead">جاري التحميل…</p>':!COMM.me.nickname?setup():cur==='board'?board():cur==='follow'?fol():cur==='friends'?fr():mine())+`<button class="btn btn-ghost" data-close style="width:100%;margin-top:14px">إغلاق</button>`;
  const setup=()=>`<p class="lead">اختر اسم مستعار وصورة، وهي اللي يشوفها المحققين في الترتيب. إيميلك ما يطلع لأحد.</p>
   <input id="cmNick" class="acc-in" maxlength="18" placeholder="اسمك المستعار (مثل: صقر_نجد)">
@@ -6028,10 +6032,11 @@ function openCommunity(tab){
    w.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>openPlayer(b.dataset.p,()=>{COMM.lb={};openCommunity(cur)}));
    let av=(COMM.me&&COMM.me.avatar)||COMM.avatars[0];w.querySelectorAll('[data-av]').forEach(b=>b.onclick=()=>{av=b.dataset.av;w.querySelectorAll('[data-av]').forEach(x=>x.classList.toggle('on',x===b))});
    const ni=w.querySelector('#cmNick');if(ni){let tm;const hint=document.createElement('small');hint.className='cm-hint';ni.after(hint);ni.oninput=()=>{clearTimeout(tm);const v=ni.value.trim();if(v.length<2){hint.textContent='';return}tm=setTimeout(async()=>{if(COMM.me&&v===COMM.me.nickname){hint.textContent='';return}try{const ok=await commRpc('nick_free',{p_nick:v});hint.textContent=ok?'✓ الاسم متاح':'✗ الاسم محجوز';hint.className='cm-hint '+(ok?'ok':'no')}catch(e){}},450)}}
+   refBind(w,re);if(cur==='me'&&!REF.st&&COMM.me&&COMM.me.nickname)commRpc('referral_status').then(r=>{REF.st=r;if(cur==='me')re()}).catch(()=>{});
    const sv=w.querySelector('#cmSave');if(sv)sv.onclick=async()=>{sv.disabled=true;try{COMM.me=await commRpc('set_profile',{p_nick:w.querySelector('#cmNick').value,p_avatar:av});await commPushStats(true);await commFlush();toast('انحفظ ملفك');COMM.lb={};re();if(cur==='board')loadBoard()}catch(e){toast(commErr(e.message));sv.disabled=false}};
    const ad=w.querySelector('#cmAdd');if(ad)ad.onclick=async()=>{const c=w.querySelector('#cmCode').value.trim();if(!c)return;ad.disabled=true;try{const p=await commRpc('add_friend',{p_code:c});toast(`انضاف ${p.nick} لأصدقائك`);friends=null;COMM.lb.friends=null;re();loadFriends()}catch(e){toast(commErr(e.message));ad.disabled=false}};
   };bind();
-  (async()=>{try{COMM.me=await commRpc('my_profile');commPushStats(true);commFlush()}catch(e){toast(accErr(e.message));close();return}re();if(COMM.me.nickname){if(cur==='board')loadBoard();else if(cur==='follow')loadFollows();else if(cur==='friends')loadFriends()}})();
+  (async()=>{try{COMM.me=await commRpc('my_profile');commPushStats(true);commFlush();refAutoClaim()}catch(e){toast(accErr(e.message));close();return}re();if(COMM.me.nickname){if(cur==='board')loadBoard();else if(cur==='follow')loadFollows();else if(cur==='friends')loadFriends()}})();
  });
 }
 function profileCard(p){const s=p.stats||{};return `<div class="cm-card"><div class="cm-bigav">${p.av}</div><div class="cm-cardt"><b>${p.nick||''}</b><small>${s.title||commTitle(s.solved||0)}</small></div>
@@ -6053,6 +6058,31 @@ async function openPlayer(id,back){let P=null;try{P=await commRpc('get_profile',
    const rp=w.querySelector('#ppRep');if(rp)rp.onclick=async()=>{try{await commRpc('report_profile',{p_id:id,p_reason:'nickname'});toast('وصلنا بلاغك، شكراً');rp.disabled=true}catch(e){toast(accErr(e.message))}};
   };bind();
  })}
+
+
+/* ---------- referrals: 500 gold per invited detective who solves a first case ---------- */
+try{const rc=new URLSearchParams(location.search).get('ref');if(rc&&/^[A-Z0-9]{4,8}$/i.test(rc))localStorage.setItem('mq_ref',rc.toUpperCase())}catch(e){}
+const REF={st:null};
+const refLink=c=>`https://z6666c.github.io/mohaqqiq-detective/?ref=${c}`;
+const refErr=m=>/ref_old/.test(m)?'كود الدعوة للحسابات الجديدة بس (أول ١٤ يوم)':/ref_done/.test(m)?'سبق واستخدمت كود دعوة':/ref_loop/.test(m)?'ما تقدر تستخدم كود اللي دعيته':commErr(m);
+async function refAutoClaim(){let c=null;try{c=localStorage.getItem('mq_ref')}catch(e){}if(!c||!accUser())return;
+ try{const r=await commRpc('claim_referral',{p_code:c});if(!META.refBonus){META.refBonus=1;gold(r.bonus||100);saveMeta()}toast(`أهلاً بك! دعاك ${r.inviter||'محقق'} · +${AR(r.bonus||100)} ذهب`)}catch(e){}
+ try{localStorage.removeItem('mq_ref')}catch(e){}}
+async function refShare(code){const url=refLink(code),text=`انضم لي في «ملفات المحقق» 🕵️ لعبة تحقيق عربية. ادخل بكود دعوتي ${code} وخذ ١٠٠ ذهب هدية.`;
+ try{if(navigator.share){await navigator.share({title:'ملفات المحقق',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+ try{await navigator.clipboard.writeText(text+'\n'+url);toast('انسخ رابط الدعوة، الصقه لصديقك')}catch(e){toast(url)}}
+function refCard(){const s=REF.st,code=(COMM.me&&COMM.me.code)||'';
+ return `<div class="ref-card"><div class="ref-top"><div><div class="label">ادعُ محقق</div><b>+٥٠٠ ذهب</b><small>لكل محقق يدخل بدعوتك ويحل أول قضية</small></div><div class="ref-gift">🎁</div></div>
+  <button class="btn btn-primary" id="refShare" style="width:100%;margin-top:10px">شارك رابط الدعوة</button>
+  <p class="ref-code">كود دعوتك <b dir="ltr">${code}</b></p>
+  ${s?`<div class="ref-stats"><span><b>${AR(s.invited||0)}</b>دخلوا بدعوتك</span><span><b>${AR(s.qualified||0)}</b>حلّوا أول قضية</span><span><b>${AR(s.claimed||0)}</b>استلمت</span></div>
+  ${s.ready?`<button class="btn btn-primary" id="refCollect" style="width:100%;margin-top:10px">استلم ${AR(s.ready*500)} ذهب</button>`:''}
+  ${s.new_account&&!s.mine?`<div class="label" style="margin-top:14px">عندك كود دعوة؟</div><div class="cm-add"><input id="refIn" class="acc-in" dir="ltr" maxlength="8" placeholder="كود صديقك" autocapitalize="characters"><button class="btn btn-ghost" id="refUse">استخدم</button></div><small class="cm-hint">تاخذ ١٠٠ ذهب، وصديقك ياخذ ٥٠٠ أول ما تحل قضيتك الأولى.</small>`:''}
+  ${s.mine?`<p class="cm-fm">دعاك ${s.mine.inviter||'محقق'} ${s.mine.qualified?'· وصلته المكافأة':'· حل أول قضية عشان توصله مكافأته'}</p>`:''}`:'<p class="lead">جاري التحميل…</p>'}
+  <p class="lead" style="font-size:11.5px;margin-top:8px">الحد ٢٠ دعوة مكافأة كل ٣٠ يوم. الحسابات المكررة أو الوهمية ما تنحسب.</p></div>`}
+function refBind(w,re){const sh=w.querySelector('#refShare');if(sh)sh.onclick=()=>refShare((COMM.me&&COMM.me.code)||'');
+ const co=w.querySelector('#refCollect');if(co)co.onclick=async()=>{co.disabled=true;try{const r=await commRpc('collect_referrals');if(r.gold){gold(r.gold);saveMeta();Snd.coin&&Snd.coin();toast(`+${AR(r.gold)} ذهب من دعواتك`)}REF.st=await commRpc('referral_status');re()}catch(e){toast(accErr(e.message));co.disabled=false}};
+ const us=w.querySelector('#refUse');if(us)us.onclick=async()=>{const c=w.querySelector('#refIn').value.trim();if(!c)return;us.disabled=true;try{const r=await commRpc('claim_referral',{p_code:c});if(!META.refBonus){META.refBonus=1;gold(r.bonus||100);saveMeta()}toast(`+${AR(r.bonus||100)} ذهب · دعاك ${r.inviter||'محقق'}`);REF.st=await commRpc('referral_status');re()}catch(e){toast(refErr(e.message));us.disabled=false}};}
 
 /* ================= BOOT ================= */
 buildArt();
