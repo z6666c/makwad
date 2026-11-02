@@ -5702,7 +5702,7 @@ function openLogin(after){
   <div class="acc-msg" id="accMsg"></div>
   <button class="btn btn-primary" id="accGo" style="width:100%">أرسل رمز الدخول</button>
   <p class="acc-fine">نرسل لك رمز من ٦ أرقام. ما نطلب كلمة مرور، وما نشارك بياناتك مع أحد.</p>`:
-  `<div class="label">رمز الدخول</div><h3 class="h-sec">اكتب الرمز</h3><p class="lead">أرسلنا رمز من ٦ أرقام إلى <b dir="ltr">${who}</b></p>
+  `<div class="label">${mode==='email'?'افتح إيميلك':'رمز الدخول'}</div><h3 class="h-sec">${mode==='email'?'أرسلنا لك رابط الدخول':'اكتب الرمز'}</h3><p class="lead">${mode==='email'?`أرسلنا رسالة إلى <b dir="ltr">${who}</b>. اضغط «Sign in» فيها من نفس الجهاز، وتدخل اللعبة على طول. إذا وصلك رمز من ٦ أرقام، اكتبه هنا:`:`أرسلنا رمز من ٦ أرقام إلى <b dir="ltr">${who}</b>`}</p>
   <input class="acc-in acc-code" id="accCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" dir="ltr">
   <div class="acc-msg" id="accMsg"></div>
   <button class="btn btn-primary" id="accVer" style="width:100%">دخول</button>
@@ -5712,7 +5712,8 @@ function openLogin(after){
   const send=async()=>{const v=(w.querySelector('#accId')||{}).value;
    if(stage===1){if(mode==='email'){if(!/^\S+@\S+\.\S+$/.test(v||'')){msg('اكتب إيميل صحيح');return}who=v.trim().toLowerCase()}else{const d=(v||'').replace(/\D/g,'').replace(/^0/,'');if(!/^5\d{8}$/.test(d)){msg('اكتب رقم جوال سعودي يبدأ بـ ٥');return}who='+966'+d}}
    const b=w.querySelector('#accGo')||w.querySelector('#accResend');b.disabled=true;
-   try{await accFetch('/auth/v1/otp',{method:'POST',body:JSON.stringify(mode==='email'?{email:who,create_user:true}:{phone:who,create_user:true})},false);stage=2;re();msg('وصلك الرمز؟ اكتبه هنا.',true)}
+   const rt=window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()?'com.hamad.mohaqqiq://auth':location.origin+location.pathname;
+   try{await accFetch('/auth/v1/otp?redirect_to='+encodeURIComponent(rt),{method:'POST',body:JSON.stringify(mode==='email'?{email:who,create_user:true}:{phone:who,create_user:true})},false);stage=2;re();msg(mode==='email'?'الرسالة ممكن تتأخر دقيقة، وشيّك على الرسائل غير المرغوبة.':'وصلك الرمز؟ اكتبه هنا.',true);ACC.waitClose=close}
    catch(e){b.disabled=false;msg(accErr(e.message))}};
   const verify=async()=>{const c=(w.querySelector('#accCode').value||'').replace(/\D/g,'');if(c.length!==6){msg('الرمز ٦ أرقام');return}
    const b=w.querySelector('#accVer');b.disabled=true;b.textContent='جارٍ الدخول…';
@@ -5728,7 +5729,13 @@ function openLogin(after){
   bind();
  });
 }
-/* magic-link fallback (web): tokens arrive in the URL hash */
+/* magic link: tokens arrive in the URL hash (web) or in the app's custom-scheme URL (iPhone) */
+function accFromUrl(u){const i=u.indexOf('#');const h=i>=0?u.slice(i):'';if(!/access_token=/.test(h))return false;const p=new URLSearchParams(h.slice(1));
+ const at=p.get('access_token'),rt=p.get('refresh_token');if(!at)return false;if(ACC.waitClose){try{ACC.waitClose()}catch(e){}ACC.waitClose=null}
+ ACC.sess={access_token:at,refresh_token:rt,expires_at:+p.get('expires_at')||Math.floor(Date.now()/1e3)+3600,user:null};
+ accFetch('/auth/v1/user').then(u=>{ACC.sess.user={id:u.id,email:u.email||null,phone:u.phone||null};accSaveSess();toast('أهلاً فيك، تقدمك صار محفوظ');accAfterLogin()}).catch(()=>{ACC.sess=null;accSaveSess()});return true}
+try{const A=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.App;if(A)A.addListener('appUrlOpen',e=>{if(e&&e.url)accFromUrl(e.url)})}catch(e){}
+addEventListener('storage',e=>{if(e.key===ACC.K&&e.newValue&&!accUser()){try{ACC.sess=JSON.parse(e.newValue);if(ACC.waitClose){ACC.waitClose();ACC.waitClose=null}toast('دخلت من الرابط');accAfterLogin()}catch(x){}}});
 (()=>{const h=location.hash;if(!/access_token=/.test(h))return;const p=new URLSearchParams(h.slice(1));
  const at=p.get('access_token'),rt=p.get('refresh_token');history.replaceState(null,'',location.pathname+location.search);if(!at)return;
  ACC.sess={access_token:at,refresh_token:rt,expires_at:+p.get('expires_at')||Math.floor(Date.now()/1e3)+3600,user:null};

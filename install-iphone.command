@@ -39,6 +39,13 @@ say "5/6 إنشاء مشروع iOS"
 npm run ios:add
 npm run assets || true
 npx cap sync ios
+PL="$DIR/ios/App/App/Info.plist"
+/usr/libexec/PlistBuddy -c "Print :CFBundleURLTypes" "$PL" >/dev/null 2>&1 || {
+ /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes array" "$PL"
+ /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0 dict" "$PL"
+ /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLName string com.hamad.mohaqqiq" "$PL"
+ /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes array" "$PL"
+ /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string com.hamad.mohaqqiq" "$PL"; }
 
 say "6/6 فتح المشروع في Xcode"
 open ios/App/App.xcodeproj
