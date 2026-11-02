@@ -721,6 +721,32 @@ html.wide #sceneDock{padding:10px 14px 14px}
 .evs-list li.on{background:rgba(229,162,69,.12);border:1px solid rgba(229,162,69,.35)}
 .evs-list i{font-style:normal;font-size:20px}
 .evs-list b{display:block;font-size:14px}.evs-list small{color:var(--muted);font-size:12px}
+
+.sc-stages{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 10px}
+.sc-stages span{font-size:12px;text-align:center;border:1px dashed var(--line);border-radius:8px;padding:6px;color:var(--muted)}
+.sc-stages span.on{border:1px solid rgba(229,162,69,.5);color:var(--fg);background:rgba(229,162,69,.08)}
+.sc-stages small{display:block;font-size:10px}
+.sc-sus,.sc-ev{display:grid;gap:8px;margin:6px 0 14px}
+.scs{display:grid;grid-template-columns:64px 1fr;gap:10px;border:1px solid var(--line);border-radius:8px;padding:10px;background:rgba(255,255,255,.03)}
+.scs img{width:64px;height:76px;object-fit:cover;border-radius:6px}
+.scs b{font-family:var(--f-display);font-size:16px}.scs small{color:var(--muted);font-size:12px;margin-inline-start:8px}
+.scs q{display:block;font-size:13px;color:#d9cfbb;margin:4px 0 6px;quotes:"«" "»"}
+.scs.lied{border-color:rgba(185,56,46,.55)}
+.scs-rev{font-size:13px;background:rgba(185,56,46,.1);border-radius:6px;padding:6px 8px}
+.scs-rev i{display:block;font-style:normal;font-size:11px;color:#e0766b;font-weight:600}
+.scs-conf{font-size:12px;color:var(--sodium);border:1px solid rgba(229,162,69,.4);border-radius:16px;padding:3px 12px}
+.scs-conf.on{background:var(--sodium);color:#1b1206}
+.sce{display:grid;grid-template-columns:84px 1fr;grid-template-rows:auto 1fr;column-gap:10px;border:1px solid var(--line);border-radius:8px;padding:8px;background:rgba(255,255,255,.03)}
+.sce img{grid-row:1/3;width:84px;height:64px;object-fit:cover;border-radius:6px}
+.sce b{font-size:14px}.sce span{font-size:12px;color:#c9bfab}
+.sce.pickable{cursor:pointer;border-color:rgba(229,162,69,.5);animation:pulseB 1.4s infinite}
+@keyframes pulseB{50%{box-shadow:0 0 0 3px rgba(229,162,69,.18)}}
+.sc-opts{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.sc-o{font-size:13px;border:1px solid var(--line);border-radius:16px;padding:6px 12px;background:rgba(255,255,255,.03)}
+.sc-o.on{border-color:var(--sodium);background:rgba(229,162,69,.15)}
+.sc-lockacc{font-size:13px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:10px;display:flex;gap:6px;align-items:center}
+.sc-lockacc svg{width:14px;height:14px;fill:currentColor}
+.evt-foot .btn-ghost.evt-go{min-height:32px;font-size:12px}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -5227,7 +5253,9 @@ const CASE_ORDER=['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12'
 
 /* ---------- schedule ---------- */
 function evCfg(){const c=EVT.cfg||{};return {night:{...EV_DEF.night,...c.night},weekly:{...EV_DEF.weekly,...c.weekly},witness:{...EV_DEF.witness,...c.witness},seasons:c.seasons||EV_DEF.seasons}}
-function nightWin(t){const N=evCfg().night,st=N.start?rDay(Date.parse(N.start+'T00:00:00+03:00')):-1e9,d=Math.max(rDay(t),st);let a=atR(d,N.from),b=atR(d,N.to);if(t>=b){a+=DAY;b+=DAY}return {a,b,open:t>=a&&t<b,day:rDay(a),i:rDay(a)%NIGHT.length}}
+function ramadanOn(t){return evCfg().seasons.some(s=>s.id.startsWith('ramadan')&&t>=Date.parse(s.from+'T00:00:00+03:00')&&t<=Date.parse(s.to+'T23:59:59+03:00'))}
+function nightWin(t){const N=evCfg().night,st=N.start?rDay(Date.parse(N.start+'T00:00:00+03:00')):-1e9;
+ for(let d=Math.max(rDay(t)-1,st);;d++){const ram=ramadanOn(atR(d,12)),fr=ram?21:N.from,to=ram?27:N.to,a=atR(d,fr),b=atR(d,to);if(t<b){const L=ram?SUHOOR:NIGHT;return {a,b,open:t>=a,day:d,i:d%L.length,L,ram}}}}
 function weekWin(t){const W=evCfg().weekly;let d=rDay(t);d-=((rDow(t)-W.day)+7)%7;let a=atR(d,W.from),b=a+W.hours*3600e3;if(t>=b){a+=7*DAY;b+=7*DAY}
  const wk=Math.floor(rDay(a)/7);return {a,b,open:t>=a&&t<b,wk,i:wk%WEEKLY.length,clue:k=>a+k*W.every*3600e3}}
 function witWin(t){const W=evCfg().witness,anc=rDay(Date.parse(W.anchor+'T00:00:00+03:00'));const d=Math.max(rDay(t),anc);let k=Math.floor((d-anc)/W.period);let a=atR(anc+k*W.period,0),b=a+DAY;if(t>=b){k++;a=atR(anc+k*W.period,0);b=a+DAY}
@@ -5248,20 +5276,20 @@ async function evSync(){
 function renderEvents(){
  const box=$('#evtBox');if(!box)return;const t=evNow(),M=evM();
  if(t==null){box.innerHTML=`<div class="evt-head"><b>الفعاليات</b><button class="evt-sched" id="evSched">الجدول</button></div><div class="evt-off">${ico('lock')} الفعاليات تحتاج اتصال بالإنترنت عشان نتأكد من الوقت.</div>`;$('#evSched').onclick=openSchedule;return}
- const n=nightWin(t),w=weekWin(t),x=witWin(t),N=NIGHT[n.i],Wq=WEEKLY[w.i];
+ const n=nightWin(t),w=weekWin(t),x=witWin(t),N=n.L[n.i],Wq=WEEKLY[w.i];
  const nDone=M.done['n'+n.day],wDone=M.done['w'+w.wk],xDone=M.done['x'+x.k],wc=witCase(x.k);
  const seas=seasonsAt(t).filter(s=>s.a-t<30*DAY);
  const card=(cls,ic,label,title,sub,open,left,done,btn,act)=>`<div class="evt-card ${cls} ${open?'is-open':'is-closed'}"><div class="evt-ic">${ic}</div><div class="evt-body"><div class="evt-label">${label}</div><h4>${title}</h4><div class="evt-sub">${sub}</div>
   <div class="evt-foot"><span class="evt-cd" data-cd="${left}" data-open="${open?1:0}">${open?'تقفل بعد':'تفتح بعد'} <b>${fmtLeft(left-t)}</b></span>${done?'<span class="evt-done">✓ تم</span>':open?`<button class="btn btn-primary evt-go" data-ev="${act}">${btn}</button>`:''}</div></div>${open?'':'<div class="evt-tape">مغلق</div>'}</div>`;
  let h=`<div class="evt-head"><b>الفعاليات</b><button class="evt-sched" id="evSched">الجدول</button></div>`;
- seas.forEach(s=>{const op=t>=s.a;h+=`<div class="evt-card evt-season ${op?'is-open':'is-closed'}"><div class="evt-ic">${s.icon||'🎉'}</div><div class="evt-body"><div class="evt-label">موسم</div><h4>${s.name}</h4><div class="evt-sub">${s.desc||''}</div><div class="evt-foot"><span class="evt-cd" data-cd="${op?s.b:s.a}" data-open="${op?1:0}">${op?'ينتهي بعد':'يبدأ بعد'} <b>${fmtLeft((op?s.b:s.a)-t)}</b></span>${op&&s.gift&&!M.done['s'+s.id]?`<button class="btn btn-primary evt-go" data-ev="s:${s.id}">استلم الهدية</button>`:''}</div></div>${op?'':'<div class="evt-tape">قريباً</div>'}</div>`});
- h+=card('evt-night','🌙','قضية الليلة · يومياً ٩ م – ١٢ ص',N.t,`${N.place}${M.streak?` · سلسلتك ${AR(M.streak)} ليالٍ`:''}`,n.open,n.open?n.b:n.a,nDone,'افتح القضية','n');
+ seas.forEach(s=>{const op=t>=s.a;h+=`<div class="evt-card evt-season ${op?'is-open':'is-closed'}"><div class="evt-ic">${s.icon||'🎉'}</div><div class="evt-body"><div class="evt-label">موسم</div><h4>${s.name}</h4><div class="evt-sub">${s.desc||''}</div><div class="evt-foot"><span class="evt-cd" data-cd="${op?s.b:s.a}" data-open="${op?1:0}">${op?'ينتهي بعد':'يبدأ بعد'} <b>${fmtLeft((op?s.b:s.a)-t)}</b></span>${op&&SEASON_CASE[s.id]?(scM(SEASON_CASE[s.id]).done?'<span class="evt-done">✓ القضية انحلّت</span>':`<button class="btn btn-primary evt-go" data-ev="c:${SEASON_CASE[s.id]}">افتح القضية</button>`):''}${op&&s.gift&&!M.done['s'+s.id]?`<button class="btn btn-ghost evt-go" data-ev="s:${s.id}">استلم الهدية · ${AR(s.gift)} ذهب</button>`:''}</div></div>${op?'':'<div class="evt-tape">قريباً</div>'}</div>`});
+ h+=card('evt-night','🌙',n.ram?'قضية السحور · ٩ م – ٣ الفجر':'قضية الليلة · يومياً ٩ م – ١٢ ص',N.t,`${N.place}${M.streak?` · سلسلتك ${AR(M.streak)} ليالٍ`:''}`,n.open,n.open?n.b:n.a,nDone,'افتح القضية','n');
  const cl=Math.min(evCfg().weekly.clues,Math.max(0,Math.floor((t-w.a)/(evCfg().weekly.every*3600e3))+1));
  h+=card('evt-week','🔓','اللغز المتسلسل · من الخميس ٦ م لين نهاية الجمعة',Wq.t,w.open?`${AR(cl)} من ${AR(evCfg().weekly.clues)} أدلة ظاهرة · دليل جديد كل ساعتين`:'دليل جديد كل ساعتين، وكل ما حليت بدري زادت الجائزة',w.open,w.open?w.b:w.a,wDone,'ادخل اللغز','w');
  h+=card('evt-wit','⏳','الشاهد الهارب · ٢٤ ساعة كل أسبوعين',wc?`شاهد من «${CASES[wc].name}»`:'شاهد مجهول',wc?'شاهد يظهر يوم واحد ويختفي، ومعه سر ما انقال':'حلّ أي قضية عشان يجيك شاهد منها',x.open,x.open?x.b:x.a,xDone,'اسمع الشهادة','x');
  box.innerHTML=h;
  $('#evSched').onclick=openSchedule;
- box.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{const k=b.dataset.ev;Snd.paper&&Snd.paper();if(k==='n')openNight();else if(k==='w')openWeekly();else if(k==='x')openWitness();else if(k.startsWith('s:'))claimSeason(k.slice(2))});
+ box.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{const k=b.dataset.ev;Snd.paper&&Snd.paper();if(k==='n')openNight();else if(k==='w')openWeekly();else if(k==='x')openWitness();else if(k.startsWith('s:'))claimSeason(k.slice(2));else if(k.startsWith('c:'))openSeasonCase(k.slice(2))});
  clearInterval(EVT.tick);EVT.tick=setInterval(()=>{if($('#cases').hidden){clearInterval(EVT.tick);return}const now=evNow();if(now==null)return;let flip=false;
   box.querySelectorAll('[data-cd]').forEach(e=>{const l=+e.dataset.cd-now;if(l<=0)flip=true;else e.querySelector('b').textContent=fmtLeft(l)});if(flip)renderEvents()},1000);
 }
@@ -5269,12 +5297,12 @@ function evGuard(open){if(!open){toast('الفعالية مقفلة الحين')
 
 /* ---------- night case ---------- */
 function openNight(){
- const t=evNow();if(t==null)return;const n=nightWin(t);if(!evGuard(n.open))return;const C=NIGHT[n.i],M=evM(),key='n'+n.day;if(M.done[key])return;
+ const t=evNow();if(t==null)return;const n=nightWin(t);if(!evGuard(n.open))return;const C=n.L[n.i],M=evM(),key='n'+n.day;if(M.done[key])return;
  let pick=null,why=null;
- sheet(`<div class="evn"><div class="evn-hero" style="background-image:url(${C.img})"><div><div class="label">قضية الليلة · ${AR(n.i+1)} من ${AR(NIGHT.length)}</div><h3>${C.t}</h3><small>${C.place}</small></div></div>
+ sheet(`<div class="evn"><div class="evn-hero" style="background-image:${scBg(C.img)}"><div><div class="label">${n.ram?'قضية السحور':'قضية الليلة'} · ${AR(n.i+1)} من ${AR(n.L.length)}</div><h3>${C.t}</h3><small>${C.place}</small></div></div>
   <p class="evn-brief">${C.brief}</p>
   <div class="label">الأقوال</div><div class="evn-sus">${C.sus.map((s,i)=>`<button class="evn-s" data-s="${i}"><b>${s[0]}</b><small>${s[1]}</small><q>${s[2]}</q></button>`).join('')}</div>
-  <div class="label">الأدلة</div><div class="evn-ev">${C.ev.map((e,i)=>`<button class="evn-e" data-e="${i}"><img src="${e[0]}" alt=""><b>${e[1]}</b><span>${e[2]}</span></button>`).join('')}</div>
+  <div class="label">الأدلة</div><div class="evn-ev">${C.ev.map((e,i)=>`<button class="evn-e" data-e="${i}"><img ${scSrc(e[0])} alt=""><b>${e[1]}</b><span>${e[2]}</span></button>`).join('')}</div>
   <div class="evn-step" id="evnStep">اختر المتّهم من الأقوال، ثم الدليل اللي يكشفه. <b>محاولة وحدة بس.</b></div>
   <div class="row"><button class="btn btn-primary" id="evnGo" disabled style="flex:1">وجّه الاتهام</button><button class="btn btn-ghost" data-close>لاحقاً</button></div></div>`,(w,close)=>{
   const upd=()=>{w.querySelectorAll('.evn-s').forEach(b=>b.classList.toggle('on',+b.dataset.s===pick));w.querySelectorAll('.evn-e').forEach(b=>b.classList.toggle('on',+b.dataset.e===why));
@@ -5335,13 +5363,252 @@ function openSchedule(){
  const t=evNow();
  if(t==null){sheet(`<h3 class="h-sec">جدول الفعاليات</h3><p class="lead">اتصل بالإنترنت عشان يظهر الجدول.</p><button class="btn btn-ghost" data-close style="width:100%">إغلاق</button>`,(w,c)=>w.querySelector('[data-close]').onclick=c);return}
  const rows=[];
- for(let k=0;k<7;k++){const n=nightWin(t+k*DAY);if(k&&n.day===nightWin(t+(k-1)*DAY).day)continue;rows.push([n.a,n.b,'🌙',`قضية الليلة: ${NIGHT[n.i].t}`])}
+ for(let k=0;k<7;k++){const n=nightWin(t+k*DAY);if(k&&n.day===nightWin(t+(k-1)*DAY).day)continue;rows.push([n.a,n.b,'🌙',`${n.ram?'قضية السحور':'قضية الليلة'}: ${n.L[n.i].t}`])}
  for(let k=0;k<2;k++){const w=weekWin(t+k*7*DAY);rows.push([w.a,w.b,'🔓',`اللغز المتسلسل: ${WEEKLY[w.i].t}`])}
  for(let k=0;k<2;k++){const x=witWin(k?witWin(t).b+1:t);rows.push([x.a,x.b,'⏳','الشاهد الهارب'])}
  seasonsAt(t).forEach(s=>rows.push([s.a,s.b,s.icon||'🎉',s.name]));
  const uniq=[...new Map(rows.map(r=>[r[3]+r[0],r])).values()].sort((a,b)=>a[0]-b[0]);
  sheet(`<h3 class="h-sec">جدول الفعاليات</h3><p class="lead">كل الأوقات بتوقيت الرياض.</p><ul class="evs-list">${uniq.map(r=>{const op=t>=r[0]&&t<r[1];return `<li class="${op?'on':''}"><i>${r[2]}</i><div><b>${r[3]}</b><small>${op?'مفتوحة الحين · تقفل '+fmtAt(r[1]):'تفتح '+fmtAt(r[0])}</small></div></li>`}).join('')}</ul><button class="btn btn-ghost" data-close style="width:100%">إغلاق</button>`,(w,c)=>w.querySelector('[data-close]').onclick=c);
 }
+/* ================= SEASON CASES (content) =================
+   img: [new Gemini image under img/sc/, fallback image already in the game]. */
+const SC_IMG=(n,fb)=>['img/sc/'+n+'.jpg','img/'+fb+'.jpg'];
+const SCASES={
+ falcon:{season:'falcon26',t:'الصقر المسموم',place:'مخيم الصياهد · شمال الرياض',hero:SC_IMG('falcon_hero','tent7_p'),
+  brief:'قبل نهائي «الملواح» بليلة، لقوا الصقر «زعيم» طايح بخيمته، وجنبه بقايا طعم. البيطري أنقذه بآخر لحظة، لكنه طلع من السباق. زعيم كان المرشح الأول للفوز.',
+  sus:[
+   {n:'سلمان',role:'مروّض زعيم',img:SC_IMG('falcon_s1','tent7_p'),say:'طعّمت زعيم الساعة ست المغرب من لحم الجزار، وطلعت. ما رجعت للخيمة إلا الصبح.',lie:'e1',reveal:'…طيب، رجعت الساعة إحدى عشر. حسّيت إني نسيت أسكّر الباب، وما طوّلت.'},
+   {n:'فراس',role:'صاحب الصقر المنافس',img:SC_IMG('falcon_s2','tent7_p'),say:'أنا ما أعرف سلمان، عمري ما كلمته. صقري يفوز بجهده.',lie:'e2',reveal:'كلمته كم مرة… كنت أبي أشتري منه فرخ، وبس.'},
+   {n:'د. هند',role:'بيطرية المهرجان',img:SC_IMG('falcon_s3','tent7_p'),say:'فحصت زعيم العصر بنفسي، وكان سليم مية بالمية.',lie:'e3',reveal:'ما فحصته اليوم… كان عندي ضغط، وكتبت التقرير من الفحص اللي قبله.'},
+   {n:'مطلق',role:'صاحب زعيم',img:SC_IMG('falcon_s4','tent7_p'),say:'زعيم ما عليه تأمين، قيمته عندي أنا بس.',lie:'e4',reveal:'أمّنته الشهر الماضي بعد ما زادت قيمته… بس والله ما أأذيه، هذا ولدي.'}],
+  ev:[
+   {id:'e1',t:'كاميرا بوابة المخيم',d:'سلمان يدخل البوابة الساعة ١١:٢٠ م، ويطلع ١١:٣٥ م.',img:SC_IMG('falcon_e1','ev_gatecam7')},
+   {id:'e2',t:'سجل مكالمات فراس',d:'ثلاث مكالمات مع رقم سلمان أمس، آخرها الساعة ١٠:٥٠ م.',img:SC_IMG('falcon_e2','ev_phone3')},
+   {id:'e3',t:'دفتر العيادة البيطرية',d:'آخر فحص مسجّل لزعيم قبل ثلاثة أيام. ما فيه فحص اليوم.',img:SC_IMG('falcon_e3','ev_vetlog7')},
+   {id:'e4',t:'وثيقة تأمين',d:'تأمين على حياة الصقر «زعيم» بمليون ريال، تاريخها الشهر الماضي.',img:SC_IMG('falcon_e4','ev_insure11')},
+   {id:'e5',t:'كيس بسيارة سلمان',d:'كيس سم فئران فاضي تحت كرسي الراكب، وعليه آثار لحم.',img:SC_IMG('falcon_e5','ev_bag4')}],
+  motives:['قبض فلوس من منافس عشان يطيّح زعيم','ينتقم من مطلق لأنه ما زاد راتبه','يتقاسم التأمين مع مطلق'],
+  ans:{who:0,mot:0,key:'e5'},
+  end:'سلمان رجع للخيمة الساعة ١١:٢٠ وحط طعم مسموم لزعيم، مقابل فلوس من فراس عشان صقره يفوز. والكيس الفاضي بسيارته هو اللي فضحه.'},
+
+ diriyah:{season:'diriyah26',t:'المخطوطة الناقصة',place:'مكتبة تراثية · حي الطريف، الدرعية',hero:SC_IMG('diriyah_hero','hall8_p'),
+  brief:'مخطوطة شعر نبطي عمرها مئتين سنة، معروضة بمكتبة تراثية في حي الطريف. وقت الجرد اكتشفوا إن الصفحة ٣٤ مقطوعة بمشرط من مكانها. ما حد دخل القاعة أمس إلا أربعة.',
+  sus:[
+   {n:'أ. سارة',role:'أمينة المكتبة',img:SC_IMG('diriyah_s1','hall8_p'),say:'ما أحد يلمس المخطوطة إلا بحضوري، وما تركت القاعة لحظة.',lie:'e1',reveal:'طلعت عشرين دقيقة أرد على مكالمة، وخليت الباحث لحاله. ما توقعت شي يصير.'},
+   {n:'نواف',role:'باحث دكتوراه',img:SC_IMG('diriyah_s2','hall8_p'),say:'فتحت المخطوطة على الصفحة ١٢ بس، وصوّرت قصيدتها لبحثي.',lie:'e2',reveal:'صوّرت الصفحة ٣٤ بعد… كانت تلفت النظر. بس التصوير مو جريمة.'},
+   {n:'عبدالإله',role:'جامع تحف',img:SC_IMG('diriyah_s3','hall8_p'),say:'ما أعرف نواف، أول مرة أسمع اسمه.',lie:'e3',reveal:'راسلني يقول عنده ورقة نادرة… ما رديت عليه بشي واضح.'},
+   {n:'فهد',role:'حارس الحي',img:SC_IMG('diriyah_s4','hall8_p'),say:'الكاميرا الداخلية خربانة من أسبوع، ما سجّلت شي.',lie:'e4',reveal:'انصلحت أمس، بس نسيت أشغّلها. خفت يخصمون علي.'}],
+  ev:[
+   {id:'e1',t:'سجل الحضور',d:'خروج أ. سارة من القاعة ٤:١٠ م ورجوعها ٤:٣٠ م.',img:SC_IMG('diriyah_e1','ev_visitors')},
+   {id:'e2',t:'صور جوال نواف',d:'لقطة للصفحة ٣٤ كاملة، الساعة ٤:١٨ م، وهي بمكانها.',img:SC_IMG('diriyah_e2','ev_phone')},
+   {id:'e3',t:'رسالة واتساب',d:'من نواف لعبدالإله: «عندي لك ورقة ما شفت مثلها، نتقابل بكرة».',img:SC_IMG('diriyah_e3','ev_phone12')},
+   {id:'e4',t:'تقرير الصيانة',d:'«تم إصلاح كاميرا القاعة الداخلية» بتاريخ أمس الصبح.',img:SC_IMG('diriyah_e4','ev_order')},
+   {id:'e5',t:'مشرط بشنطة نواف',d:'مشرط ورق صغير، على شفرته ألياف ورق قديم أصفر.',img:SC_IMG('diriyah_e5','ev_pen')}],
+  motives:['يبيع الصفحة لجامع تحف','يخفي إن قصيدة بحثه منقولة','ينتقم من المكتبة لأنها رفضت طلبه'],
+  ans:{who:1,mot:0,key:'e5'},
+  end:'نواف استغل خروج الأمينة عشرين دقيقة، وقطع الصفحة ٣٤ بمشرطه عشان يبيعها لعبدالإله. صورته للصفحة الساعة ٤:١٨ تثبت إنها كانت سليمة وهو لحاله.'},
+
+ founding:{season:'founding27',t:'راية ١٧٢٧',place:'مسرح العرض التاريخي · الدرعية',hero:SC_IMG('founding_hero','hall8_p'),
+  brief:'ليلة عرض «يوم التأسيس» التاريخي، اختفت الراية الخضراء المصنوعة للعرض، وهي نسخة مشغولة باليد على شكل رايات الدولة الأولى. العرض الساعة ٨ الليل، والوقت يمشي.',
+  sus:[
+   {n:'مشاري',role:'المخرج',img:SC_IMG('founding_s1','hall8_p'),say:'الراية كانت بالصندوق لما قفلته بيدي الساعة ثمان الليل أمس.',lie:'e1',reveal:'صح… خليتها على الحامل بعد البروفة، كنت مستعجل.'},
+   {n:'ريّان',role:'المخرج المساعد',img:SC_IMG('founding_s2','hall8_p'),say:'طلعت من المسرح الساعة تسع ورحت البيت.',lie:'e2',reveal:'تأخرت شوي أرتب المعدات… بس ما لمست الراية.'},
+   {n:'أم خالد',role:'الخيّاطة',img:SC_IMG('founding_s3','hall8_p'),say:'ما خيّطت شي جديد اليوم، بس رقّعت الأزياء.',lie:'e3',reveal:'كنت أخيّط راية احتياط بالسر، خفت القديمة تنقطع وقت العرض.'},
+   {n:'سعود',role:'مسؤول الإضاءة',img:SC_IMG('founding_s4','hall8_p'),say:'كنت فوق برج الإضاءة طول البروفة، ما نزلت.',lie:'e4',reveal:'نزلت دقايق آخذ قهوة من غرفة الملابس، وطلعت.'}],
+  ev:[
+   {id:'e1',t:'صورة البروفة',d:'صورة الساعة ٩ م: الراية على حاملها برّا الصندوق.',img:SC_IMG('founding_e1','ev_photos')},
+   {id:'e2',t:'سجل بوابة المسرح',d:'خروج ريّان الساعة ١١:٤٠ م، آخر واحد طلع.',img:SC_IMG('founding_e2','ev_doorlog')},
+   {id:'e3',t:'فاتورة قماش',d:'قماش أخضر ثلاثة أمتار باسم أم خالد، تاريخ اليوم.',img:SC_IMG('founding_e3','ev_receipt5')},
+   {id:'e4',t:'كوب قهوة',d:'كوب عليه اسم سعود بغرفة الملابس، فيه قهوة باردة.',img:SC_IMG('founding_e4','ev_cup')},
+   {id:'e5',t:'شنطة معدات ريّان',d:'حامل الراية الخشبي مفكوك داخلها، والراية ملفوفة تحته.',img:SC_IMG('founding_e5','ev_case8')}],
+  motives:['يفشّل العرض عشان ياخذ مكان المخرج','يبيع الراية لجامع تحف','يحميها من المطر'],
+  ans:{who:1,mot:0,key:'e5'},
+  end:'ريّان تأخر لين الكل طلع، وأخذ الراية من حاملها وخبّاها بشنطة معداته. كان يبي العرض يفشل وتنلام على المخرج، عشان يمسك الإخراج السنة الجاية. والراية رجعت قبل العرض بساعة.'},
+
+ fitr:{season:'fitr27',t:'العيدية المفقودة',place:'بيت الجد · حي الشفا، الرياض',hero:SC_IMG('fitr_hero','majlis_p'),
+  brief:'صبح العيد، الجدة فتحت درجها توزّع العيديات، والظرف الأحمر اللي فيه خمسة آلاف ريال مختفي. الأحفاد ينتظرون بالمجلس، والكل يطالع بالثاني.',
+  sus:[
+   {n:'سلطان',role:'الحفيد · ١٦ سنة',img:SC_IMG('fitr_s1','majlis_p'),say:'ما دخلت غرفة جدتي اليوم أبد، كنت ألعب بالصالة.',lie:'e1',reveal:'دخلت آخذ حلاو من درجها بس! ما شفت أي ظرف.'},
+   {n:'نوف',role:'العمة',img:SC_IMG('fitr_s2','majlis_p'),say:'الظرف كان فيه خمسة آلاف بالضبط، عديتها أمس.',lie:'e2',reveal:'سحبت خمسمية لعيالي قبل التوزيع… كنت برجّعها، والله.'},
+   {n:'حمد',role:'العم',img:SC_IMG('fitr_s3','majlis_p'),say:'كنت بالمصلى من الفجر، وما رجعت البيت إلا بعد صلاة العيد.',lie:'e3',reveal:'رجعت شوي قبل الصلاة أبدّل ثوبي.'},
+   {n:'أبو فهد',role:'الجار',img:SC_IMG('fitr_s4','majlis_p'),say:'ما دخلت البيت اليوم، عايدت من برّا.',lie:'e4',reveal:'دخلت المطبخ أحط صحن المعمول من أم فهد، وطلعت على طول.'}],
+  ev:[
+   {id:'e1',t:'غلاف حلاو',d:'غلاف حلاو بالدرج، من النوع اللي سلطان ما ياكل غيره.',img:SC_IMG('fitr_e1','ev_bin10')},
+   {id:'e2',t:'ورقة حساب',d:'بخط نوف: «عيديات: ٤٥٠٠».',img:SC_IMG('fitr_e2','ev_note')},
+   {id:'e3',t:'كاميرا جرس الباب',d:'حمد يدخل البيت الساعة ٦:٤٠ ص، ويطلع ٦:٥٠ ص.',img:SC_IMG('fitr_e3','ev_cctv')},
+   {id:'e4',t:'صحن معمول',d:'صحن معمول بالمطبخ عليه ورقة: «من بيت أبو فهد».',img:SC_IMG('fitr_e4','ev_flowers8')},
+   {id:'e5',t:'إشعار تحويل',d:'من جوال حمد: تحويل ٤٥٠٠ ريال لشخص اسمه «ديْن خالد» الساعة ٧:٠٢ ص.',img:SC_IMG('fitr_e5','ev_phone6')}],
+  motives:['يسدّد دين مستعجل','يشتري هدية للجدة','مقلب عيد'],
+  ans:{who:2,mot:0,key:'e5'},
+  end:'حمد رجع البيت قبل الصلاة، وأخذ الظرف من الدرج وحوّل المبلغ يسدّد دين محرج. والفرق اللي بالظرف كان من نوف. بعد الغدا اعترف حمد للجدة، وهي سامحته، وقالت: «العيدية الحقيقية إنكم مجتمعين».'},
+
+ flag:{season:'flag27',t:'راية القاعة الكبرى',place:'متحف وطني · الرياض',hero:SC_IMG('flag_hero','hall8_p'),
+  brief:'حفل يوم العلم الساعة تسع الصبح، ونجمته راية تاريخية مطرّزة يدوياً من أوائل الدولة. الحارس فتح القاعة الساعة سبع ولقى الصندوق الزجاجي مفتوح والراية مو موجودة. لازم ترجع قبل الحفل.',
+  sus:[
+   {n:'أ. عبدالرحمن',role:'أمين المتحف',img:SC_IMG('flag_s1','hall8_p'),say:'قفلت القاعة الساعة عشر الليل وطلعت مباشرة.',lie:'e1',reveal:'رجعت الساعة إحدى عشر أتأكد من الإضاءة… والراية كانت مكانها.'},
+   {n:'ماجد',role:'فني الترميم',img:SC_IMG('flag_s2','hall8_p'),say:'خلّصت ترميم التطريز أمس العصر، ورجّعتها مكانها، وما رجعت.',lie:'e2',reveal:'طيب… رجعت الفجر أتأكد من التطريز، بس الراية رجعت مكانها!'},
+   {n:'ليان',role:'منسّقة الحفل',img:SC_IMG('flag_s3','hall8_p'),say:'ما دخلت القاعة الكبرى، كل شغلي بالساحة برّا.',lie:'e3',reveal:'دخلت أقيس مكان المنصة، عشر دقايق بس.'},
+   {n:'صالح',role:'الحارس الليلي',img:SC_IMG('flag_s4','hall8_p'),say:'كنت صاحي طول الليل، وما مر أحد.',lie:'e4',reveal:'غفيت ساعة… لا تعلمون الإدارة.'}],
+  ev:[
+   {id:'e1',t:'سجل البطاقات',d:'بطاقة الأمين تدخل القاعة الساعة ١١:٠٥ م.',img:SC_IMG('flag_e1','ev_badge8')},
+   {id:'e2',t:'سجل الورشة',d:'باب ورشة الترميم انفتح الساعة ٥:٠٢ فجراً ببطاقة ماجد.',img:SC_IMG('flag_e2','ev_doorlog')},
+   {id:'e3',t:'شريط قياس',d:'شريط قياس عليه اسم ليان، جنب الصندوق الزجاجي.',img:SC_IMG('flag_e3','ev_tablet8')},
+   {id:'e4',t:'كاميرا غرفة الحراسة',d:'الحارس نايم على الكرسي من ٣:٥٠ لين ٥:١٠ فجراً.',img:SC_IMG('flag_e4','ev_cctv4')},
+   {id:'e5',t:'خيط حريري أخضر',d:'خيط حرير أخضر جديد وإبرة على طاولة الورشة، وجنبها قفازات بيضاء.',img:SC_IMG('flag_e5','ev_thread')}],
+  motives:['يصلح خيط مرتخي بالسر قبل الحفل','يبيعها لجامع تحف','يأخذها يصورها لنفسه'],
+  ans:{who:1,mot:0,key:'e5'},
+  end:'ما فيه سرقة. ماجد لاحظ إن خيط بالتطريز ارتخى، وخاف إن الراية تتضرر قدام الكاميرات. ودخل الساعة خمس الفجر يصلحها بالسر بدل ما يعترف إنه ما خلّص أمس. لقيتها بالورشة، ورجعت مكانها الساعة ٨:٤٠، قبل الحفل بعشرين دقيقة.'},
+
+ rose:{season:'rose27',t:'قطفة الفجر',place:'مزرعة ورد · الهدا، الطائف',hero:SC_IMG('rose_hero','terrace11_p'),
+  brief:'محصول الورد الطائفي هالسنة أقل من المتوقع بالربع، مع إن الموسم ممتاز. صاحب المزرعة يشك إن أحد يسحب من القطفة كل فجر. أربعة يلمسون الورد قبل ما يوصل القدور.',
+  sus:[
+   {n:'حسين',role:'قطّاف',img:SC_IMG('rose_s1','terrace11_p'),say:'قطفت أربعين سلة اليوم، مثل كل يوم.',lie:'e1',reveal:'بالغت شوي عشان الحافز… كانت اثنين وثلاثين.'},
+   {n:'عوض',role:'سائق الشاحنة',img:SC_IMG('rose_s2','terrace11_p'),say:'الشاحنة ما طلعت من المزرعة الليل.',lie:'e2',reveal:'وصّلت ولدي الطوارئ وأنا راجع. ما كان فيها ورد.'},
+   {n:'أبو ماجد',role:'صاحب المزرعة المجاورة',img:SC_IMG('rose_s3','terrace11_p'),say:'ما أشتري ورد من أحد، مزرعتي تكفيني.',lie:'e3',reveal:'اشتريت مرة من سوق الطائف… قطفتي كانت قليلة.'},
+   {n:'جميلة',role:'مسؤولة الميزان',img:SC_IMG('rose_s4','terrace11_p'),say:'كل الأوزان مطابقة للميزان، أسجلها بيدي.',lie:'e4',reveal:'يمكن الميزان خربان من نفسه… أنا ما ألمسه إلا وقت الوزن.'}],
+  ev:[
+   {id:'e1',t:'دفتر الوزن',d:'سلال حسين اليوم: ٣٢ سلة.',img:SC_IMG('rose_e1','ev_ledger12')},
+   {id:'e2',t:'عداد الشاحنة',d:'العداد زاد ٦٠ كيلو بين المغرب والفجر.',img:SC_IMG('rose_e2','ev_fuel9')},
+   {id:'e3',t:'فاتورة شراء',d:'فاتورة من سوق الطائف لأبو ماجد: ٢٠٠ كيلو ورد.',img:SC_IMG('rose_e3','ev_receipt5')},
+   {id:'e4',t:'الميزان',d:'الميزان معايَر ناقص كيلوين بكل سلة، والمعايرة بخط جميلة.',img:SC_IMG('rose_e4','ev_thermo12')},
+   {id:'e5',t:'رسالة من معمل',d:'على جوال جميلة من معمل عطور بالشفا: «وصلت الدفعة، الحساب بكرة».',img:SC_IMG('rose_e5','ev_phone12')}],
+  motives:['تبيع الفرق لمعمل منافس','تغطي على خطأ بالميزان','تساعد قطّافين يكسبون حافز'],
+  ans:{who:3,mot:0,key:'e4'},
+  end:'جميلة عايرت الميزان ناقص كيلوين بكل سلة، وكل فجر تجمع الفرق وتبيعه لمعمل بالشفا. الميزان نفسه هو الدليل.'},
+
+ adha:{season:'adha27',t:'الحاج المفقود',place:'مطار الملك عبدالعزيز · جدة',hero:SC_IMG('adha_hero','sec_p'),
+  brief:'العائلة كلها بالاستقبال ينتظرون الجد راجع من الحج. الحملة وصلت الساعة أربع العصر، والجد ما طلع مع الحجاج. جواله مقفل، وولده سعد يقول ما يدري عنه.',
+  sus:[
+   {n:'المطوّف',role:'مسؤول الحملة',img:SC_IMG('adha_s1','sec_p'),say:'الجد ركب الباص مع الحملة للفندق، شفته بعيني.',lie:'e1',reveal:'ما تأكدت… الكشف طويل، وافترضت إنه ركب.'},
+   {n:'لمى',role:'الحفيدة',img:SC_IMG('adha_s2','sec_p'),say:'ما كلمت جدي اليوم، جواله مقفل من الصبح.',lie:'e2',reveal:'كلمني الظهر وقال: «لا تقولين لأبوك إني بمرّ مكان».'},
+   {n:'أبو ناصر',role:'الجار',img:SC_IMG('adha_s3','sec_p'),say:'ما شفت الجد من يوم سافر.',lie:'e3',reveal:'مر علي الصبح بسيارة سعد، وعطاني زمزم ومشى.'},
+   {n:'سعد',role:'الابن · السائق',img:SC_IMG('adha_s4','sec_p'),say:'آخر مرة شفت أبوي يوم ودّعته قبل الحج.',lie:'e4',reveal:'رحت المستشفى أزور ربع لي… وش دخل أبوي؟'}],
+  ev:[
+   {id:'e1',t:'كشف الباص',d:'اسم الجد مشطوب بقلم، ومكتوب جنبه: «استلمه ابنه».',img:SC_IMG('adha_e1','ev_manifest')},
+   {id:'e2',t:'سجل مكالمات لمى',d:'مكالمة من رقم الجد الساعة ١:١٥ ظهراً، مدتها دقيقتين.',img:SC_IMG('adha_e2','ev_phone3')},
+   {id:'e3',t:'قارورة زمزم',d:'قارورة زمزم جديدة بمجلس أبو ناصر، عليها ملصق الحملة.',img:SC_IMG('adha_e3','ev_glass10')},
+   {id:'e4',t:'إيصال مواقف',d:'مواقف مستشفى بجدة، سيارة سعد، دخول ٥:١٠ م.',img:SC_IMG('adha_e4','ev_parking')},
+   {id:'e5',t:'كشف الزوار',d:'سجل زوار المستشفى: «الحاج عبدالله، زيارة للمريض أبو راشد، ٥:٢٠ م».',img:SC_IMG('adha_e5','ev_visitors')}],
+  motives:['الجد طلب منه يكتم السر','يبي يمزح مع العائلة','خايف من عتاب أخوانه'],
+  ans:{who:3,mot:0,key:'e4'},
+  end:'سعد استلم أبوه من المطار بالسر، ووداه المستشفى يزور رفيق دربه أبو راشد. الجد عرف بالحج إن أبو راشد مريض، وطلب من سعد يكتم لين يرجع البيت بنفسه. وصل الجد على العشا، ومعه زمزم للكل.'},
+
+ hijri:{season:'hijri27',t:'تقويم ١٤٤٩',place:'دكان ساعاتي · سوق الزل، الرياض',hero:SC_IMG('hijri_hero','dining_p'),
+  brief:'العم زيد عنده تقويم جداري هجري مطبوع سنة ١٣٤٩، ويعلّقه بدكانه كل سنة جديدة. ليلة ٣٠ ذو الحجة ١٤٤٨، قبل يعلّقه بيوم، اختفى من الخزانة.',
+  sus:[
+   {n:'العم زيد',role:'الساعاتي',img:SC_IMG('hijri_s1','dining_p'),say:'التقويم ما ينباع، ولا فكرت أبيعه يوم.',lie:'e1',reveal:'جاني عرض كبير وكتبت سعر… بس رجعت عن قراري.'},
+   {n:'بدر',role:'صبي الدكان',img:SC_IMG('hijri_s2','dining_p'),say:'قفلت الدكان الساعة عشر الليل وطلعت.',lie:'e2',reveal:'جلست ألعب بجوالي لين ١١… بس الباب كان مقفول.'},
+   {n:'أبو علي',role:'زبون',img:SC_IMG('hijri_s3','dining_p'),say:'ما أعرف شي عن التقويم، أنا أصلّح ساعتي بس.',lie:'e3',reveal:'كنت أبي أشتريه ودفعت عربون، والعم زيد رجّعه.'},
+   {n:'هشام',role:'جامع تقاويم',img:SC_IMG('hijri_s4','dining_p'),say:'كنت بجدة ليلة ٥ يونيو، ورجعت الرياض بعد يومين.',lie:'e5',reveal:'تذكرة قديمة… أكيد تاريخها غلط، أنا كنت بجدة.'}],
+  ev:[
+   {id:'e1',t:'ورقة سعر',d:'بخط العم زيد: «التقويم: ٨٠ ألف».',img:SC_IMG('hijri_e1','ev_note6')},
+   {id:'e2',t:'القفل الإلكتروني',d:'باب الدكان انقفل الساعة ١١:٢٠ م.',img:SC_IMG('hijri_e2','ev_lock10')},
+   {id:'e3',t:'إيصال عربون',d:'عربون ٥٠٠٠ ريال من أبو علي للتقويم، ومكتوب عليه «مُرتجع».',img:SC_IMG('hijri_e3','ev_receipt5')},
+   {id:'e4',t:'التقويم الناقص',d:'مجموعة هشام المعروضة على موقعه: تقاويم من ١٣٤٠ إلى ١٣٦٠… ناقصها ١٣٤٩ بس.',img:SC_IMG('hijri_e4','ev_photos10')},
+   {id:'e5',t:'تذكرة قطار',d:'تذكرة باسم هشام: الرياض، ٣٠/١٢/١٤٤٨هـ، وصول ٩:٤٠ م.',img:SC_IMG('hijri_e5','ev_taxi')}],
+  motives:['يكمّل مجموعته الناقصة','يبيعه لمزاد','ينتقم من العم زيد'],
+  ans:{who:3,mot:0,key:'e5'},
+  end:'هشام قال إنه كان بجدة ليلة ٥ يونيو، لكن ٣٠ ذو الحجة ١٤٤٨ هو نفسه ٥ يونيو، وتذكرته تقول إنه وصل الرياض ٩:٤٠ الليل. انتظر بدر يطلع ١١:٢٠ وأخذ التقويم، عشان يكمّل مجموعته من ١٣٤٠ إلى ١٣٦٠.'},
+
+ national:{season:'national27',t:'وثيقة ١٣٥١',place:'مركز الوثائق الوطني · الرياض',hero:SC_IMG('national_hero','office12_p'),stages:['2027-09-20','2027-09-22','2027-09-24'],
+  stageNames:['النسخة','المخزن','اليوم الوطني'],
+  brief:'قبل معرض «اليوم الوطني ٩٧» بثلاثة أيام، خبير الوثائق اكتشف إن الوثيقة المعروضة من سنة ١٣٥١هـ، اللي تخص توحيد المملكة، نسخة مزوّرة متقنة. الأصل مختفي، والمعرض يفتح يوم ٢٣ سبتمبر.',
+  sus:[
+   {n:'أ. منى',role:'أمينة الأرشيف',img:SC_IMG('national_s1','office12_p'),stage:2,say:'الوثيقة ما طلعت من الخزنة من شهر.',lie:'e3',reveal:'نسيت جلسة التصوير… طلعت ساعتين بس، وبحضوري.'},
+   {n:'ثامر',role:'مصوّر الوثائق',img:SC_IMG('national_s2','office12_p'),stage:2,say:'صوّرت الوثيقة مرة وحدة قبل شهر، وما رجعت لها.',lie:'e5',reveal:'الرسالة عن مشروع ثاني… ما لها علاقة بالوثيقة.'},
+   {n:'جمال',role:'مورّد الإطارات',img:SC_IMG('national_s3','office12_p'),stage:2,say:'ما فتحت إطار الوثيقة، ركّبته وطلعت.',lie:'e4',reveal:'فكّيت البراغي وغيّرتها لأنها صدّت. ما شلت شي.'},
+   {n:'د. وليد',role:'جامع وثائق',img:SC_IMG('national_s4','office12_p'),stage:2,say:'ما أتعامل مع مطابع، أنا أشتري أصول بس.',lie:'e6',reveal:'أطبع كتالوج لمجموعتي، وبس.'}],
+  ev:[
+   {id:'e1',t:'الختم المقلوب',d:'الختم بالوثيقة المعروضة مقلوب يمين ويسار، مثل صورة بالمراية.',img:SC_IMG('national_e1','ev_plaque'),stage:1},
+   {id:'e2',t:'تحت الضوء البنفسجي',d:'ألياف الورق تلمع: ورق حديث، مو ورق قبل تسعين سنة.',img:SC_IMG('national_e2','ev_copy'),stage:1},
+   {id:'e3',t:'سجل التصوير',d:'جلسة «إعادة تصوير» للوثيقة قبل أسبوع، من ٢ لين ٤ العصر، باسم ثامر.',img:SC_IMG('national_e3','ev_logbook'),stage:2},
+   {id:'e4',t:'براغي الإطار',d:'البراغي جديدة ولامعة، والقديمة صدّت.',img:SC_IMG('national_e4','ev_hasp12'),stage:2},
+   {id:'e5',t:'رسالة بين ثامر ووليد',d:'«الصورة جاهزة بأعلى دقة، والنسخة توصلك الخميس».',img:SC_IMG('national_e5','ev_phone12'),stage:2},
+   {id:'e6',t:'فاتورة مطبعة فاخرة',d:'طباعة «وثيقة واحدة على ورق قطني معتّق» لحساب د. وليد.',img:SC_IMG('national_e6','ev_printer'),stage:2},
+   {id:'e7',t:'إعدادات كاميرا ثامر',d:'وضع «المراية» مفعّل بالكاميرا من جلسة إعادة التصوير.',img:SC_IMG('national_e7','ev_photos'),stage:3},
+   {id:'e8',t:'حجز شحن دولي',d:'شحنة «كتب قديمة» باسم د. وليد، تطلع يوم ٢٤ سبتمبر.',img:SC_IMG('national_e8','ev_manifest'),stage:3}],
+  motives:['يبيع الأصل لجامع يهرّبه برّا البلد','يحمي الأصل من التلف','يثبت إن الأمن ضعيف'],
+  ans:{who:1,mot:0,key:'e7'},
+  end:'ثامر صوّر الوثيقة بأعلى دقة بجلسة «إعادة تصوير»، ونسي وضع المراية مفعّل بكاميرته. د. وليد طبع منها نسخة متقنة على ورق معتّق، وثامر بدّلها بالأصل. الختم المقلوب هو بصمة المراية. الأصل انضبط بشحنة «كتب قديمة» قبل ما تطلع بيوم، ورجع للمعرض يوم ٢٣ سبتمبر.'}
+};
+const SEASON_CASE={falcon26:'falcon',diriyah26:'diriyah',founding27:'founding',fitr27:'fitr',flag27:'flag',rose27:'rose',adha27:'adha',hijri27:'hijri',national27:'national'};
+
+/* Ramadan: suhoor cases, same format as the night case, 9 pm – 3 am */
+const SUHOOR=[
+ {t:'فوانيس الحارة',place:'حارة شعبية · جدة',img:SC_IMG('suhoor1','alley_p'),brief:'فوانيس رمضان النحاسية اللي علقها أهل الحارة اختفت ثلاثة منها قبل السحور.',
+  sus:[['مازن','بائع الفول','كنت عند قدر الفول من العشا لين الفجر، ما تحرّكت.'],['رامي','شاب من الحارة','كنت بالمسجد بالتراويح ثم نمت.'],['أبو سامي','صاحب البقالة','قفلت البقالة ١٢ ونمت.']],
+  ev:[[SC_IMG('suhoor1_e1','ev_footprints'),'آثار رماد فحم','آثار رماد فحم على الدرج تحت مكان الفوانيس.'],[SC_IMG('suhoor1_e2','ev_cctv'),'كاميرا البقالة','أبو سامي يقفل ١٢:٠٥ ويروح بيته.']],ans:0,key:0,why:'الرماد من قدر الفول، ومازن الوحيد اللي يشتغل على الفحم. ترك القدر دقايق وأخذ الفوانيس يبيعها.'},
+ {t:'سفرة الإفطار',place:'مسجد الحي · الرياض',img:SC_IMG('suhoor2','dining_p'),brief:'صندوق تبرعات سفرة الإفطار نقص منه مبلغ كبير بعد التراويح.',
+  sus:[['عبدالله','مسؤول السفرة','عدّيت الصندوق قبل التراويح وكان كامل.'],['يوسف','متطوع','ما لمست الصندوق، كنت أوزّع التمر.'],['خالد','مؤذن المسجد','كنت بالمئذنة وقت التراويح.']],
+  ev:[[SC_IMG('suhoor2_e1','ev_ledger12'),'دفتر العد','آخر عدّ مسجّل الساعة ٥ العصر، مو قبل التراويح.'],[SC_IMG('suhoor2_e2','ev_receipt5'),'إيصال جوال','إيصال شراء جوال بنفس المبلغ الناقص، باسم عبدالله، الساعة ١١ م.']],ans:0,key:1,why:'عبدالله قال عدّ الصندوق قبل التراويح، لكن آخر عد كان العصر، وإيصال الجوال بنفس المبلغ بعد التراويح بساعة.'},
+ {t:'دلة الضيافة',place:'خيمة رمضانية · الدمام',img:SC_IMG('suhoor3','camp_p'),brief:'دلة فضة قديمة تخص صاحب الخيمة اختفت وقت السحور.',
+  sus:[['سامي','القهوجي','الدلة كانت معي لين آخر فنجان، ورجعتها مكانها.'],['نادر','ضيف','كنت جالس بالركن طول الوقت.'],['حمدان','حارس الخيمة','ما طلع أحد ومعه شي.']],
+  ev:[[SC_IMG('suhoor3_e1','ev_cup'),'آخر فنجان','آخر فنجان انصب الساعة ١٢:٣٠، والدلة اختفت ٢:٠٠.'],[SC_IMG('suhoor3_e2','ev_tires7'),'سيارة نادر','بصندوق سيارة نادر أثر قهوة طازج على القماش.']],ans:1,key:1,why:'نادر قال ما تحرك من مكانه، لكن صندوق سيارته فيه أثر قهوة طازج من الدلة.'},
+ {t:'كيس التمر',place:'مستودع جمعية خيرية · القصيم',img:SC_IMG('suhoor4','ws_p'),brief:'عشرين كرتون تمر مخصصة لسلال رمضان نقصت من المستودع.',
+  sus:[['فيصل','أمين المستودع','المستودع ما ينفتح إلا بمفتاحي، وما فتحته الليل.'],['منصور','سائق','ما دخلت المستودع، أحمّل من الباب.'],['طلال','متطوع','كنت أغلّف السلال بالقاعة.']],
+  ev:[[SC_IMG('suhoor4_e1','ev_storagelog'),'سجل الباب','الباب انفتح ١:٤٠ ص بمفتاح فيصل.'],[SC_IMG('suhoor4_e2','ev_crate'),'كراتين فاضية','كراتين فاضية مرمية خلف المستودع.']],ans:0,key:0,why:'فيصل قال ما فتح المستودع الليل، والسجل يقول انفتح بمفتاحه ١:٤٠ الفجر.'},
+ {t:'مدفع الإفطار',place:'ساحة المدينة · مكة',img:SC_IMG('suhoor5','yardJ_p'),brief:'مدفع الإفطار الرمزي ما اشتغل، وأحد شال قطعة الإشعال منه قبل المغرب.',
+  sus:[['ماهر','فني المدفع','جهزت المدفع العصر وكان سليم.'],['جاسم','مصور','كنت أصور من فوق السطح.'],['زكي','حارس الساحة','ما قرب المدفع أحد.']],
+  ev:[[SC_IMG('suhoor5_e1','ev_photos'),'صورة جاسم','صورة الساعة ٥ م: يد ماسكة قطعة الإشعال، ولابسة ساعة ذهبية.'],[SC_IMG('suhoor5_e2','ev_watch'),'ساعة ذهبية','ساعة ذهبية على معصم زكي.']],ans:2,key:0,why:'زكي قال ما قرب المدفع أحد، لكن صورة جاسم تبيّن يده بساعته الذهبية وهي تشيل قطعة الإشعال.'},
+ {t:'سحور الجدة',place:'بيت شعبي · الأحساء',img:SC_IMG('suhoor6','majlis_p'),brief:'قدر الهريس اللي طبخته الجدة للسحور انسكب كله، وأحد كذب عن وش صار.',
+  sus:[['تركي','الحفيد','كنت نايم، ما صحيت إلا على الصوت.'],['أم تركي','الأم','كنت أصلي بالغرفة.'],['سلمى','الحفيدة','كنت أذاكر، ما رحت المطبخ.']],
+  ev:[[SC_IMG('suhoor6_e1','ev_footprints'),'آثار هريس','آثار أقدام صغيرة بالهريس توصل لغرفة سلمى.'],[SC_IMG('suhoor6_e2','ev_phone'),'جوال تركي','آخر استخدام للجوال قبل ساعة، يعني كان نايم فعلاً.']],ans:2,key:0,why:'سلمى قالت ما راحت المطبخ، لكن آثار الهريس توصل لغرفتها. كانت تبي تذوق قبل الكل، وطاح القدر.'},
+ {t:'زكاة الفطر',place:'بقالة الحي · الطائف',img:SC_IMG('suhoor7','dining_p'),brief:'أكياس الرز المخصصة لزكاة الفطر نقصت عشرة من رف البقالة.',
+  sus:[['أبو حمزة','صاحب البقالة','الأكياس كلها محسوبة، وما بعت منها شي.'],['نايف','موظف','ما طلعت من الكاشير.'],['عمر','زبون دائم','اشتريت كيس واحد وبس.']],
+  ev:[[SC_IMG('suhoor7_e1','ev_receipt5'),'فاتورة','فاتورة بيع عشرة أكياس رز لمطعم، بتوقيع أبو حمزة.'],[SC_IMG('suhoor7_e2','ev_cctv'),'كاميرا الكاشير','نايف ما طلع من الكاشير طول الوقت.']],ans:0,key:0,why:'أبو حمزة قال ما باع منها شي، والفاتورة بتوقيعه تقول باع عشرة أكياس لمطعم بسعر أعلى.'},
+ {t:'هلال العيد',place:'مرصد · سدير',img:SC_IMG('suhoor8','tomb_p'),brief:'تلسكوب المرصد انكسرت عدسته قبل ليلة ترائي الهلال.',
+  sus:[['د. أحمد','فلكي','آخر مرة استخدمته أمس، وكان سليم.'],['بندر','طالب متدرب','ما لمست التلسكوب، أنا أسجل بس.'],['أبو راكان','الحارس','قفلت القبة الساعة ١١.']],
+  ev:[[SC_IMG('suhoor8_e1','ev_logbook'),'دفتر الرصد','آخر تسجيل بخط بندر: «ضبطت العدسة» الساعة ١٠:٣٠ م.'],[SC_IMG('suhoor8_e2','ev_lock10'),'قفل القبة','القبة انقفلت ١١:٠٢ م.']],ans:1,key:0,why:'بندر قال ما لمس التلسكوب، لكن دفتر الرصد بخطه يقول إنه ضبط العدسة قبل الكسر.'},
+ {t:'ماء زمزم',place:'استراحة · المدينة المنورة',img:SC_IMG('suhoor9','terrace11_p'),brief:'جوالين زمزم مجهزة للضيوف اختفت من الثلاجة.',
+  sus:[['سعيد','الطباخ','الثلاجة ما فتحتها من العصر.'],['حمود','العامل','نقلت الجوالين للمستودع بأمر صاحب الاستراحة.'],['عادل','الضيف','ما أدري وين الثلاجة أصلاً.']],
+  ev:[[SC_IMG('suhoor9_e1','ev_thermo12'),'شاشة الثلاجة','باب الثلاجة انفتح ٩:١٥ م.'],[SC_IMG('suhoor9_e2','ev_tracks'),'آثار عربية','آثار عربية نقل من الثلاجة لسيارة عادل.']],ans:2,key:1,why:'عادل قال ما يدري وين الثلاجة، لكن آثار عربية النقل تمشي من الثلاجة لين سيارته.'},
+ {t:'ليلة القدر',place:'مكتبة وقف · الرياض',img:SC_IMG('suhoor10','office_p'),brief:'مصحف مخطوط قديم اختفى من خزانة مكتبة الوقف في العشر الأواخر.',
+  sus:[['الشيخ صالح','ناظر الوقف','المفتاح عندي، وما فتحت الخزانة من شهر.'],['ياسر','مرمّم','رمّمت المصحف وسلّمته قبل أسبوع.'],['حسام','أمين المكتبة','ما عندي مفتاح الخزانة.']],
+  ev:[[SC_IMG('suhoor10_e1','ev_key3'),'مفتاح منسوخ','مفتاح منسوخ جديد بدرج حسام، عليه رقم الخزانة.'],[SC_IMG('suhoor10_e2','ev_inventory'),'سجل الاستلام','ياسر سلّم المصحف قبل أسبوع بتوقيع الناظر.']],ans:2,key:0,why:'حسام قال ما عنده مفتاح، لكن بدرجه مفتاح منسوخ جديد للخزانة نفسها.'}
+];
+
+/* ================= SEASON CASES (engine) ================= */
+const scSrc=a=>Array.isArray(a)?`src="${a[0]}" onerror="this.onerror=null;this.src='${a[1]}'"`:`src="${a}"`;
+const scBg=a=>Array.isArray(a)?`url(${a[0]}),url(${a[1]})`:`url(${a})`;
+const scM=id=>{const M=evM();M.sc=M.sc||{};return M.sc[id]=M.sc[id]||{lies:{},wrong:0}};
+function scStage(C,t){if(!C.stages)return 1;return C.stages.filter(d=>t>=Date.parse(d+'T00:00:00+03:00')).length}
+function seasonOpenNow(sid){const t=evNow();if(t==null)return null;return seasonsAt(t).find(s=>s.id===sid&&t>=s.a)||null}
+function openSeasonCase(id){
+ const C=SCASES[id];if(!C)return;const t=evNow();if(t==null)return;const S=seasonOpenNow(C.season);if(!S){toast('الموسم مقفل الحين');return}
+ const P=scM(id),stg=scStage(C,t),last=!C.stages||stg>=C.stages.length;
+ const sus=C.sus.map((x,i)=>({...x,i})).filter(x=>(x.stage||1)<=stg),ev=C.ev.filter(x=>(x.stage||1)<=stg);
+ let pick={who:null,mot:null,key:null},conf=null;
+ const evOf=k=>C.ev.find(e=>e.id===k);
+ const susHTML=()=>sus.map(x=>{const L=P.lies[x.i];return `<div class="scs ${L?'lied':''}"><img ${scSrc(x.img)} alt=""><div><b>${x.n}</b><small>${x.role}</small><q>${x.say}</q>
+  ${L?`<div class="scs-rev"><i>كذبة مكشوفة · ${evOf(x.lie).t}</i>«${x.reveal}»</div>`:P.done?'':`<button class="scs-conf ${conf===x.i?'on':''}" data-conf="${x.i}">واجهه بدليل</button>`}</div></div>`}).join('');
+ const evHTML=()=>ev.map(e=>`<div class="sce ${conf!=null?'pickable':''}" ${conf!=null?`data-use="${e.id}"`:''}><img ${scSrc(e.img)} alt=""><b>${e.t}</b><span>${e.d}</span></div>`).join('');
+ const accHTML=()=>{if(P.done)return `<div class="evr ${P.done.ok?'good':'bad'}"><div class="evr-stamp">${P.done.ok?'حُلّت':'أُغلقت'}</div><h3>${P.done.ok?'القضية انحلّت':'الفاعل أفلت'}</h3><p>${C.end}</p>${P.done.g?`<div class="evr-gold">${coinSVG} +${AR(P.done.g)} ذهب</div>`:''}</div>`;
+  if(!last)return `<div class="sc-lockacc">${ico('lock')} الاتهام يفتح مع المرحلة الأخيرة «${C.stageNames[C.stages.length-1]}» · ${fmtAt(Date.parse(C.stages[C.stages.length-1]+'T00:00:00+03:00'))}</div>`;
+  const grp=(k,lab,opts)=>`<div class="label">${lab}</div><div class="sc-opts">${opts.map(([v,txt])=>`<button class="sc-o ${pick[k]===v?'on':''}" data-k="${k}" data-v="${v}">${txt}</button>`).join('')}</div>`;
+  return grp('who','١. منهو الفاعل؟',sus.map(x=>[x.i,x.n]))+grp('mot','٢. وش دافعه؟',C.motives.map((m,i)=>[i,m]).sort((a,b)=>((a[0]+id.length)%3)-((b[0]+id.length)%3)))+grp('key','٣. الدليل الحاسم',ev.map(e=>[e.id,e.t]))+
+   `<button class="btn btn-primary" id="scAcc" style="width:100%" ${pick.who==null||pick.mot==null||pick.key==null?'disabled':''}>وجّه الاتهام · محاولة وحدة</button>`};
+ const stagesHTML=()=>C.stages?`<div class="sc-stages">${C.stages.map((d,i)=>`<span class="${i<stg?'on':''}">${AR(i+1)}. ${C.stageNames[i]}<small>${i<stg?'مفتوحة':fmtAt(Date.parse(d+'T00:00:00+03:00'))}</small></span>`).join('')}</div>`:'';
+ const body=()=>`<div class="evn-hero" style="background-image:${scBg(C.hero)}"><div><div class="label">${S.icon||''} ${S.name}</div><h3>${C.t}</h3><small>${C.place}</small></div></div>
+  ${stagesHTML()}<p class="evn-brief">${C.brief}</p>
+  <div class="label">المشتبهين ${conf!=null?'· اختر الدليل اللي يكشف كذبته':''}</div><div class="sc-sus">${sus.length?susHTML():`<div class="sc-lockacc">${ico('lock')} المشتبهين يظهرون مع المرحلة الثانية «${C.stageNames[1]}» · ${fmtAt(Date.parse(C.stages[1]+'T00:00:00+03:00'))}</div>`}</div>
+  <div class="label">الأدلة</div><div class="sc-ev">${evHTML()}</div>
+  <div class="sc-acc">${accHTML()}</div><button class="btn btn-ghost" data-close style="width:100%;margin-top:10px">إغلاق</button>`;
+ sheet(`<div class="scw">${body()}</div>`,(w,close)=>{
+  const re=()=>{w.querySelector('.scw').innerHTML=body();bind()};
+  const bind=()=>{w.querySelector('[data-close]').onclick=close;
+   w.querySelectorAll('[data-conf]').forEach(b=>b.onclick=()=>{conf=conf===+b.dataset.conf?null:+b.dataset.conf;Snd.tab&&Snd.tab();re();if(conf!=null)w.querySelector('.sc-ev').scrollIntoView({behavior:'smooth',block:'start'})});
+   w.querySelectorAll('[data-use]').forEach(b=>b.onclick=()=>{const x=C.sus[conf];if(x.lie===b.dataset.use){P.lies[conf]=1;Snd.reveal?Snd.reveal():Snd.found&&Snd.found();toast(`كشفت كذبة ${x.n}`)}else{P.wrong++;Snd.wrong&&Snd.wrong();toast('هالدليل ما يناقض كلامه')}
+    saveMeta();const k=conf;conf=null;re();const el=w.querySelector(`.scs:nth-child(${sus.findIndex(s=>s.i===k)+1})`);el&&el.scrollIntoView({behavior:'smooth',block:'center'})});
+   w.querySelectorAll('.sc-o').forEach(b=>b.onclick=()=>{const k=b.dataset.k;pick[k]=k==='key'?b.dataset.v:+b.dataset.v;Snd.tab&&Snd.tab();const y=w.querySelector('.sheet').scrollTop;re();w.querySelector('.sheet').scrollTop=y});
+   const a=w.querySelector('#scAcc');if(a)a.onclick=()=>{if(!seasonOpenNow(C.season)){close();toast('انتهى الموسم');return}
+    const okW=pick.who===C.ans.who,okM=okW&&pick.mot===C.ans.mot,okK=okW&&pick.key===C.ans.key,nl=Object.keys(P.lies).length;
+    const g=okW?Math.max(50,150+(okM?75:0)+(okK?75:0)+nl*25-P.wrong*10):0;P.done={ok:okW,okM,okK,g};if(g)gold(g);
+    if(okW){const M=evM();M.badges.season=M.badges.season||{};M.badges.season[id]=1}
+    saveMeta();okW?(Snd.win&&Snd.win()):(Snd.fail&&Snd.fail());re();w.querySelector('.sc-acc').scrollIntoView({behavior:'smooth'});renderEvents()}};
+  bind();
+ });
+}
+
 evSync();setInterval(evSync,10*60e3);
 
 /* ================= BOOT ================= */
