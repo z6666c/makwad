@@ -4517,13 +4517,27 @@ const TPH={ok:false,img:null,sign:{"x": 0.335, "y": 0.163, "w": 0.109},car:{"x":
 const TITLE_PHOTO='img/title.jpg';
 if(TITLE_PHOTO){TPH.img=new Image();TPH.img.onload=()=>TPH.ok=true;TPH.img.src=TITLE_PHOTO}
 function neonSign(cx,txt,x,y,maxW,on){
- let fs=60;cx.font=`700 ${fs}px "Reem Kufi","IBM Plex Sans Arabic",sans-serif`;fs=Math.max(10,fs*maxW/cx.measureText(txt).width);
- cx.font=`700 ${fs}px "Reem Kufi","IBM Plex Sans Arabic",sans-serif`;cx.textAlign='center';cx.textBaseline='middle';
- const w=cx.measureText(txt).width;cx.save();cx.fillStyle='rgba(6,8,12,.82)';cx.fillRect(x-w/2-fs*.35,y-fs*.72,w+fs*.7,fs*1.44);
- cx.lineJoin='round';cx.lineWidth=Math.max(2,fs*.12);cx.strokeStyle='rgba(20,6,4,.95)';cx.strokeText(txt,x,y);
- if(on){cx.shadowColor='rgba(255,80,60,1)';cx.shadowBlur=fs*.8;cx.fillStyle='#ff6a52';cx.fillText(txt,x,y);cx.shadowBlur=fs*.25;cx.fillStyle='#ffe6df';cx.fillText(txt,x,y);cx.shadowBlur=0;
-  const ng=cx.createRadialGradient(x,y,0,x,y,w*1.1);ng.addColorStop(0,'rgba(255,80,60,.2)');ng.addColorStop(1,'rgba(255,80,60,0)');cx.fillStyle=ng;cx.fillRect(x-w*1.1,y-w*1.1,w*2.2,w*2.2)}
- else{cx.fillStyle='#8a3328';cx.fillText(txt,x,y)}
+ /* rooftop hotel sign: warm-white channel letters, gold rule, five stars and a Latin line */
+ const AF='"Reem Kufi","IBM Plex Sans Arabic",sans-serif',LF='"IBM Plex Sans Arabic",system-ui,sans-serif';
+ cx.save();cx.textAlign='center';cx.textBaseline='middle';
+ let f1=60;cx.font=`700 ${f1}px ${AF}`;f1=Math.max(9,f1*maxW*.8/cx.measureText(txt).width);
+ const f2=Math.max(5,f1*.28),gap=f1*.24,h=f1*.95+gap+f2*1.1,top=y-h/2,y1=top+f1*.47,yr=top+f1*.95+gap*.5,y2=yr+gap*.5+f2*.55;
+ const lat='MAKWAD  HOTEL';
+ /* halo on the board */
+ const hg=cx.createRadialGradient(x,y,0,x,y,maxW*.8);hg.addColorStop(0,'rgba(255,210,150,.22)');hg.addColorStop(1,'rgba(255,210,150,0)');cx.fillStyle=hg;cx.fillRect(x-maxW,y-maxW*.8,maxW*2,maxW*1.6);
+ /* Arabic channel letters */
+ cx.font=`700 ${f1}px ${AF}`;const w1=cx.measureText(txt).width;
+ cx.shadowColor='rgba(255,190,110,.95)';cx.shadowBlur=f1*.55;cx.fillStyle='#ffd79a';cx.fillText(txt,x,y1);
+ const lg=cx.createLinearGradient(0,y1-f1*.5,0,y1+f1*.5);lg.addColorStop(0,'#ffffff');lg.addColorStop(.55,'#fff1d6');lg.addColorStop(1,'#ffd49a');
+ cx.shadowBlur=f1*.12;cx.fillStyle=lg;cx.fillText(txt,x,y1);cx.shadowBlur=0;
+ /* gold rule with five stars */
+ const rw=w1*.9,st=f2*.55;cx.strokeStyle='rgba(232,190,120,.85)';cx.lineWidth=Math.max(.8,f1*.03);
+ cx.beginPath();cx.moveTo(x-rw/2,yr);cx.lineTo(x-st*4.2,yr);cx.moveTo(x+st*4.2,yr);cx.lineTo(x+rw/2,yr);cx.stroke();
+ cx.fillStyle='#ffd68f';cx.shadowColor='rgba(255,200,120,.9)';cx.shadowBlur=st*1.5;
+ for(let i=-2;i<=2;i++){const cxs=x+i*st*1.6;cx.beginPath();for(let k=0;k<10;k++){const r=k%2?st*.38:st*.8,an=-Math.PI/2+k*Math.PI/5;cx.lineTo(cxs+r*Math.cos(an),yr+r*Math.sin(an))}cx.closePath();cx.fill()}
+ /* Latin line */
+ cx.shadowBlur=f2*.6;cx.fillStyle='#f3dcb4';cx.font=`600 ${f2}px ${LF}`;
+ if('letterSpacing' in cx)cx.letterSpacing=`${f2*.35}px`;cx.fillText(lat,x,y2);
  cx.restore()}
 function drawTitlePhoto(cx,W,H,t,neonOn){
  const im=TPH.img,iw=im.naturalWidth,ih=im.naturalHeight;
@@ -4532,7 +4546,7 @@ function drawTitlePhoto(cx,W,H,t,neonOn){
  const fx=TPH.sign.x+TPH.sign.w/2;let ox=(wideT?W*.36:W/2)-fx*dw;ox=Math.min(0,Math.max(W-dw,ox));const oy=wideT?(H-dh)*.5:(H-dh)*.55;
  cx.drawImage(im,ox,oy,dw,dh);
  // neon sign on the tower's blank board
- const sx=ox+fx*dw,sy=oy+TPH.sign.y*dh,sw=TPH.sign.w*dw;neonSign(cx,'فندق مكود',sx,sy,sw*.92,neonOn);
+ const sx=ox+fx*dw,sy=oy+TPH.sign.y*dh,sw=TPH.sign.w*dw;neonSign(cx,'فندق مكود',sx,sy,sw,neonOn);
  // patrol car light bar: alternating red / blue glow + wet-road reflection
  {const px=ox+TPH.car.x*dw,py=oy+TPH.car.y*dh,ph=(t/260)%2<1,R0=Math.max(18,dw*.03);cx.globalCompositeOperation='lighter';
   for(const [c,on,dx] of [['255,40,40',ph,-R0*.35],['40,90,255',!ph,R0*.35]]){const a=on?.85:.18,g=cx.createRadialGradient(px+dx,py,0,px+dx,py,R0*2.2);g.addColorStop(0,`rgba(${c},${a})`);g.addColorStop(1,`rgba(${c},0)`);cx.fillStyle=g;cx.fillRect(px+dx-R0*2.2,py-R0*2.2,R0*4.4,R0*4.4);
