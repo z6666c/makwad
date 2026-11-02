@@ -747,6 +747,42 @@ html.wide #sceneDock{padding:10px 14px 14px}
 .sc-lockacc{font-size:13px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:10px;display:flex;gap:6px;align-items:center}
 .sc-lockacc svg{width:14px;height:14px;fill:currentColor}
 .evt-foot .btn-ghost.evt-go{min-height:32px;font-size:12px}
+
+.acc-chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;border:1px solid var(--line);border-radius:20px;padding:5px 12px;margin-inline-start:6px;color:var(--fg);background:rgba(255,255,255,.04)}
+.acc-chip.in{border-color:rgba(229,162,69,.45)}
+.acc-chip i{font-style:normal;width:20px;height:20px;border-radius:50%;background:var(--sodium);color:#1b1206;display:grid;place-items:center;font-weight:700;font-size:11px}
+.acc-chip.cart{border-color:rgba(229,162,69,.6);color:var(--sodium)}
+#goldBar{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center}
+.acc-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0 12px}
+.acc-tabs button{border:1px solid var(--line);border-radius:8px;padding:9px;font-size:14px}
+.acc-tabs button.on{border-color:var(--sodium);background:rgba(229,162,69,.12);color:var(--sodium);font-weight:600}
+.acc-in{width:100%;font:inherit;font-size:17px;color:var(--fg);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:8px;padding:12px 14px;outline:none}
+.acc-in:focus{border-color:var(--sodium)}
+.acc-phone{display:flex;gap:6px;direction:ltr}.acc-phone span{display:grid;place-items:center;padding:0 12px;border:1px solid var(--line);border-radius:8px;color:var(--muted)}
+.acc-code{text-align:center;letter-spacing:.6em;font-family:var(--f-mono);font-size:24px}
+.acc-msg{min-height:22px;font-size:13px;margin:8px 0}.acc-msg.err{color:#e0766b}.acc-msg.ok{color:#7fc28e}
+.acc-fine{font-size:12px;color:var(--muted);margin:10px 0 0;text-align:center}
+.acc-head{display:flex;gap:12px;align-items:center;margin:4px 0 12px}
+.acc-av{width:48px;height:48px;border-radius:50%;background:var(--sodium);color:#1b1206;display:grid;place-items:center;font-weight:700;font-size:20px;flex:none}
+.acc-head b{display:block;font-size:15px}.acc-head small{color:var(--muted);font-size:12px}
+.acc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.acc-stats span{text-align:center;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:8px 4px}
+.acc-stats b{display:block;font-size:16px;color:var(--fg)}
+.acc-list{display:grid;gap:6px}
+.acc-list button{display:flex;align-items:center;gap:10px;text-align:right;border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:14px}
+.acc-list button svg{width:18px;height:18px;fill:var(--sodium)}
+.acc-list button.danger{color:#e0766b;border-color:rgba(224,118,107,.35)}
+.acc-orders{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:6px}
+.acc-orders li,.cart-list li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.04)}
+.acc-orders b,.cart-list b{display:block;font-size:14px}.acc-orders small,.cart-list small{color:var(--muted);font-size:12px}
+.acc-orders span{font-size:13px;white-space:nowrap;text-align:left}.acc-orders i{display:block;font-style:normal;font-size:10px;color:var(--muted)}
+.acc-del{margin-top:12px;font-size:13px;color:#d9cfbb}
+.cart-list{list-style:none;padding:0;margin:8px 0 12px;display:grid;gap:6px}
+.qty{display:flex;align-items:center;gap:6px}
+.qty button{width:30px;height:30px;border:1px solid var(--line);border-radius:6px;font-size:16px}
+.qty .rm{width:auto;padding:0 10px;font-size:12px;color:#e0766b;border-color:rgba(224,118,107,.35)}
+.cart-tot{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-top:1px solid var(--line);margin-bottom:10px}
+.cart-tot b{font-size:18px;color:var(--sodium)}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -4335,11 +4371,12 @@ function openStore(){
   <div class="label" style="margin:16px 0 8px">القضايا المميزة</div>
   ${META.premium?`<div class="premium owned">${ico('board')} <span><strong>حزمة القضايا المميزة مفعّلة</strong><small>ليلة الافتتاح، رمال العلا، موسم الورد، ثلاجة الأحساء، رواشين البلد، برج الأفق</small></span></div>`:
   `<button class="premium" data-premium>${ico('board')} <span><strong>حزمة الخبير والنخبة والأسطوري</strong><small>ست قضايا: ليلة الافتتاح، رمال العلا، موسم الورد، ثلاجة الأحساء، رواشين البلد، برج الأفق</small></span><span class="price">${PREMIUM.price} ر.س</span></button>`}
-  <div class="row" style="margin-top:16px;justify-content:center"><button class="small-btn" data-close>إغلاق</button></div>`,(w,close)=>{
+  <div class="row" style="margin-top:16px;justify-content:center"><button class="btn btn-primary" id="stCart" style="flex:1">🛒 السلة · ${AR(cartCount())}</button></div><div class="row" style="margin-top:10px;justify-content:center"><button class="small-btn" id="stRestore">استعادة المشتريات</button><button class="small-btn" data-close>إغلاق</button></div>`,(w,close)=>{
   w.querySelector('[data-close]').onclick=close;
   const d=w.querySelector('#dailyBtn');if(d&&daily)d.onclick=()=>{META.dailyDay=todayKey();gold(20);Snd.medal();toast('+٢٠ ذهب');close();openStore()};
-  w.querySelectorAll('[data-pack]').forEach(b=>b.onclick=()=>{const p=GOLD_PACKS.find(x=>x.id===b.dataset.pack);close();confirmBuy(`${AR(p.gold)} ذهب`,p.price,()=>{gold(p.gold);toast(`أُضيف ${AR(p.gold)} ذهب`)})});
-  const pr=w.querySelector('[data-premium]');if(pr)pr.onclick=()=>{close();confirmBuy('حزمة القضايا المميزة',PREMIUM.price,()=>{META.premium=true;saveMeta();toast('فُتحت القضايا المميزة');if(!$('#cases').hidden)renderCases()})};
+  w.querySelectorAll('[data-pack]').forEach(b=>b.onclick=()=>{cartAdd(b.dataset.pack);const cb=w.querySelector('#stCart');if(cb)cb.innerHTML=`🛒 السلة · ${AR(cartCount())}`});
+  const pr=w.querySelector('[data-premium]');if(pr)pr.onclick=()=>{cartAdd('premium');const cb=w.querySelector('#stCart');if(cb)cb.innerHTML=`🛒 السلة · ${AR(cartCount())}`};
+  w.querySelector('#stCart').onclick=()=>{close();openCart()};const sr=w.querySelector('#stRestore');if(sr)sr.onclick=async()=>{if(!accUser()){close();openLogin();return}try{await accRestore(false)}catch(e){toast(accErr(e.message))}};
  });
 }
 function confirmBuy(name,price,apply){
@@ -4686,6 +4723,7 @@ function renderCases(){
  const gb=$('#goldBar');if(gb)gb.innerHTML=`<button class="gold-chip" id="goldChip">${coinSVG}<b data-gold-bal>${AR(goldBal())}</b> ذهب · المتجر</button>`;const gc=$('#goldChip');if(gc)gc.onclick=()=>openStore();
  $('#medalBox').innerHTML=medalsHTML();
  try{renderEvents()}catch(e){}
+ try{renderAccChip()}catch(e){}
 }
 function startCase(id,cont,dk){
  stopEngine();if(tierLocked(id)){renderCases();show('cases');toast(`حُلّ قضية من ${TIER_NAME[TIER_ORDER[TIER_ORDER.indexOf(TIER[id])-1]]} أولاً`);Snd.wrong();return}if(isLocked(id)){renderCases();show('cases');openStore();return}const sv=loadSave(id);loadCase(id,cont&&sv?sv.diff:dk);
@@ -5610,6 +5648,152 @@ function openSeasonCase(id){
 }
 
 evSync();setInterval(evSync,10*60e3);
+
+/* ================= ACCOUNT · CLOUD SAVE · CART =================
+   Supabase (auth by email or phone one-time code, progress sync, demo checkout, restore purchases).
+   No money is ever taken: checkout calls the demo_checkout RPC, which prices the cart from the products table. */
+const ACC={url:'https://fxhzcztkkxnipuolphxv.supabase.co',key:'sb_publishable_uJFW5F3ef7Fj2nExfe55Tg_ApvSGJ8J',K:'casefiles_acc',CK:'casefiles_cart',sess:null,timer:null,lastSync:null,busy:false,
+ PRICES:{g120:4.99,g350:12.99,g900:29.99,g2500:69.99,premium:19.99}};
+try{ACC.sess=JSON.parse(localStorage.getItem(ACC.K))}catch(e){}
+const accSaveSess=()=>{try{ACC.sess?localStorage.setItem(ACC.K,JSON.stringify(ACC.sess)):localStorage.removeItem(ACC.K)}catch(e){}};
+const accUser=()=>ACC.sess&&ACC.sess.user;
+const accName=()=>{const u=accUser();return u?(u.email||(u.phone?'+'+u.phone.replace(/^\+/,''):'')):''};
+const fmtSAR=n=>AR((Math.round(n*100)/100).toFixed(2)).replace('.','٫');
+async function accFetch(path,opt={},auth=true){
+ if(auth&&ACC.sess&&ACC.sess.expires_at&&Date.now()/1e3>ACC.sess.expires_at-60)await accRefresh();
+ const h={'apikey':ACC.key,'Content-Type':'application/json',...(opt.headers||{})};
+ if(auth&&ACC.sess)h.Authorization='Bearer '+ACC.sess.access_token;
+ const r=await fetch(ACC.url+path,{...opt,headers:h});const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
+ if(!r.ok){const m=(j&&(j.msg||j.message||j.error_description||j.error))||('HTTP '+r.status);throw new Error(m)}return j}
+async function accRefresh(){if(!ACC.sess||!ACC.sess.refresh_token)return;try{const j=await accFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:ACC.sess.refresh_token})},false);accSetSess(j)}catch(e){if(/invalid|expired|not found/i.test(e.message)){ACC.sess=null;accSaveSess();renderAccChip()}}}
+function accSetSess(j){ACC.sess={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at||Math.floor(Date.now()/1e3)+(j.expires_in||3600),user:{id:j.user.id,email:j.user.email||null,phone:j.user.phone||null}};accSaveSess()}
+const accErr=m=>/rate|seconds/i.test(m)?'طلبت رموز كثير، انتظر دقيقة وجرّب':/invalid|expired|otp/i.test(m)?'الرمز غلط أو انتهت صلاحيته':/phone|sms|provider/i.test(m)?'الدخول بالجوال ما تفعّل بعد، استخدم الإيميل':/fetch|network|Failed/i.test(m)?'ما فيه اتصال بالإنترنت':m;
+
+/* ---------- progress sync ---------- */
+function accCollect(){const out={meta:META,cases:{}};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('casefiles_v1_')){try{out.cases[k.slice(13)]=JSON.parse(localStorage.getItem(k))}catch(e){}}}}catch(e){}out.t=Date.now();return out}
+function accMerge(cloud){if(!cloud||!cloud.meta)return;const L=META,C=cloud.meta;
+ const best={...(C.best||{})};for(const[k,v]of Object.entries(L.best||{}))if(!best[k]||(v&&v.score>best[k].score))best[k]=v;
+ const ev=L.ev||{},cev=C.ev||{};const done={...(cev.done||{}),...(ev.done||{})},sc={...(cev.sc||{}),...(ev.sc||{})};
+ const merged={...C,...L,best,gold:Math.max(L.gold==null?60:L.gold,C.gold==null?0:C.gold),premium:!!(L.premium||C.premium),owned:{...(C.owned||{}),...(L.owned||{})},
+  ev:{...cev,...ev,done,sc,badges:{...(cev.badges||{}),...(ev.badges||{})},streak:Math.max(ev.streak||0,cev.streak||0)},purchases:[...(C.purchases||[]),...(L.purchases||[])].slice(-50)};
+ META=Object.assign(META,merged);ACC.origSaveMeta();
+ for(const[id,v]of Object.entries(cloud.cases||{})){try{if(!localStorage.getItem(keyOf(id))&&v)localStorage.setItem(keyOf(id),JSON.stringify(v))}catch(e){}}}
+async function accPush(){if(!accUser()||ACC.busy)return;ACC.busy=true;try{
+ await accFetch('/rest/v1/saves?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:accUser().id,data:accCollect(),updated_at:new Date().toISOString()})});
+ ACC.lastSync=Date.now();renderAccChip()}catch(e){}finally{ACC.busy=false}}
+async function accPull(){const r=await accFetch(`/rest/v1/saves?user_id=eq.${accUser().id}&select=data,updated_at`);if(r&&r[0])accMerge(r[0].data)}
+const accSchedule=()=>{if(!accUser())return;clearTimeout(ACC.timer);ACC.timer=setTimeout(accPush,4000)};
+ACC.origSaveMeta=saveMeta;saveMeta=function(){ACC.origSaveMeta();accSchedule()};
+const _accSave=save;save=function(){_accSave();accSchedule()};
+async function accAfterLogin(){
+ try{await accFetch('/rest/v1/profiles?on_conflict=id',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({id:accUser().id})})}catch(e){}
+ try{await accPull()}catch(e){}try{await accRestore(true)}catch(e){}await accPush();
+ document.querySelectorAll('[data-gold-bal]').forEach(e=>e.textContent=AR(goldBal()));if(!$('#cases').hidden)renderCases();renderAccChip()}
+async function accRestore(silent){const r=await accFetch(`/rest/v1/entitlements?select=product_id`);let n=0;
+ (r||[]).forEach(e=>{if(e.product_id==='premium'&&!META.premium){META.premium=true;n++}});ACC.origSaveMeta();if(!silent)toast(n?'رجعت مشترياتك':'مشترياتك كلها مفعّلة');if(n&&!$('#cases').hidden)renderCases();return n}
+
+/* ---------- sign in ---------- */
+function openLogin(after){
+ let mode='email',stage=1,who='';
+ const body=()=>stage===1?`<div class="label">حسابك</div><h3 class="h-sec">سجّل دخولك</h3><p class="lead">احفظ تقدمك وذهبك ومشترياتك، وكمّل من أي جهاز.</p>
+  <div class="acc-tabs"><button class="${mode==='email'?'on':''}" data-m="email">الإيميل</button><button class="${mode==='phone'?'on':''}" data-m="phone">رقم الجوال</button></div>
+  ${mode==='email'?`<input class="acc-in" id="accId" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" dir="ltr">`:
+   `<div class="acc-phone"><span dir="ltr">+966</span><input class="acc-in" id="accId" type="tel" inputmode="numeric" autocomplete="tel" placeholder="5XXXXXXXX" dir="ltr" maxlength="10"></div>`}
+  <div class="acc-msg" id="accMsg"></div>
+  <button class="btn btn-primary" id="accGo" style="width:100%">أرسل رمز الدخول</button>
+  <p class="acc-fine">نرسل لك رمز من ٦ أرقام. ما نطلب كلمة مرور، وما نشارك بياناتك مع أحد.</p>`:
+  `<div class="label">رمز الدخول</div><h3 class="h-sec">اكتب الرمز</h3><p class="lead">أرسلنا رمز من ٦ أرقام إلى <b dir="ltr">${who}</b></p>
+  <input class="acc-in acc-code" id="accCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" dir="ltr">
+  <div class="acc-msg" id="accMsg"></div>
+  <button class="btn btn-primary" id="accVer" style="width:100%">دخول</button>
+  <div class="row" style="justify-content:space-between;margin-top:10px"><button class="small-btn" id="accBack">تغيير ${mode==='email'?'الإيميل':'الرقم'}</button><button class="small-btn" id="accResend">أعد الإرسال</button></div>`;
+ sheet(`<div class="accw">${body()}</div><button class="small-btn" data-close style="margin:12px auto 0;display:block">إغلاق</button>`,(w,close)=>{
+  const msg=(t,ok)=>{const m=w.querySelector('#accMsg');if(m){m.textContent=t;m.className='acc-msg'+(ok?' ok':' err')}};
+  const send=async()=>{const v=(w.querySelector('#accId')||{}).value;
+   if(stage===1){if(mode==='email'){if(!/^\S+@\S+\.\S+$/.test(v||'')){msg('اكتب إيميل صحيح');return}who=v.trim().toLowerCase()}else{const d=(v||'').replace(/\D/g,'').replace(/^0/,'');if(!/^5\d{8}$/.test(d)){msg('اكتب رقم جوال سعودي يبدأ بـ ٥');return}who='+966'+d}}
+   const b=w.querySelector('#accGo')||w.querySelector('#accResend');b.disabled=true;
+   try{await accFetch('/auth/v1/otp',{method:'POST',body:JSON.stringify(mode==='email'?{email:who,create_user:true}:{phone:who,create_user:true})},false);stage=2;re();msg('وصلك الرمز؟ اكتبه هنا.',true)}
+   catch(e){b.disabled=false;msg(accErr(e.message))}};
+  const verify=async()=>{const c=(w.querySelector('#accCode').value||'').replace(/\D/g,'');if(c.length!==6){msg('الرمز ٦ أرقام');return}
+   const b=w.querySelector('#accVer');b.disabled=true;b.textContent='جارٍ الدخول…';
+   try{const j=await accFetch('/auth/v1/verify',{method:'POST',body:JSON.stringify(mode==='email'?{type:'email',email:who,token:c}:{type:'sms',phone:who,token:c})},false);
+    accSetSess(j);Snd.unlock&&Snd.unlock();toast('أهلاً فيك، تقدمك صار محفوظ');close();await accAfterLogin();after&&after()}
+   catch(e){b.disabled=false;b.textContent='دخول';msg(accErr(e.message))}};
+  const re=()=>{w.querySelector('.accw').innerHTML=body();bind()};
+  const bind=()=>{w.querySelector('[data-close]').onclick=close;
+   w.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;re()});
+   const g=w.querySelector('#accGo');if(g)g.onclick=send;const id=w.querySelector('#accId');if(id){id.onkeydown=e=>{if(e.key==='Enter')send()};setTimeout(()=>id.focus(),50)}
+   const v=w.querySelector('#accVer');if(v)v.onclick=verify;const cd=w.querySelector('#accCode');if(cd){cd.oninput=()=>{if(cd.value.replace(/\D/g,'').length===6)verify()};setTimeout(()=>cd.focus(),50)}
+   const bk=w.querySelector('#accBack');if(bk)bk.onclick=()=>{stage=1;re()};const rs=w.querySelector('#accResend');if(rs)rs.onclick=send};
+  bind();
+ });
+}
+/* magic-link fallback (web): tokens arrive in the URL hash */
+(()=>{const h=location.hash;if(!/access_token=/.test(h))return;const p=new URLSearchParams(h.slice(1));
+ const at=p.get('access_token'),rt=p.get('refresh_token');history.replaceState(null,'',location.pathname+location.search);if(!at)return;
+ ACC.sess={access_token:at,refresh_token:rt,expires_at:+p.get('expires_at')||Math.floor(Date.now()/1e3)+3600,user:null};
+ accFetch('/auth/v1/user').then(u=>{ACC.sess.user={id:u.id,email:u.email||null,phone:u.phone||null};accSaveSess();toast('أهلاً فيك، تقدمك صار محفوظ');accAfterLogin()}).catch(()=>{ACC.sess=null;accSaveSess()})})();
+
+/* ---------- account sheet ---------- */
+function openAccount(){
+ if(!accUser()){openLogin();return}
+ sheet(`<div class="acc-head"><div class="acc-av">${(accName()[0]||'م').toUpperCase()}</div><div><div class="label">حسابي</div><b dir="ltr">${accName()}</b><small id="accSync">${ACC.lastSync?'آخر حفظ '+new Date(ACC.lastSync).toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}):'جاري المزامنة…'}</small></div></div>
+  <div class="acc-stats"><span><b>${AR(Object.keys(META.best||{}).length)}</b>قضية محلولة</span><span><b data-gold-bal>${AR(goldBal())}</b>ذهب</span><span><b>${META.premium?'مفعّلة':'—'}</b>الحزمة المميزة</span></div>
+  <div class="acc-list">
+   <button id="accNow">${ico('board')}<span>احفظ تقدمي الحين</span></button>
+   <button id="accRest">${coinSVG}<span>استعادة المشتريات</span></button>
+   <button id="accOrd">${ico('board')}<span>طلباتي</span></button>
+   <button id="accOut"><span>تسجيل الخروج</span></button>
+   <button id="accDel" class="danger"><span>حذف الحساب</span></button></div>
+  <div id="accPane"></div><button class="small-btn" data-close style="margin:12px auto 0;display:block">إغلاق</button>`,(w,close)=>{
+  w.querySelector('[data-close]').onclick=close;
+  const pane=w.querySelector('#accPane');
+  w.querySelector('#accNow').onclick=async()=>{await accPush();w.querySelector('#accSync').textContent=ACC.lastSync?'انحفظ الحين':'ما قدرنا نحفظ، تأكد من الإنترنت';toast(ACC.lastSync?'تقدمك محفوظ':'ما فيه اتصال')};
+  w.querySelector('#accRest').onclick=async()=>{try{await accRestore(false)}catch(e){toast(accErr(e.message))}};
+  w.querySelector('#accOrd').onclick=async()=>{pane.innerHTML='<p class="lead">جاري التحميل…</p>';try{const r=await accFetch('/rest/v1/orders?select=id,items,total_sar,gold,status,created_at&order=created_at.desc&limit=30');
+   pane.innerHTML=r&&r.length?`<ul class="acc-orders">${r.map(o=>`<li><div><b>${o.items.map(i=>i.title+(i.qty>1?' ×'+AR(i.qty):'')).join('، ')}</b><small>${new Date(o.created_at).toLocaleDateString('ar-SA')} · رقم ${o.id.slice(0,8)}</small></div><span>${fmtSAR(+o.total_sar)} ر.س<i>تجريبي</i></span></li>`).join('')}</ul>`:'<p class="lead">ما عندك طلبات للحين.</p>'}catch(e){pane.innerHTML=`<p class="lead">${accErr(e.message)}</p>`}};
+  w.querySelector('#accOut').onclick=async()=>{await accPush();try{await accFetch('/auth/v1/logout',{method:'POST'})}catch(e){}ACC.sess=null;accSaveSess();close();renderAccChip();toast('سجّلت خروج. تقدمك باقي على هالجهاز.')};
+  w.querySelector('#accDel').onclick=()=>{pane.innerHTML=`<div class="acc-del"><p>حذف الحساب يمسح تقدمك المحفوظ وطلباتك من السيرفر نهائياً. اللعب على هالجهاز يبقى.</p><button class="btn btn-ghost" id="accDelOk" style="width:100%;color:#e0766b;border-color:#e0766b">أكّد حذف الحساب</button></div>`;
+   pane.querySelector('#accDelOk').onclick=async()=>{try{await accFetch('/rest/v1/rpc/delete_my_account',{method:'POST',body:'{}'});ACC.sess=null;accSaveSess();close();renderAccChip();toast('انحذف الحساب')}catch(e){toast(accErr(e.message))}}};
+ });
+}
+function renderAccChip(){const gb=$('#goldBar');if(!gb)return;let b=$('#accChip');if(!b){b=document.createElement('button');b.id='accChip';b.className='acc-chip';gb.appendChild(b);b.onclick=()=>openAccount()}
+ const u=accUser();b.innerHTML=u?`<i>${(accName()[0]||'م').toUpperCase()}</i><span>حسابي</span>`:`<span>تسجيل الدخول</span>`;b.classList.toggle('in',!!u);
+ let c=$('#cartChip');const n=cartCount();if(n){if(!c){c=document.createElement('button');c.id='cartChip';c.className='acc-chip cart';gb.appendChild(c);c.onclick=()=>openCart()}c.innerHTML=`🛒 <b>${AR(n)}</b>`}else if(c)c.remove()}
+
+/* ---------- cart ---------- */
+const cartGet=()=>{try{return JSON.parse(localStorage.getItem(ACC.CK))||[]}catch(e){return[]}};
+const cartSet=c=>{try{localStorage.setItem(ACC.CK,JSON.stringify(c))}catch(e){}renderAccChip()};
+const cartCount=()=>cartGet().reduce((n,i)=>n+i.qty,0);
+const prodTitle=id=>id==='premium'?'حزمة القضايا المميزة':`${AR((GOLD_PACKS.find(p=>p.id===id)||{}).gold||0)} ذهب`;
+function cartAdd(id){const c=cartGet(),it=c.find(i=>i.id===id);if(id==='premium'&&(META.premium||it)){toast(META.premium?'الحزمة مفعّلة عندك':'الحزمة في السلة');return}
+ if(it)it.qty=Math.min(10,it.qty+1);else c.push({id,qty:1});cartSet(c);Snd.coin&&Snd.coin();toast(`انضاف للسلة: ${prodTitle(id)}`)}
+function openCart(){
+ const render=w=>{const c=cartGet(),tot=c.reduce((s,i)=>s+ACC.PRICES[i.id]*i.qty,0);
+  w.querySelector('.cartw').innerHTML=`<div class="label">السلة</div><h3 class="h-sec">${c.length?'مشترياتك':'السلة فاضية'}</h3>
+   ${c.length?`<ul class="cart-list">${c.map(i=>`<li><div><b>${prodTitle(i.id)}</b><small>${fmtSAR(ACC.PRICES[i.id])} ر.س</small></div><div class="qty">${i.id==='premium'?'':`<button data-dec="${i.id}">−</button><span>${AR(i.qty)}</span><button data-inc="${i.id}">+</button>`}<button class="rm" data-rm="${i.id}">حذف</button></div></li>`).join('')}</ul>
+    <div class="cart-tot"><span>الإجمالي</span><b>${fmtSAR(tot)} ر.س</b></div>
+    <div class="demo-note">${ico('lock')} <span><strong>دفع تجريبي:</strong> ما ينخصم أي مبلغ، وما نطلب بيانات بطاقة.</span></div>
+    ${accUser()?'':'<p class="acc-fine" style="margin:8px 0 0">بنطلب منك تسجيل الدخول قبل الدفع، عشان تقدر تستعيد مشترياتك من أي جهاز.</p>'}
+    <button class="btn btn-primary" id="cartPay" style="width:100%;margin-top:12px">إتمام الشراء</button>`:'<p class="lead">ضيف باقات ذهب أو الحزمة المميزة من المتجر.</p>'}
+   <div class="row" style="justify-content:center;margin-top:12px"><button class="small-btn" id="cartStore">المتجر</button><button class="small-btn" data-close>إغلاق</button></div>`;bind(w)};
+ let closeFn;
+ const bind=w=>{w.querySelector('[data-close]').onclick=closeFn;w.querySelector('#cartStore').onclick=()=>{closeFn();openStore()};
+  const upd=(id,d)=>{const c=cartGet(),it=c.find(i=>i.id===id);if(!it)return;it.qty+=d;cartSet(it.qty<1?c.filter(i=>i!==it):c);render(w)};
+  w.querySelectorAll('[data-inc]').forEach(b=>b.onclick=()=>upd(b.dataset.inc,1));w.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>upd(b.dataset.dec,-1));
+  w.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{cartSet(cartGet().filter(i=>i.id!==b.dataset.rm));render(w)});
+  const p=w.querySelector('#cartPay');if(p)p.onclick=()=>{if(!accUser()){closeFn();openLogin(()=>openCart());return}checkout(w,p)}};
+ sheet(`<div class="cartw"></div>`,(w,close)=>{closeFn=close;render(w)});
+}
+async function checkout(w,btn){btn.disabled=true;btn.textContent='جارٍ المعالجة…';Snd.riser&&Snd.riser(.8);
+ try{const r=await accFetch('/rest/v1/rpc/demo_checkout',{method:'POST',body:JSON.stringify({p_items:cartGet()})});
+  if(r.gold)gold(r.gold);if(r.items.some(i=>i.id==='premium')){META.premium=true;saveMeta()}
+  (META.purchases=META.purchases||[]).push({order:r.order_id,total:+r.total,t:Date.now()});saveMeta();cartSet([]);
+  Snd.medal&&Snd.medal();for(let i=0;i<6;i++)setTimeout(()=>Snd.coin&&Snd.coin(),i*90);
+  w.querySelector('.cartw').innerHTML=`<div class="evr good"><div class="evr-stamp">تم</div><h3>اكتمل الطلب</h3><p>رقم الطلب <b dir="ltr">${r.order_id.slice(0,8)}</b> · ${fmtSAR(+r.total)} ر.س (تجريبي)</p>${r.gold?`<div class="evr-gold">${coinSVG} +${AR(r.gold)} ذهب</div>`:''}${r.items.some(i=>i.id==='premium')?'<p>فُتحت حزمة القضايا المميزة.</p>':''}<button class="btn btn-primary" data-close style="width:100%">تم</button></div>`;
+  w.querySelector('[data-close]').onclick=()=>w.remove();accPush();if(!$('#cases').hidden)renderCases()}
+ catch(e){btn.disabled=false;btn.textContent='إتمام الشراء';toast(accErr(e.message))}}
+if(accUser())setTimeout(()=>{accRefresh().then(()=>accUser()&&accPull().catch(()=>{}).then(()=>accPush()))},1500);
 
 /* ================= BOOT ================= */
 buildArt();
