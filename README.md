@@ -35,12 +35,16 @@
 
 وتحتاج كذلك Node.js 18 أو أحدث.
 
+### تجربة سريعة على آيفونك (مجاناً وبدون حساب مطوّر)
+
+على الماك، اضغط مرتين على الملف `install-iphone.command`. الملف يثبّت ما ينقص، وينزّل اللعبة، وينشئ مشروع iOS، ثم يفتحه في Xcode. بعدها اختر فريق التوقيع (Apple ID الشخصي) وشغّل التطبيق على الآيفون. التوقيع المجاني صالح ٧ أيام.
+
 ### البناء
 
 ```bash
 npm install
 npm run build          # ينسخ ملفات اللعبة إلى www/
-npx cap add ios        # مرة واحدة
+npx cap add ios --packagemanager SPM   # مرة واحدة
 npx cap add android    # مرة واحدة
 npm run assets         # يولّد الأيقونات وشاشة البداية من مجلد resources/
 npm run ios            # يفتح المشروع في Xcode
