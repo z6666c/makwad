@@ -5819,7 +5819,7 @@ function ntfPlan(){
  if(P.night){let seen=new Set();for(let k=0;k<14;k++){const n=nightWin(t+k*DAY);if(seen.has(n.day)||n.a<=t)continue;seen.add(n.day);const C=n.L[n.i];
   L.push([n.a,n.ram?'🌙 قضية السحور فتحت':'🌙 قضية الليلة فتحت',`«${C.t}» · محاولة وحدة بس، وتقفل ${n.ram?'مع الفجر':'الساعة ١٢ الليل'}`])}}
  if(P.weekly)for(let k=0;k<4;k++){const w=weekWin(t+k*7*DAY);if(w.a>t)L.push([w.a,'🔓 اللغز المتسلسل بدأ',`«${WEEKLY[w.i].t}» · دليل جديد كل ساعتين، وكل ما حليت بدري زادت الجائزة`])}
- if(P.witness){let x=witWin(t);for(let k=0;k<4;k++){if(x.a>t)L.push([x.a,'⏳ الشاهد الهارب ظهر','عنده كلام ما انقال عن قضية حليتها. يختفي بعد ٢٤ ساعة']);x=witWin(x.b+1)}}
+ if(P.witness){let x=witWin(t);for(let k=0;k<4;k++){if(x.a+10*3600e3>t)L.push([x.a+10*3600e3,'⏳ الشاهد الهارب ظهر','عنده كلام ما انقال عن قضية حليتها. يختفي بعد ٢٤ ساعة']);x=witWin(x.b+1)}}
  if(P.season)seasonsAt(t).forEach(s=>{if(s.a>t&&s.a-t<120*DAY)L.push([s.a+9*3600e3,`${s.icon||'🎉'} ${s.name} بدأ`,s.desc||'موسم جديد وقضية خاصة فيه'])});
  return [...new Map(L.map(x=>[x[0]+x[1],x])).values()].sort((a,b)=>a[0]-b[0]).slice(0,60);
 }
@@ -5840,7 +5840,7 @@ async function openNotifSettings(){
   st==='denied'?`<div class="ntf-note">الإشعارات مقفلة من إعدادات الجوال. افتح الإعدادات ← ملفات المحقق ← الإشعارات، وفعّلها.</div>`:'';
  sheet(`<h3 class="h-sec">الإشعارات</h3><p class="lead">نذكّرك أول ما تفتح الفعالية، عشان ما تفوتك.</p>${note}
   <div class="label">إشعارات الجوال</div>
-  ${tg('night','🌙','قضية الليلة','كل يوم الساعة ٩ مساءً')}${tg('weekly','🔓','اللغز المتسلسل','كل خميس الساعة ٦ مساءً')}${tg('witness','⏳','الشاهد الهارب','كل اثنين بعد اثنين')}${tg('season','🎉','بداية المواسم','الساعة ٩ الصبح أول يوم بالموسم')}
+  ${tg('night','🌙','قضية الليلة','كل يوم الساعة ٩ مساءً')}${tg('weekly','🔓','اللغز المتسلسل','كل خميس الساعة ٦ مساءً')}${tg('witness','⏳','الشاهد الهارب','كل اثنين بعد اثنين · ١٠ الصبح')}${tg('season','🎉','بداية المواسم','الساعة ٩ الصبح أول يوم بالموسم')}
   <div class="label" style="margin-top:14px">الإيميل</div>
   <label class="ntf-row"><i>✉️</i><div><b>بداية المواسم على الإيميل</b><small id="ntfMailSub">${accUser()?'إيميل واحد مع بداية كل موسم، وتقدر تلغيه من أي إيميل':'سجّل دخول بالإيميل عشان تفعّلها'}</small></div><input type="checkbox" id="ntfMail" ${accUser()?'':'disabled'}></label>
   <button class="btn btn-ghost" data-close style="width:100%;margin-top:14px">تم</button>`,(w,close)=>{
