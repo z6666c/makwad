@@ -784,6 +784,10 @@ html.wide #sceneDock{padding:10px 14px 14px}
 .cart-tot{display:flex;justify-content:space-between;align-items:center;padding:10px 4px;border-top:1px solid var(--line);margin-bottom:10px}
 .cart-tot b{font-size:18px;color:var(--sodium)}
 .evt-rep{display:inline-block;margin:3px 0 4px;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;color:var(--gold,#d4a94a);background:rgba(212,169,74,.12);border:1px solid rgba(212,169,74,.3);line-height:1.6}
+.ntf-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:6px 0;background:rgba(255,255,255,.03);cursor:pointer}
+.ntf-row i{font-style:normal;font-size:22px}.ntf-row div{flex:1;display:flex;flex-direction:column;gap:2px}.ntf-row small{opacity:.65;font-size:12px}
+.ntf-row input{width:22px;height:22px;accent-color:var(--gold,#d4a94a)}.ntf-note{padding:10px 12px;border-radius:10px;background:rgba(212,169,74,.1);border:1px solid rgba(212,169,74,.3);font-size:13px;line-height:1.7;margin:8px 0}
+.evt-bell{margin-inline-start:auto;margin-inline-end:8px}
 </style>
 
 <div class="grain" aria-hidden="true"></div>
@@ -5308,19 +5312,19 @@ async function evSync(){
  try{const r=await fetch(EVT_URL+'?t='+Date.now(),{cache:'no-store'});if(r.ok){const d=r.headers.get('date');try{EVT.cfg=await r.json()}catch(e){}if(d&&!isNaN(Date.parse(d))){EVT.off=Date.parse(d)-Date.now();ok=true}}}catch(e){}
  if(!ok||!EVT.cfg){try{const r=await fetch('events.json?t='+Date.now(),{cache:'no-store'});if(!EVT.cfg)try{EVT.cfg=await r.clone().json()}catch(e){}
   const d=location.origin.startsWith('http')&&r.headers.get('date');if(!ok&&d&&!isNaN(Date.parse(d)))EVT.off=Date.parse(d)-Date.now()}catch(e){}}
- renderEvents();
+ renderEvents();typeof ntfSync==='function'&&ntfSync();
 }
 
 /* ---------- home cards ---------- */
 function renderEvents(){
  const box=$('#evtBox');if(!box)return;const t=evNow(),M=evM();
- if(t==null){box.innerHTML=`<div class="evt-head"><b>الفعاليات</b><button class="evt-sched" id="evSched">الجدول</button></div><div class="evt-off">${ico('lock')} الفعاليات تحتاج اتصال بالإنترنت عشان نتأكد من الوقت.</div>`;$('#evSched').onclick=openSchedule;return}
+ if(t==null){box.innerHTML=`<div class="evt-head"><b>الفعاليات</b><button class="evt-sched evt-bell" id="evBell" aria-label="الإشعارات">🔔</button><button class="evt-sched" id="evSched">الجدول</button></div><div class="evt-off">${ico('lock')} الفعاليات تحتاج اتصال بالإنترنت عشان نتأكد من الوقت.</div>`;$('#evSched').onclick=openSchedule;$('#evBell').onclick=openNotifSettings;return}
  const n=nightWin(t),w=weekWin(t),x=witWin(t),N=n.L[n.i],Wq=WEEKLY[w.i];
  const nDone=M.done['n'+n.day],wDone=M.done['w'+w.wk],xDone=M.done['x'+x.k],wc=witCase(x.k);
  const seas=seasonsAt(t).filter(s=>s.a-t<30*DAY);
  const RH=[],SH=[];const card=(cls,ic,label,title,sub,open,left,done,btn,act)=>{RH.push([open?0:left-t,`<div class="evt-card ${cls} ${open?'is-open':'is-closed'}"><div class="evt-ic">${ic}</div><div class="evt-body"><div class="evt-label">${label.split(' · ')[0]}</div>${label.includes(' · ')?`<div class="evt-rep">🔁 ${label.split(' · ').slice(1).join(' · ')}</div>`:''}<h4>${title}</h4><div class="evt-sub">${sub}</div>
   <div class="evt-foot"><span class="evt-cd" data-cd="${left}" data-open="${open?1:0}">${open?'تقفل بعد':'تفتح بعد'} <b>${fmtLeft(left-t)}</b></span>${done?'<span class="evt-done">✓ تم</span>':open?`<button class="btn btn-primary evt-go" data-ev="${act}">${btn}</button>`:''}</div></div>${open?'':'<div class="evt-tape">مغلق</div>'}</div>`]);return ''};
- let h=`<div class="evt-head"><b>الفعاليات</b><button class="evt-sched" id="evSched">الجدول</button></div>`;
+ let h=`<div class="evt-head"><b>الفعاليات</b><button class="evt-sched evt-bell" id="evBell" aria-label="الإشعارات">🔔</button><button class="evt-sched" id="evSched">الجدول</button></div>`;
  seas.forEach(s=>{const op=t>=s.a;SH.push([op?0:s.a-t,`<div class="evt-card evt-season ${op?'is-open':'is-closed'}"><div class="evt-ic">${s.icon||'🎉'}</div><div class="evt-body"><div class="evt-label">موسم</div><h4>${s.name}</h4><div class="evt-sub">${s.desc||''}</div><div class="evt-foot"><span class="evt-cd" data-cd="${op?s.b:s.a}" data-open="${op?1:0}">${op?'ينتهي بعد':'يبدأ بعد'} <b>${fmtLeft((op?s.b:s.a)-t)}</b></span>${op&&SEASON_CASE[s.id]?(scM(SEASON_CASE[s.id]).done?'<span class="evt-done">✓ القضية انحلّت</span>':`<button class="btn btn-primary evt-go" data-ev="c:${SEASON_CASE[s.id]}">افتح القضية</button>`):''}${op&&s.gift&&!M.done['s'+s.id]?`<button class="btn btn-ghost evt-go" data-ev="s:${s.id}">استلم الهدية · ${AR(s.gift)} ذهب</button>`:''}</div></div>${op?'':'<div class="evt-tape">قريباً</div>'}</div>`])});
  h+=card('evt-night','🌙',n.ram?'قضية السحور · ٩ م – ٣ الفجر':'قضية الليلة · كل يوم · ٩ م – ١٢ ص',N.t,`${N.place}${M.streak?` · سلسلتك ${AR(M.streak)} ليالٍ`:''}`,n.open,n.open?n.b:n.a,nDone,'افتح القضية','n');
  const cl=Math.min(evCfg().weekly.clues,Math.max(0,Math.floor((t-w.a)/(evCfg().weekly.every*3600e3))+1));
@@ -5328,7 +5332,7 @@ function renderEvents(){
  h+=card('evt-wit','⏳','الشاهد الهارب · كل اثنين بعد اثنين · يوم كامل',wc?`شاهد من «${CASES[wc].name}»`:'شاهد مجهول',wc?'شاهد يظهر يوم واحد ويختفي، ومعه سر ما انقال':'حلّ أي قضية عشان يجيك شاهد منها',x.open,x.open?x.b:x.a,xDone,'اسمع الشهادة','x');
  const by=(x,y)=>x[0]-y[0];h+=RH.sort(by).map(x=>x[1]).join('')+SH.sort(by).map(x=>x[1]).join('');
  box.innerHTML=h;
- $('#evSched').onclick=openSchedule;
+ $('#evSched').onclick=openSchedule;$('#evBell').onclick=openNotifSettings;
  box.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{const k=b.dataset.ev;Snd.paper&&Snd.paper();if(k==='n')openNight();else if(k==='w')openWeekly();else if(k==='x')openWitness();else if(k.startsWith('s:'))claimSeason(k.slice(2));else if(k.startsWith('c:'))openSeasonCase(k.slice(2))});
  clearInterval(EVT.tick);EVT.tick=setInterval(()=>{if($('#cases').hidden){clearInterval(EVT.tick);return}const now=evNow();if(now==null)return;let flip=false;
   box.querySelectorAll('[data-cd]').forEach(e=>{const l=+e.dataset.cd-now;if(l<=0)flip=true;else e.querySelector('b').textContent=fmtLeft(l)});if(flip)renderEvents()},1000);
@@ -5752,11 +5756,13 @@ function openAccount(){
    <button id="accNow">${ico('board')}<span>احفظ تقدمي الحين</span></button>
    <button id="accRest">${coinSVG}<span>استعادة المشتريات</span></button>
    <button id="accOrd">${ico('board')}<span>طلباتي</span></button>
+   <button id="accNtf"><span>🔔 الإشعارات</span></button>
    <button id="accOut"><span>تسجيل الخروج</span></button>
    <button id="accDel" class="danger"><span>حذف الحساب</span></button></div>
   <div id="accPane"></div><button class="small-btn" data-close style="margin:12px auto 0;display:block">إغلاق</button>`,(w,close)=>{
   w.querySelector('[data-close]').onclick=close;
   const pane=w.querySelector('#accPane');
+  w.querySelector('#accNtf').onclick=()=>{close();openNotifSettings()};
   w.querySelector('#accNow').onclick=async()=>{await accPush();w.querySelector('#accSync').textContent=ACC.lastSync?'انحفظ الحين':'ما قدرنا نحفظ، تأكد من الإنترنت';toast(ACC.lastSync?'تقدمك محفوظ':'ما فيه اتصال')};
   w.querySelector('#accRest').onclick=async()=>{try{await accRestore(false)}catch(e){toast(accErr(e.message))}};
   w.querySelector('#accOrd').onclick=async()=>{pane.innerHTML='<p class="lead">جاري التحميل…</p>';try{const r=await accFetch('/rest/v1/orders?select=id,items,total_sar,gold,status,created_at&order=created_at.desc&limit=30');
@@ -5803,6 +5809,51 @@ async function checkout(w,btn){btn.disabled=true;btn.textContent='جارٍ ال�
   w.querySelector('[data-close]').onclick=()=>w.remove();accPush();if(!$('#cases').hidden)renderCases()}
  catch(e){btn.disabled=false;btn.textContent='إتمام الشراء';toast(accErr(e.message))}}
 if(accUser())setTimeout(()=>{accRefresh().then(()=>accUser()&&accPull().catch(()=>{}).then(()=>accPush()))},1500);
+
+/* ================= NOTIFICATIONS (local push in the app + season emails) ================= */
+const NTF={ids:[1000,1099],last:''};
+const ntfPrefs=()=>{META.notif=Object.assign({night:1,weekly:1,witness:1,season:1},META.notif||{});return META.notif};
+const ntfPlug=()=>window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications;
+function ntfPlan(){
+ const t=(typeof evNow==='function'&&evNow())||Date.now(),P=ntfPrefs(),L=[];
+ if(P.night){let seen=new Set();for(let k=0;k<14;k++){const n=nightWin(t+k*DAY);if(seen.has(n.day)||n.a<=t)continue;seen.add(n.day);const C=n.L[n.i];
+  L.push([n.a,n.ram?'🌙 قضية السحور فتحت':'🌙 قضية الليلة فتحت',`«${C.t}» · محاولة وحدة بس، وتقفل ${n.ram?'مع الفجر':'الساعة ١٢ الليل'}`])}}
+ if(P.weekly)for(let k=0;k<4;k++){const w=weekWin(t+k*7*DAY);if(w.a>t)L.push([w.a,'🔓 اللغز المتسلسل بدأ',`«${WEEKLY[w.i].t}» · دليل جديد كل ساعتين، وكل ما حليت بدري زادت الجائزة`])}
+ if(P.witness){let x=witWin(t);for(let k=0;k<4;k++){if(x.a>t)L.push([x.a,'⏳ الشاهد الهارب ظهر','عنده كلام ما انقال عن قضية حليتها. يختفي بعد ٢٤ ساعة']);x=witWin(x.b+1)}}
+ if(P.season)seasonsAt(t).forEach(s=>{if(s.a>t&&s.a-t<120*DAY)L.push([s.a+9*3600e3,`${s.icon||'🎉'} ${s.name} بدأ`,s.desc||'موسم جديد وقضية خاصة فيه'])});
+ return [...new Map(L.map(x=>[x[0]+x[1],x])).values()].sort((a,b)=>a[0]-b[0]).slice(0,60);
+}
+async function ntfSync(force){
+ const LN=ntfPlug();if(!LN||typeof evCfg!=='function')return;
+ try{const plan=ntfPlan(),sig=JSON.stringify(plan.map(x=>x[0]+x[1]));if(!force&&sig===NTF.last)return;
+  let perm=await LN.checkPermissions();if(perm.display==='prompt'||perm.display==='prompt-with-rationale'){if(!META.notifAsked){META.notifAsked=1;saveMeta();perm=await LN.requestPermissions()}}
+  if(perm.display!=='granted')return;
+  const pend=await LN.getPending();const old=(pend.notifications||[]).filter(n=>n.id>=NTF.ids[0]&&n.id<=NTF.ids[1]).map(n=>({id:n.id}));if(old.length)await LN.cancel({notifications:old});
+  if(plan.length)await LN.schedule({notifications:plan.map((x,i)=>({id:NTF.ids[0]+i,title:x[1],body:x[2],schedule:{at:new Date(x[0]),allowWhileIdle:true}}))});
+  NTF.last=sig}catch(e){console.warn('ntf',e)}
+}
+async function ntfPermState(){const LN=ntfPlug();if(!LN)return 'web';try{return (await LN.checkPermissions()).display}catch(e){return 'web'}}
+async function openNotifSettings(){
+ const P=ntfPrefs(),st=await ntfPermState();
+ const tg=(k,ic,l,d)=>`<label class="ntf-row"><i>${ic}</i><div><b>${l}</b><small>${d}</small></div><input type="checkbox" data-n="${k}" ${P[k]?'checked':''}></label>`;
+ const note=st==='web'?`<div class="ntf-note">إشعارات الجوال تشتغل في تطبيق «ملفات المحقق» على الآيفون. في المتصفح تقدر تفعّل تنبيه المواسم على الإيميل.</div>`:
+  st==='denied'?`<div class="ntf-note">الإشعارات مقفلة من إعدادات الجوال. افتح الإعدادات ← ملفات المحقق ← الإشعارات، وفعّلها.</div>`:'';
+ sheet(`<h3 class="h-sec">الإشعارات</h3><p class="lead">نذكّرك أول ما تفتح الفعالية، عشان ما تفوتك.</p>${note}
+  <div class="label">إشعارات الجوال</div>
+  ${tg('night','🌙','قضية الليلة','كل يوم الساعة ٩ مساءً')}${tg('weekly','🔓','اللغز المتسلسل','كل خميس الساعة ٦ مساءً')}${tg('witness','⏳','الشاهد الهارب','كل اثنين بعد اثنين')}${tg('season','🎉','بداية المواسم','الساعة ٩ الصبح أول يوم بالموسم')}
+  <div class="label" style="margin-top:14px">الإيميل</div>
+  <label class="ntf-row"><i>✉️</i><div><b>بداية المواسم على الإيميل</b><small id="ntfMailSub">${accUser()?'إيميل واحد مع بداية كل موسم، وتقدر تلغيه من أي إيميل':'سجّل دخول بالإيميل عشان تفعّلها'}</small></div><input type="checkbox" id="ntfMail" ${accUser()?'':'disabled'}></label>
+  <button class="btn btn-ghost" data-close style="width:100%;margin-top:14px">تم</button>`,(w,close)=>{
+  w.querySelector('[data-close]').onclick=close;
+  w.querySelectorAll('[data-n]').forEach(c=>c.onchange=()=>{P[c.dataset.n]=c.checked?1:0;saveMeta();ntfSync(true);Snd.tab&&Snd.tab()});
+  const m=w.querySelector('#ntfMail');
+  if(accUser()){accFetch('/rest/v1/rpc/get_season_mail',{method:'POST',body:'{}'}).then(v=>{m.checked=!!v}).catch(()=>{});
+   m.onchange=async()=>{try{await accFetch('/rest/v1/rpc/set_season_mail',{method:'POST',body:JSON.stringify({p_on:m.checked})});toast(m.checked?'بيوصلك إيميل مع بداية كل موسم':'وقّفنا إيميلات المواسم')}catch(e){m.checked=!m.checked;toast(accErr(e.message))}}}
+  else{const s=w.querySelector('#ntfMailSub');s.style.cursor='pointer';s.onclick=()=>{close();openLogin()}}
+ });
+}
+(function(){const go=()=>setTimeout(()=>ntfSync(),2500);if(document.readyState==='complete')go();else addEventListener('load',go);
+ try{const A=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.App;A&&A.addListener('appStateChange',s=>{if(s.isActive)ntfSync()})}catch(e){}})();
 
 /* ================= BOOT ================= */
 buildArt();
