@@ -26,9 +26,9 @@ export const SERVICE_PRICING: Array<Service> = [
     key: 'web', label: 'مواقع وتطبيقات الويب', type: 'موقع أو تطبيق ويب', from: 1500, tierLabel: 'نوع الموقع',
     tiers: [
       { key: 'landing', label: 'صفحة تعريفية واحدة', hint: 'صفحة هبوط لنشاطك أو حملة', price: 1500, days: 4 },
+      { key: 'store', label: 'متجر إلكتروني', hint: 'منتجات وسلة وطلبات', price: 1500, days: 20 },
       { key: 'basic', label: 'موقع تعريفي', hint: 'حتى 5 صفحات', price: 3500, days: 8 },
       { key: 'company', label: 'موقع شركة متكامل', hint: 'حتى 12 صفحة', price: 6500, days: 14 },
-      { key: 'store', label: 'متجر إلكتروني', hint: 'منتجات وسلة وطلبات', price: 9500, days: 20 },
       { key: 'platform', label: 'منصة ويب مخصصة', hint: 'حسابات وأدوار وعمليات خاصة', price: 18000, days: 35 },
     ],
     addons: [

@@ -22,7 +22,7 @@
     "includes": ["Responsive design for phone and desktop", "A dashboard to edit texts, images and products", "Store with cart, orders and online payments", "Search engine optimisation and Google setup", "Fast hosting with an SSL certificate", "Arabic and English when you need both"],
     "faq": [
       { "q": "How much does a website cost?", "a": "A landing page from SAR 1,500, a business website of up to 5 pages from SAR 3,500, a full company website of up to 12 pages from SAR 6,500, and a custom platform from SAR 18,000." },
-      { "q": "How much does an online store cost?", "a": "An online store with cart and orders starts at SAR 9,500. You can add online payments, a content dashboard, two languages and SEO, each priced clearly in the calculator." },
+      { "q": "How much does an online store cost?", "a": "An online store with cart and orders starts at SAR 1,500. You can add online payments, a content dashboard, two languages and SEO, each priced clearly in the calculator." },
       { "q": "How long does a website take?", "a": "A landing page takes days; websites and stores take 3 to 6 weeks depending on size, with a test version for you to review before launch." },
       { "q": "Can I edit the website myself?", "a": "Yes. With the content dashboard add-on you edit texts, images and products yourself, no technical experience needed." }
     ]
@@ -80,14 +80,14 @@
     ]
   },
   "ecommerce-store": {
-    "title": "Online Store Design in Saudi Arabia | From SAR 9,500 | Makwad Studio",
-    "description": "An online store built for your brand: products, cart, orders and payment by mada and Apple Pay, with a dashboard and search engine optimisation. From SAR 9,500.",
+    "title": "Online Store Design in Saudi Arabia | From SAR 1,500 | Makwad Studio",
+    "description": "An online store built for your brand: products, cart, orders and payment by mada and Apple Pay, with a dashboard and search engine optimisation. From SAR 1,500.",
     "kicker": "Online stores",
     "h1": "Online store design",
     "lead": "A store under your name and domain, not a repeated template: your products, cart and orders, online payments, and a dashboard where you run everything yourself.",
     "includes": ["Product pages, categories and search", "Shopping cart, orders and order statuses", "Payment by mada, Apple Pay and STC Pay", "Dashboard for products, orders and offers", "Customer accounts and order tracking", "Search engine optimisation and fast loading"],
     "faq": [
-      { "q": "How much does an online store cost?", "a": "An online store with products, cart and orders starts at SAR 9,500. Add-ons such as online payments (SAR 1,500), a content dashboard (SAR 1,800) and two languages (SAR 1,200) are priced clearly." },
+      { "q": "How much does an online store cost?", "a": "An online store with products, cart and orders starts at SAR 1,500. Add-ons such as online payments (SAR 1,500), a content dashboard (SAR 1,800) and two languages (SAR 1,200) are priced clearly." },
       { "q": "How is your store different from ready-made platforms?", "a": "The store carries your name and domain and its design is made for your brand, with no commission on sales; the code is yours, and we add any feature your business needs." },
       { "q": "How long does the store take?", "a": "3 to 6 weeks depending on the number of products and features, with a test version for you to review before launch." },
       { "q": "Can I add a mobile app to the store?", "a": "Yes. We can build an iOS and Android app connected to the same store and dashboard." }
