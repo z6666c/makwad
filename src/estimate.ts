@@ -175,11 +175,14 @@ export const SERVICE_PRICING: Array<Service> = [
 ]
 
 export const DURATIONS = [
-  { months: 1, label: 'شهر', discount: 0 },
-  { months: 3, label: '3 أشهر', discount: 0.05 },
-  { months: 6, label: '6 أشهر', discount: 0.1 },
-  { months: 12, label: 'سنة', discount: 0.15 },
+  { months: 1, label: 'شهر', en: '1 month', discount: 0 },
+  { months: 3, label: '3 أشهر', en: '3 months', discount: 0.05 },
+  { months: 6, label: '6 أشهر', en: '6 months', discount: 0.1 },
+  { months: 12, label: 'سنة', en: '1 year', discount: 0.15 },
 ]
+
+export type EstLang = 'ar' | 'en'
+const tx = (lang: EstLang, ar: string, en: string) => (lang === 'en' ? en : ar)
 
 
 export const URGENT_RATE = 0.25
@@ -198,14 +201,14 @@ export type Coupon = { code: string; kind: 'percent' | 'fixed'; value: number }
 export const couponOff = (c: Coupon, total: number) =>
   Math.min(total, c.kind === 'percent' ? Math.round((total * c.value) / 100) : Math.round(c.value))
 
-const withCoupon = (e: Estimate, c: Coupon | null | undefined, monthly: boolean): Estimate => {
+const withCoupon = (e: Estimate, c: Coupon | null | undefined, monthly: boolean, lang: EstLang = 'ar'): Estimate => {
   if (!c) return e
   const off = couponOff(c, e.total)
   if (!off) return e
   const total = e.total - off
   return {
     ...e,
-    lines: [...e.lines, { label: `كود الخصم ${c.code}${c.kind === 'percent' ? ` (${c.value}%)` : ''}`, amount: -off }],
+    lines: [...e.lines, { label: `${tx(lang, 'كود الخصم', 'Discount code')} ${c.code}${c.kind === 'percent' ? ` (${c.value}%)` : ''}`, amount: -off }],
     total,
     deposit: monthly ? Math.round(total / e.months) : Math.round(total * DEPOSIT_RATE),
     monthly: e.monthly === null ? null : Math.round(total / e.months),
@@ -246,7 +249,7 @@ export function planFor(total: number): string {
 
 /** Plan cards as a calculator service, so each plan's starting price shows exactly; add-ons reuse catalog prices. */
 export const PLANS_KEY = 'plans'
-export function withPlans(catalog: Catalog, plans: Array<{ name: string; price: string; items: Array<string> }>): Catalog {
+export function withPlans(catalog: Catalog, plans: Array<{ name: string; price: string; items: Array<string> }>, lang: EstLang = 'ar'): Catalog {
   if (catalog.some((c) => c.key === PLANS_KEY)) return catalog
   const days = [7, 15, 40]
   const pick = (svc: string, keys: Array<string>) => {
@@ -258,7 +261,7 @@ export function withPlans(catalog: Catalog, plans: Array<{ name: string; price: 
     .filter((a) => (seen.has(a.label) ? false : (seen.add(a.label), true)))
   const svc: Service = {
     key: PLANS_KEY, label: 'الباقات', type: 'باقة', from: 0, tierLabel: 'الباقة',
-    tiers: plans.map((p, i) => ({ key: `plan${i}`, label: `باقة ${p.name}`, hint: p.items.slice(0, 2).join('، '), price: Number(p.price.replace(/[^\d]/g, '')) || 0, days: days[i] ?? 15 })),
+    tiers: plans.map((p, i) => ({ key: `plan${i}`, label: lang === 'en' ? `${p.name} plan` : `باقة ${p.name}`, hint: p.items.slice(0, 2).join(lang === 'en' ? ', ' : '، '), price: Number(p.price.replace(/[^\d]/g, '')) || 0, days: days[i] ?? 15 })),
     addons,
     note: 'سعر الباقة سعر بداية، ويتحدد النطاق النهائي في جلسة الاكتشاف.',
   }
@@ -285,12 +288,12 @@ export function presetForPlan(plan: string, catalog: Catalog = SERVICE_PRICING):
   return null
 }
 
-export function estimate(input: EstimateInput, catalog: Catalog = SERVICE_PRICING, coupon?: Coupon | null): Estimate {
+export function estimate(input: EstimateInput, catalog: Catalog = SERVICE_PRICING, coupon?: Coupon | null, lang: EstLang = 'ar'): Estimate {
   const s = getService(input.service, catalog)
-  return withCoupon(baseEstimate(input, s), coupon, !!s.monthly)
+  return withCoupon(baseEstimate(input, s, lang), coupon, !!s.monthly, lang)
 }
 
-function baseEstimate(input: EstimateInput, s: Service): Estimate {
+function baseEstimate(input: EstimateInput, s: Service, lang: EstLang = 'ar'): Estimate {
   const tier = s.tiers.find((t) => t.key === input.tier) ?? s.tiers[0]
   const addons = s.addons.filter((a) => input.addons.includes(a.key))
   const lines: Array<Line> = [{ label: tier.label, amount: tier.price }, ...addons.map((a) => ({ label: a.label, amount: a.price }))]
@@ -300,15 +303,15 @@ function baseEstimate(input: EstimateInput, s: Service): Estimate {
     const d = DURATIONS.find((x) => x.months === input.months) ?? DURATIONS[0]
     const monthly = lines.reduce((n, l) => n + l.amount, 0)
     const gross = monthly * d.months
-    if (d.months > 1) lines.push({ label: `× ${d.months} أشهر`, amount: gross - monthly })
-    if (d.discount) lines.push({ label: `خصم الاشتراك ${Math.round(d.discount * 100)}%`, amount: -Math.round(gross * d.discount) })
+    if (d.months > 1) lines.push({ label: `× ${d.months} ${tx(lang, 'أشهر', 'months')}`, amount: gross - monthly })
+    if (d.discount) lines.push({ label: `${tx(lang, 'خصم الاشتراك', 'Subscription discount')} ${Math.round(d.discount * 100)}%`, amount: -Math.round(gross * d.discount) })
     const total = gross - Math.round(gross * d.discount)
     return { lines, subtotal: gross, total, deposit: Math.round(total / d.months), daysLow: 0, daysHigh: 0, monthly: Math.round(total / d.months), months: d.months, plan: planFor(total) }
   }
 
   const subtotal = lines.reduce((n, l) => n + l.amount, 0)
   if (input.urgent) {
-    lines.push({ label: `تسليم مستعجل +${URGENT_RATE * 100}%`, amount: Math.round(subtotal * URGENT_RATE) })
+    lines.push({ label: `${tx(lang, 'تسليم مستعجل', 'Rush delivery')} +${URGENT_RATE * 100}%`, amount: Math.round(subtotal * URGENT_RATE) })
     days = Math.ceil(days * 0.7)
   }
   const total = lines.reduce((n, l) => n + l.amount, 0)
@@ -319,15 +322,16 @@ function baseEstimate(input: EstimateInput, s: Service): Estimate {
 
 export const fmtSAR = (n: number) => n.toLocaleString('en-US')
 
-export function fmtDays(a: number, b: number): string {
-  if (b <= 14) return `${a}–${b} يوم عمل`
-  return `${Math.max(1, Math.round(a / 5))}–${Math.max(2, Math.round(b / 5))} أسابيع`
+export function fmtDays(a: number, b: number, lang: EstLang = 'ar'): string {
+  if (b <= 14) return `${a}–${b} ${tx(lang, 'يوم عمل', 'working days')}`
+  return `${Math.max(1, Math.round(a / 5))}–${Math.max(2, Math.round(b / 5))} ${tx(lang, 'أسابيع', 'weeks')}`
 }
 
-export function estimateSummary(input: EstimateInput, e: Estimate, catalog: Catalog = SERVICE_PRICING): string {
+export function estimateSummary(input: EstimateInput, e: Estimate, catalog: Catalog = SERVICE_PRICING, lang: EstLang = 'ar'): string {
   const s = getService(input.service, catalog)
-  const out = ['من حاسبة الأسعار في الموقع:', `• الخدمة: ${s.label}`]
-  for (const l of e.lines) out.push(`• ${l.label}: ${l.amount < 0 ? '−' : ''}${fmtSAR(Math.abs(l.amount))} ريال`)
-  out.push(`• الإجمالي: ${fmtSAR(e.total)} ريال${s.monthly ? '' : `، المدة ${fmtDays(e.daysLow, e.daysHigh)}`}`, '', 'نبذة عن الفكرة: ')
+  const sar = tx(lang, 'ريال', 'SAR')
+  const out = [tx(lang, 'من حاسبة الأسعار في الموقع:', 'From the website price calculator:'), `• ${tx(lang, 'الخدمة', 'Service')}: ${s.label}`]
+  for (const l of e.lines) out.push(`• ${l.label}: ${l.amount < 0 ? '−' : ''}${fmtSAR(Math.abs(l.amount))} ${sar}`)
+  out.push(`• ${tx(lang, 'الإجمالي', 'Total')}: ${fmtSAR(e.total)} ${sar}${s.monthly ? '' : `${tx(lang, '، المدة', ', timeline')} ${fmtDays(e.daysLow, e.daysHigh, lang)}`}`, '', tx(lang, 'نبذة عن الفكرة: ', 'About the idea: '))
   return out.join('\n')
 }

@@ -41,7 +41,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 html { scroll-behavior: smooth; scroll-padding-top: 80px; }
 body {
-  direction: rtl; text-align: right; background: var(--bg); color: var(--ink);
+  text-align: start; background: var(--bg); color: var(--ink);
   font-family: var(--f-body); font-size: 1.03rem; line-height: 1.85; font-weight: 400;
   -webkit-font-smoothing: antialiased; margin: 0;
 }
@@ -1249,3 +1249,14 @@ html.printing .sbc-verify-seal, html.printing iframe[title="SBC Verification"] {
 .vis-form .field { flex: 1 1 280px; display: flex; flex-direction: column; gap: 6px; }
 .vis-foot { font-size: .82rem; }
 .linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); cursor: pointer; text-decoration: underline; }
+
+/* English (left-to-right) pages under /en: the direction comes from <html dir>; these undo the few right-hand assumptions */
+html[dir="ltr"] .stats b, html[dir="ltr"] .metrics b, html[dir="ltr"] .price, html[dir="ltr"] .kpi b,
+html[dir="ltr"] .est-price b, html[dir="ltr"] .lap-kpis b, html[dir="ltr"] .ldz .kpis b, html[dir="ltr"] .users-table th { text-align: left; }
+html[dir="ltr"] .price small { direction: ltr; }
+html[dir="ltr"] .est-coupon input::placeholder { text-align: left; }
+html[dir="ltr"] .wa-float { left: auto; right: 20px; }
+@media (max-width: 520px) { html[dir="ltr"] .wa-float { left: auto; right: 16px; } }
+@media (max-width: 860px) { html[dir="ltr"] .process::before { right: auto; left: 19px; } }
+.lang-sw { font-family: var(--f-body); }
+html[dir="ltr"] .lang-sw { font-family: "Readex Pro", var(--f-body); }

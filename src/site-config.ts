@@ -2,6 +2,8 @@ import { useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { SERVICE_PRICING } from '@/estimate'
 import type { Catalog } from '@/estimate'
+import { useLang } from '@/i18n'
+import { localizeCatalog } from '@/content-en'
 
 // Fallback company details. The live values are edited from the dashboard (الإعدادات).
 export const COMPANY = {
@@ -54,4 +56,11 @@ export function usePricing(): Catalog {
   const s = useSettings()
   const list = Array.isArray(s.pricing) && s.pricing.length ? s.pricing : SERVICE_PRICING
   return list.filter((x) => !x.hidden)
+}
+
+/** Pricing in the page's language (labels only; keys and prices are the same). */
+export function useLocalPricing(): Catalog {
+  const list = usePricing()
+  const { lang } = useLang()
+  return localizeCatalog(list, lang)
 }

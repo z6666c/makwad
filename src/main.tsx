@@ -23,20 +23,31 @@ const routeTree = rootRoute.addChildren([
   createRoute({ getParentRoute: () => rootRoute, path: '/refund', component: Refund }),
   createRoute({ getParentRoute: () => rootRoute, path: '/services', component: ServicesIndex }),
   createRoute({ getParentRoute: () => rootRoute, path: '/services/$slug', component: ServiceDetail }),
+  // English: the same pages under /en (the dashboard stays Arabic)
+  createRoute({ getParentRoute: () => rootRoute, path: '/en', component: Home }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/login', component: Login }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/privacy', component: Privacy }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/terms', component: Terms }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/refund', component: Refund }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/services', component: ServicesIndex }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/services/$slug', component: ServiceDetail }),
 ])
 
 const router = createRouter({
   routeTree,
   basepath: '/',
   scrollRestoration: true,
-  defaultNotFoundComponent: () => (
-    <div className="center-screen">
-      <div className="empty">
-        <h3>الصفحة غير موجودة</h3>
-        <a className="btn" href="/">العودة للرئيسية</a>
+  defaultNotFoundComponent: () => {
+    const en = window.location.pathname.startsWith('/en')
+    return (
+      <div className="center-screen" dir={en ? 'ltr' : 'rtl'} lang={en ? 'en' : 'ar'}>
+        <div className="empty">
+          <h3>{en ? 'Page not found' : 'الصفحة غير موجودة'}</h3>
+          <a className="btn" href={en ? '/en' : '/'}>{en ? 'Back to home' : 'العودة للرئيسية'}</a>
+        </div>
       </div>
-    </div>
-  ),
+    )
+  },
 })
 
 declare module '@tanstack/react-router' {

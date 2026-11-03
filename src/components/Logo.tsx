@@ -1,5 +1,5 @@
-import { Link } from '@tanstack/react-router'
 import { useId } from 'react'
+import { useLang } from '@/i18n'
 
 // MK monogram for Makwad Studio: outlined bands, navy-to-cyan gradient.
 const M = 'M7.5 72 V17 Q7.5 7.5 17 7.5 H20 L35 41 L64 -4'
@@ -46,13 +46,14 @@ export function LogoMark({ height = 34, solid = false }: { height?: number; soli
 }
 
 export function Logo() {
+  const { t, L } = useLang()
   return (
-    <Link className="logo" to="/" aria-label="استوديو مكود">
+    <a className="logo" href={L('/')} aria-label={t('استوديو مكود', 'Makwad Studio')}>
       <LogoMark />
       <span className="logo-text">
-        <b>مكود</b>
+        <b>{t('مكود', 'Makwad')}</b>
         <small>MAKWAD STUDIO</small>
       </span>
-    </Link>
+    </a>
   )
 }

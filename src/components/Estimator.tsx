@@ -5,6 +5,8 @@ import { DEPOSIT_RATE, DURATIONS, defaultInput, withPlans, PLANS_KEY, estimate, 
 import type { Coupon, EstimateInput, ServiceKey } from '@/estimate'
 import { usePricing } from '@/site-config'
 import { PLANS } from '@/site-content'
+import { PLANS_EN, localizeCatalog, planName } from '@/content-en'
+import { useLang } from '@/i18n'
 
 type Props = {
   service: ServiceKey
@@ -18,7 +20,8 @@ type Props = {
 
 export function Estimator({ service, onService, onUse, preset, onPlan }: Props) {
   const pricing = usePricing()
-  const catalog = useMemo(() => withPlans(pricing, PLANS), [pricing])
+  const { lang, t } = useLang()
+  const catalog = useMemo(() => localizeCatalog(withPlans(pricing, lang === 'en' ? PLANS_EN : PLANS, lang), lang), [pricing, lang])
   const [input, setInput] = useState<EstimateInput>(() => defaultInput(service, catalog))
   useEffect(() => {
     setInput((cur) => (cur.service === service ? cur : defaultInput(service, catalog)))
@@ -34,15 +37,16 @@ export function Estimator({ service, onService, onUse, preset, onPlan }: Props) 
   const s = getService(input.service, catalog)
   const [codeText, setCodeText] = useState('')
   const [code, setCode] = useState('')
-  const base = useMemo(() => estimate(input, catalog), [input, catalog])
+  const base = useMemo(() => estimate(input, catalog, null, lang), [input, catalog, lang])
   const check = useQuery(api.coupons.check, code ? { code, total: base.total } : 'skip') as
     | { ok: true; code: string; kind: 'percent' | 'fixed'; value: number }
     | { ok: false; error: string }
     | undefined
   const coupon: Coupon | null = check && check.ok ? { code: check.code, kind: check.kind, value: check.value } : null
-  const e = useMemo(() => estimate(input, catalog, coupon), [input, catalog, coupon?.code, coupon?.value, coupon?.kind])
+  const e = useMemo(() => estimate(input, catalog, coupon, lang), [input, catalog, coupon?.code, coupon?.value, coupon?.kind, lang])
   // on the plans service the chosen plan decides, whatever add-ons push the total to
-  const fitPlan = input.service === PLANS_KEY ? (PLANS[s.tiers.findIndex((t) => t.key === input.tier)]?.name ?? e.plan) : e.plan
+  const fitPlan = input.service === PLANS_KEY ? (PLANS[s.tiers.findIndex((x) => x.key === input.tier)]?.name ?? e.plan) : e.plan
+  const tx = t
   useEffect(() => { if (touched.current) onPlan?.(fitPlan) }, [fitPlan])
   const toggle = (k: string) =>
     edit((v) => ({ ...v, addons: v.addons.includes(k) ? v.addons.filter((a) => a !== k) : [...v.addons, k] }))
@@ -51,7 +55,7 @@ export function Estimator({ service, onService, onUse, preset, onPlan }: Props) 
     <div className="est">
       <div className="est-form">
         <fieldset className="est-group">
-          <legend>الخدمة</legend>
+          <legend>{t('الخدمة', 'Service')}</legend>
           <div className="est-seg">
             {catalog.map((x) => (
               <label key={x.key} className={input.service === x.key ? 'on' : ''}>
@@ -66,19 +70,19 @@ export function Estimator({ service, onService, onUse, preset, onPlan }: Props) 
         <fieldset className="est-group">
           <legend>{s.tierLabel}</legend>
           <div className="est-tiers">
-            {s.tiers.map((t) => (
-              <label key={t.key} className={input.tier === t.key ? 'on' : ''}>
-                <input type="radio" name="est-tier" value={t.key} checked={input.tier === t.key}
-                  onChange={() => edit((v) => ({ ...v, tier: t.key }))} />
-                <span><b>{t.label}</b>{t.hint && <small>{t.hint}</small>}</span>
-                <em className="mono">{fmtSAR(t.price)}{s.monthly ? ' / شهر' : ''}</em>
+            {s.tiers.map((tr) => (
+              <label key={tr.key} className={input.tier === tr.key ? 'on' : ''}>
+                <input type="radio" name="est-tier" value={tr.key} checked={input.tier === tr.key}
+                  onChange={() => edit((v) => ({ ...v, tier: tr.key }))} />
+                <span><b>{tr.label}</b>{tr.hint && <small>{tr.hint}</small>}</span>
+                <em className="mono">{fmtSAR(tr.price)}{s.monthly ? tx(' / شهر', ' / month') : ''}</em>
               </label>
             ))}
           </div>
         </fieldset>
 
         <fieldset className="est-group">
-          <legend>إضافات <small className="muted">اختياري</small></legend>
+          <legend>{t('إضافات', 'Add-ons')} <small className="muted">{t('اختياري', 'optional')}</small></legend>
           <div className="est-feats">
             {s.addons.map((a) => (
               <label key={a.key} className={input.addons.includes(a.key) ? 'on' : ''}>
@@ -92,49 +96,49 @@ export function Estimator({ service, onService, onUse, preset, onPlan }: Props) 
 
         {s.monthly ? (
           <fieldset className="est-group">
-            <legend>مدة الاشتراك</legend>
+            <legend>{t('مدة الاشتراك', 'Subscription length')}</legend>
             <div className="est-seg">
               {DURATIONS.map((d) => (
                 <label key={d.months} className={input.months === d.months ? 'on' : ''}>
                   <input type="radio" name="est-months" checked={input.months === d.months}
                     onChange={() => edit((v) => ({ ...v, months: d.months }))} />
-                  {d.label}{d.discount ? ` · خصم ${Math.round(d.discount * 100)}%` : ''}
+                  {lang === 'en' ? d.en : d.label}{d.discount ? ` · ${t('خصم', 'save')} ${Math.round(d.discount * 100)}%` : ''}
                 </label>
               ))}
             </div>
           </fieldset>
         ) : (
           <div className="est-group est-toggles">
-            <label><input type="checkbox" checked={input.urgent} onChange={(ev) => edit((v) => ({ ...v, urgent: ev.target.checked }))} /> تسليم مستعجل (+25%، مدة أقصر بنحو 30%)</label>
+            <label><input type="checkbox" checked={input.urgent} onChange={(ev) => edit((v) => ({ ...v, urgent: ev.target.checked }))} /> {t('تسليم مستعجل (+25%، مدة أقصر بنحو 30%)', 'Rush delivery (+25%, about 30% faster)')}</label>
           </div>
         )}
       </div>
 
       <aside className="est-result" aria-live="polite">
         <form className="est-coupon" onSubmit={(ev) => { ev.preventDefault(); setCode(codeText.trim()) }}>
-          <input value={codeText} onChange={(ev) => { setCodeText(ev.target.value); if (!ev.target.value) setCode('') }} placeholder="عندك كود خصم؟" aria-label="كود الخصم" dir="ltr" />
-          <button type="submit" disabled={!codeText.trim()}>تطبيق</button>
+          <input value={codeText} onChange={(ev) => { setCodeText(ev.target.value); if (!ev.target.value) setCode('') }} placeholder={t('عندك كود خصم؟', 'Have a discount code?')} aria-label={t('كود الخصم', 'Discount code')} dir="ltr" />
+          <button type="submit" disabled={!codeText.trim()}>{t('تطبيق', 'Apply')}</button>
         </form>
         {code && check && !check.ok && <small className="est-coupon-err">{check.error}</small>}
-        {coupon && <small className="est-coupon-ok">تم تطبيق الكود {coupon.code} ✓</small>}
-        <span className="kicker">عرض السعر المبدئي</span>
+        {coupon && <small className="est-coupon-ok">{t('تم تطبيق الكود', 'Code applied:')} {coupon.code} ✓</small>}
+        <span className="kicker">{t('عرض السعر المبدئي', 'Initial estimate')}</span>
         <ul className="est-lines">
           {e.lines.map((l) => (
             <li key={l.label}><span>{l.label}</span><b className="mono">{l.amount < 0 ? '−' : ''}{fmtSAR(Math.abs(l.amount))}</b></li>
           ))}
         </ul>
-        <div className="est-price"><span>الإجمالي</span><b className="mono">{fmtSAR(e.total)} <small>ريال</small></b></div>
+        <div className="est-price"><span>{t('الإجمالي', 'Total')}</span><b className="mono">{fmtSAR(e.total)} <small>{t('ريال', 'SAR')}</small></b></div>
         {s.monthly ? (
-          <div className="est-row"><span>يعادل شهرياً</span><b><span className="mono">{fmtSAR(e.monthly ?? 0)}</span> ريال</b></div>
+          <div className="est-row"><span>{t('يعادل شهرياً', 'Per month')}</span><b><span className="mono">{fmtSAR(e.monthly ?? 0)}</span> {t('ريال', 'SAR')}</b></div>
         ) : (
           <>
-            <div className="est-row"><span>المدة المتوقعة</span><b>{fmtDays(e.daysLow, e.daysHigh)}</b></div>
-            <div className="est-row"><span>الدفعة الأولى ({DEPOSIT_RATE * 100}%)</span><b><span className="mono">{fmtSAR(e.deposit)}</span> ريال</b></div>
+            <div className="est-row"><span>{t('المدة المتوقعة', 'Expected timeline')}</span><b>{fmtDays(e.daysLow, e.daysHigh, lang)}</b></div>
+            <div className="est-row"><span>{t('الدفعة الأولى', 'First payment')} ({DEPOSIT_RATE * 100}%)</span><b><span className="mono">{fmtSAR(e.deposit)}</span> {t('ريال', 'SAR')}</b></div>
           </>
         )}
-        <div className="est-row"><span>الباقة المناسبة</span><b>{fitPlan}</b></div>
-        <button className="btn" type="button" onClick={() => onUse(estimateSummary(input, e, catalog), fitPlan, [s.type], e.total, coupon?.code)}>اطلب عرضاً بهذه التفاصيل</button>
-        <p className="est-note">الأسعار بالريال السعودي ولا تشمل ضريبة القيمة المضافة إن وُجدت. {s.note ?? ''} السعر النهائي يُعتمد بعد جلسة الاكتشاف المجانية.</p>
+        <div className="est-row"><span>{t('الباقة المناسبة', 'Matching plan')}</span><b>{planName(fitPlan, lang)}</b></div>
+        <button className="btn" type="button" onClick={() => onUse(estimateSummary(input, e, catalog, lang), fitPlan, [s.type], e.total, coupon?.code)}>{t('اطلب عرضاً بهذه التفاصيل', 'Request a quote with these details')}</button>
+        <p className="est-note">{t('الأسعار بالريال السعودي ولا تشمل ضريبة القيمة المضافة إن وُجدت.', 'Prices are in Saudi riyals and exclude VAT where it applies.')} {s.note ?? ''} {t('السعر النهائي يُعتمد بعد جلسة الاكتشاف المجانية.', 'The final price is confirmed after the free discovery session.')}</p>
       </aside>
     </div>
   )
