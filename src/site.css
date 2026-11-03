@@ -1250,6 +1250,9 @@ html.printing .sbc-verify-seal, html.printing iframe[title="SBC Verification"] {
 .vis-foot { font-size: .82rem; }
 .linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); cursor: pointer; text-decoration: underline; }
 
+/* Arabic keeps its original explicit right alignment, which left-to-right pieces (MAKWAD STUDIO, numbers) inherit */
+html[dir="rtl"] body { text-align: right; }
+
 /* English (left-to-right) pages under /en: the direction comes from <html dir>; these undo the few right-hand assumptions */
 html[dir="ltr"] .stats b, html[dir="ltr"] .metrics b, html[dir="ltr"] .price, html[dir="ltr"] .kpi b,
 html[dir="ltr"] .est-price b, html[dir="ltr"] .lap-kpis b, html[dir="ltr"] .ldz .kpis b, html[dir="ltr"] .users-table th { text-align: left; }
