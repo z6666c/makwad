@@ -48,7 +48,7 @@ const ALL: Array<Track> = [
     ],
     faq: [
       { q: ['هل أقدر أعدل محتوى الموقع بنفسي؟', 'Can I edit the website content myself?'], a: ['نعم، مواقع الشركات تشمل لوحة تحكم تعدّل منها النصوص والصور والأخبار، ونعطيك تدريب عليها.', 'Yes. Company websites include a dashboard to edit text, images and news, and we train you on it.'] },
-      { q: ['هل الاستضافة والدومين مشمولة؟', 'Are hosting and the domain included?'], a: ['نطلق الموقع على دومينك مع حماية Cloudflare، والاستضافة السنوية نضيفها في العرض حسب احتياجك.', 'We launch on your domain with Cloudflare protection; yearly hosting is added to the quote as you need it.'] },
+      { q: ['هل الاستضافة والدومين مشمولة؟', 'Are hosting and the domain included?'], a: ['نطلق الموقع على دومينك مع شهادة أمان وحماية من الهجمات، والاستضافة السنوية نضيفها في العرض حسب احتياجك، ونقدر نستضيف داخل المملكة إذا احتجت.', 'We launch on your domain with an SSL certificate and attack protection; yearly hosting is added to the quote as you need it, and we can host inside Saudi Arabia if you need it.'] },
     ],
     pages: ['websites', 'company-website', 'landing-page'],
   },

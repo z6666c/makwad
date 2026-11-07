@@ -168,7 +168,7 @@ export default function Home() {
               </div>
               <div>
                 <b>{t('بعد الإطلاق: الاستضافة والصيانة', 'After launch: hosting and maintenance')}</b>
-                <span>{t('إطلاق على دومينك مع حماية Cloudflare، نسخ احتياطي ومراقبة، وصيانة شهرية للتحديثات والإضافات.', 'Launch on your domain with Cloudflare protection, backups and monitoring, and monthly maintenance for updates and additions.')}</span>
+                <span>{t('إطلاق على دومينك مع شهادة أمان وحماية من الهجمات، ونسخ احتياطي ومراقبة، وصيانة شهرية للتحديثات والإضافات. ونقدر نستضيف داخل المملكة إذا احتجت.', 'Launch on your domain with an SSL certificate and attack protection, backups and monitoring, and monthly maintenance for updates and additions. We can host inside Saudi Arabia if you need it.')}</span>
               </div>
             </div>
           </section>
