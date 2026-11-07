@@ -25,7 +25,7 @@ export type Track = {
 
 export const tx = (v: Tx, lang: Lang) => (lang === 'en' ? v[1] : v[0])
 
-export const TRACKS4: Array<Track> = [
+const ALL: Array<Track> = [
   {
     key: 'web', from: 2000, num: '01', name: ['مكود ويب', 'Makwad Web'], color: '#1F6F8B', tint: '#E4EEF3',
     line: ['مواقع ومنصات ويب تشتغل بسرعة على الجوال والكمبيوتر، بلوحة تحكم تديرها بنفسك.', 'Websites and web platforms that run fast on phones and computers, with a dashboard you manage yourself.'],
@@ -131,6 +131,9 @@ export const TRACKS4: Array<Track> = [
     pages: ['ecommerce-store', 'systems'],
   },
 ]
+
+/** Shown from the lowest starting price to the highest, numbered in that order. */
+export const TRACKS4: Array<Track> = [...ALL].sort((a, b) => a.from - b.from).map((t, i) => ({ ...t, num: String(i + 1).padStart(2, '0') }))
 
 export const trackOf = (k: string | undefined | null) => TRACKS4.find((x) => x.key === k)
 export const trackFrom = (t: Track) => t.from
