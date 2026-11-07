@@ -1,31 +1,33 @@
-import { Link } from '@tanstack/react-router'
-import { useMutation, useQuery } from 'convex/react'
+import { useQuery } from 'convex/react'
 import { useEffect, useRef, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { api } from '@/convex/_generated/api'
 import { Logo } from '@/components/Logo'
-import { FAQ, PLANS, SERVICES, SOCIALS, TRACKS, WHY } from '@/site-content'
+import { FAQ, SOCIALS, WHY } from '@/site-content'
 import { ARTS, COLORS } from '@/mockups'
-import { Estimator } from '@/components/Estimator'
-import { SERVICE_PRICING, fmtSAR, presetForPlan, withPlans } from '@/estimate'
-import type { ServiceKey } from '@/estimate'
+import { fmtSAR } from '@/estimate'
 import type { Doc } from '@/convex/_generated/dataModel'
-import { useTitle } from '@/useTitle'
-import { toWaNumber } from '@/phone'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
-import { SERVICE_PAGES, serviceFor, useMeta } from '@/pages/Services'
-import { usePricing, useSettings, useLocalPricing } from '@/site-config'
+import { RequestForm } from '@/components/RequestForm'
+import { useMeta } from '@/pages/Services'
+import { useSettings } from '@/site-config'
 import { LangSwitch, useHtmlLang, useLang } from '@/i18n'
-import { FAQ_EN, PLANS_EN, SOCIAL_LABEL_EN, TRACKS_EN, WA_MESSAGE_EN, WHY_EN, WORKS_EN, planName, settingEn } from '@/content-en'
-import { SERVICE_PAGES_EN } from '@/pages/Services'
+import { FAQ_EN, SOCIAL_LABEL_EN, WHY_EN, WORKS_EN, settingEn } from '@/content-en'
+import { TRACKS4, trackFrom, trackOf, tx } from '@/tracks'
+import type { TrackKey } from '@/tracks'
 
 const NAV = [
-  ['#services', 'خدماتنا', 'Services'],
+  ['#services', 'التخصصات', 'Specialities'],
   ['#process', 'طريقة العمل', 'How we work'],
   ['#work', 'أعمالنا', 'Work'],
-  ['#plans', 'الباقات', 'Plans'],
-  ['#estimate', 'حاسبة الأسعار', 'Price calculator'],
   ['#faq', 'الأسئلة الشائعة', 'FAQ'],
+] as const
+
+const STEPS = [
+  { t: ['ترسل طلبك', 'You send your request'], p: ['تختار التخصص والخدمات وتكتب فكرتك وميزانيتك التقريبية.', 'Pick the speciality and services, and tell us your idea and approximate budget.'] },
+  { t: ['جلسة اكتشاف مجانية', 'Free discovery session'], p: ['نتواصل معك خلال يوم عمل ونفهم التفاصيل.', 'We contact you within one working day to go through the details.'] },
+  { t: ['عرض سعر مفصل', 'Detailed quote'], p: ['كل شاشة وميزة ومدتها، وخطة الدفع على مراحل.', 'Every screen and feature with its timeline, and a staged payment plan.'] },
+  { t: ['التنفيذ والتسليم', 'Build and delivery'], p: ['نسخة تجريبية تتابعها بنفسك من بوابة العملاء حتى الإطلاق.', 'Preview versions you follow yourself in the client portal, through to launch.'] },
 ] as const
 
 const Icon = ({ d, size = 20 }: { d: string; size?: number }) => (
@@ -56,66 +58,30 @@ export default function Home() {
   useHtmlLang()
   useMeta(
     t('استوديو مكود | تصميم وبرمجة تطبيقات الجوال والمواقع في الرياض', 'Makwad Studio | Mobile App & Website Development in Riyadh'),
-    t('شركة تصميم وبرمجة تطبيقات جوال ومواقع ومتاجر إلكترونية وأنظمة إدارة في الرياض، مع تصميم الهويات وأدوات الذكاء الاصطناعي. احسب تكلفة مشروعك بالتفصيل، والباقات تبدأ من 850 ريال.', 'Mobile app, website, online store and management system design and development in Riyadh, plus brand identities and AI tools. Price your project in detail; plans start at SAR 850.'),
+    t('أربعة تخصصات: مكود ويب للمواقع، مكود تطبيقات للجوال والألعاب، مكود هوية للهويات والحملات ووكلاء الذكاء، ومكود بزنس للمتاجر والدفع والأنظمة. أرسل طلبك واحصل على عرض سعر مفصل.', 'Four specialities: Makwad Web for websites, Makwad Apps for mobile apps and games, Makwad Brand for identities, campaigns and AI agents, and Makwad Business for stores, payments and systems. Send your request for a detailed quote.'),
     '/',
   )
-  const PL = en ? PLANS_EN : PLANS
   const FQ = en ? FAQ_EN : FAQ
   const [menuOpen, setMenuOpen] = useState(false)
-  const [plan, setPlan] = useState('لم أحدد بعد')
-  const track = (en ? TRACKS_EN : TRACKS).find((x) => x.plan === plan) ?? (en ? TRACKS_EN : TRACKS)[1]
-  const [types, setTypes] = useState<Array<string>>([])
+  const [picked, setPicked] = useState<Array<TrackKey>>([])
   const [message, setMessage] = useState('')
-  const [estSvc, setEstSvc] = useState<ServiceKey>('web')
-  // start the calculator on the featured plan so the cards and the calculator agree from the first view
-  const [preset, setPreset] = useState<{ service: ServiceKey; tier: string; n: number } | null>(() => {
-    const ps = presetForPlan('النمو', withPlans(SERVICE_PRICING, PLANS))
-    return ps ? { ...ps, n: 1 } : null
-  })
-  const priceOf = (k: ServiceKey) => {
-    setEstSvc(k)
-    document.getElementById('estimate')?.scrollIntoView({ behavior: 'smooth' })
-  }
   const settings = useSettings()
   const content = useQuery(api.content.publicContent) as
     | { works: Array<Doc<'works'>>; testimonials: Array<Doc<'testimonials'>> }
     | undefined
   const clients = settings.clients ?? []
-  const rawCatalog = usePricing()
-  const catalog = useLocalPricing()
+  // ?track=<key> preselects a speciality; ?custom=<name> comes from older links to a custom request
   useEffect(() => {
     const q = new URLSearchParams(window.location.search)
-    const k = q.get('svc')
-    const svc = k ? catalog.find((c) => c.key === k) : undefined
-    const tier = svc?.tiers.find((t) => t.key === q.get('tier')) ?? svc?.tiers[0]
-    if (svc && tier) setPreset((cur) => (cur?.service === svc.key && cur.tier === tier.key ? cur : { service: svc.key, tier: tier.key, n: (cur?.n ?? 0) + 1 }))
-  }, [catalog])
-  // ?custom=<service name> comes from a service page that is quoted by special request
-  useEffect(() => {
-    const c = new URLSearchParams(window.location.search).get('custom')?.trim().slice(0, 80)
-    if (!c) return
-    setPlan('طلب خاص')
-    setTypes([en ? 'Other' : 'أخرى'])
-    setMessage((m) => m || `${en ? 'Custom request' : 'طلب خاص'}: ${c}\n`)
-    // the hash jump runs before the page finishes laying out, so land on the form again
-    window.setTimeout(() => document.getElementById('contact')?.scrollIntoView(), 700)
+    const k = trackOf(q.get('track'))
+    const c = q.get('custom')?.trim().slice(0, 80)
+    if (k) setPicked([k.key])
+    if (c) setMessage(`${en ? 'Request' : 'طلب'}: ${c}\n`)
+    if (k || c) window.setTimeout(() => document.getElementById('contact')?.scrollIntoView(), 700)
   }, [])
-  const pickPlan = (name: string) => {
-    setPlan(name)
-    const ps = presetForPlan(name, withPlans(rawCatalog, PLANS))
-    if (ps) setPreset((cur) => ({ ...ps, n: (cur?.n ?? 0) + 1 }))
-  }
-  const minPrice = Math.min(...catalog.flatMap((c) => c.tiers.map((x) => x.price)), 1500)
-  const [amount, setAmount] = useState<number | undefined>(undefined)
-  const [coupon, setCoupon] = useState<string | undefined>(undefined)
-  const useEstimate = (summary: string, p: string, t: Array<string>, total: number, code?: string) => {
-    setAmount(total)
-    setCoupon(code)
-    setMessage(summary)
-    setPlan(p)
-    setTypes(t)
+  const ask = (k: TrackKey) => {
+    setPicked([k])
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
-    window.setTimeout(() => document.getElementById('name')?.focus({ preventScroll: true }), 600)
   }
   return (
     <>
@@ -130,7 +96,7 @@ export default function Home() {
           <div className="nav-end">
             <LangSwitch />
             <a className="btn ghost small hide-sm" href={L('/login')}>{t('دخول العملاء', 'Client login')}</a>
-            <a className="btn small hide-sm" href="#contact">{t('اطلب عرض سعر', 'Get a quote')}</a>
+            <a className="btn small hide-sm" href="#contact">{t('أرسل طلبك', 'Send a request')}</a>
             <button
               className="menu-btn"
               type="button"
@@ -145,7 +111,8 @@ export default function Home() {
         </nav>
         {menuOpen && (
           <div className="mobile-menu wrap" id="mMenu">
-            {[...NAV, ['#contact', 'تواصل معنا', 'Contact'] as const].map(([h, ar, e]) => (
+            {TRACKS4.map((x) => <a key={x.key} href={L(`/${x.key}`)}>{tx(x.name, lang)}</a>)}
+            {[...NAV.slice(1), ['#contact', 'أرسل طلبك', 'Send a request'] as const].map(([h, ar, e]) => (
               <a key={h} href={h} onClick={() => setMenuOpen(false)}>{en ? e : ar}</a>
             ))}
             <a href={L('/login')}>{t('دخول العملاء', 'Client login')}</a>
@@ -169,32 +136,40 @@ export default function Home() {
         <div className="wrap">
           <section className="section" id="services">
             <div className="sec-head">
-              <div><span className="kicker">{t('خدماتنا', 'Our services')}</span><h2>{t('تصميم وبرمجة التطبيقات والمواقع والأنظمة', 'Design and development of apps, websites and systems')}</h2></div>
-              <p>{en ? <>Clear prices from SAR {fmtSAR(minPrice)}. Tap “Price it” to see the cost in detail.</> : <>خدمات بأسعار واضحة تبدأ من {fmtSAR(minPrice)} ريال. اضغط «احسب السعر» لترى التكلفة بالتفصيل.</>}</p>
+              <div><span className="kicker">{t('تخصصاتنا', 'Our specialities')}</span><h2>{t('أربعة تخصصات تحت سقف واحد', 'Four specialities under one roof')}</h2></div>
+              <p>{t('موقعك، تطبيقك، هويتك، وتجارتك. ادخل صفحة التخصص لتشوف خدماته، وأرسل طلبك منها أو من هنا.', 'Your website, your app, your brand and your business. Open a speciality to see its services, and send your request there or here.')}</p>
             </div>
-            <div className="services">
-              {catalog.map((c) => {
-                const st = SERVICES.find((x) => x.key === c.key)
-                return (
-                  <div className="svc" key={c.key}>
-                    <div className="svc-icon"><Icon d={st?.icon ?? '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>'} /></div>
-                    <h3>{c.label}</h3>
-                    <p>{c.text || (en ? '' : st?.text) || ''}</p>
-                    <div className="tags">{(c.tags?.length ? c.tags : en ? [] : st?.tags ?? []).map((g) => <span className="tag" key={g}>{g}</span>)}</div>
-                    <div className="svc-foot">
-                      <span className="svc-price"><small>{t('يبدأ من', 'from')}</small><b className="mono">{fmtSAR(Math.min(...c.tiers.map((x) => x.price)))}</b><small>{t('ريال', 'SAR')}{c.monthly ? t(' / شهرياً', ' / month') : ''}</small></span>
-                      <span className="svc-links">
-                        {(() => { const pg = SERVICE_PAGES.find((x) => (x.group ?? 'main') === 'main' && serviceFor(x, [c])); return pg ? <a className="linkish" href={L(`/services/${pg.slug}`)}>{t('التفاصيل', 'Details')}</a> : null })()}
-                        <button className="linkish" type="button" onClick={() => priceOf(c.key)}>{t('احسب السعر ←', 'Price it →')}</button>
-                      </span>
-                    </div>
+            <div className="tracks">
+              {TRACKS4.map((tr) => (
+                <article className="track" key={tr.key} style={{ ['--tc' as string]: tr.color } as CSSProperties}>
+                  <div className="track-head">
+                    <span className="track-num mono">{tr.num}</span>
+                    <h3><a href={L(`/${tr.key}`)}>{tx(tr.name, lang)}</a></h3>
+                    <p>{tx(tr.line, lang)}</p>
                   </div>
-                )
-              })}
-              <div className="svc svc-cta">
-                <h3>{t('مشروعك مختلف؟', 'Something different in mind?')}</h3>
-                <p>{t('نجهّز لك عرضاً مخصصاً بعد جلسة اكتشاف مجانية.', 'We prepare a tailored quote after a free discovery session.')}</p>
-                <a className="btn small" href="#contact">{t('احجز جلسة مجانية', 'Book a free session')}</a>
+                  <ul className="track-list">
+                    {tr.services.map((s) => (
+                      <li key={s.key}>{tx(s.name, lang)}{s.isNew && <span className="trk-new">{t('جديد', 'New')}</span>}</li>
+                    ))}
+                  </ul>
+                  <div className="track-foot">
+                    <span className="svc-price"><small>{t('يبدأ من', 'from')}</small><b className="mono">{fmtSAR(trackFrom(tr))}</b><small>{t('ريال', 'SAR')}</small></span>
+                    <span className="track-links">
+                      <a className="linkish" href={L(`/${tr.key}`)}>{t('تفاصيل التخصص', 'Details')}</a>
+                      <button className="btn small trk-btn" type="button" onClick={() => ask(tr.key)}>{t('أرسل طلبك', 'Request')}</button>
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="track-extra">
+              <div>
+                <b>{t('قبل أي تخصص: الاستشارة والتحليل', 'Before any speciality: consulting and analysis')}</b>
+                <span>{t('تحليل فكرة، وثيقة متطلبات، دراسة جدوى تقنية، أو تدقيق نظام قائم. يبدأ من 1,500 ريال.', 'Idea analysis, a requirements document, a technical feasibility study or an audit of an existing system. From SAR 1,500.')}</span>
+              </div>
+              <div>
+                <b>{t('بعد الإطلاق: الاستضافة والصيانة', 'After launch: hosting and maintenance')}</b>
+                <span>{t('إطلاق على دومينك مع حماية Cloudflare، نسخ احتياطي ومراقبة، وصيانة شهرية تبدأ من 1,500 ريال.', 'Launch on your domain with Cloudflare protection, backups and monitoring, and monthly maintenance from SAR 1,500.')}</span>
               </div>
             </div>
           </section>
@@ -223,63 +198,20 @@ export default function Home() {
 
           <PromoVideos />
 
-          <section className="section" id="plans">
+          <section className="section" id="process">
             <div className="sec-head">
-              <div><span className="kicker">{t('الباقات والأسعار', 'Plans & pricing')}</span><h2>{t('اختر نقطة البداية', 'Pick your starting point')}</h2></div>
-              <p>{t('أسعار تقديرية تبدأ منها، والعرض النهائي بعد جلسة الاكتشاف المجانية.', 'Starting prices; the final quote follows the free discovery session.')}</p>
+              <div><span className="kicker">{t('طريقة العمل', 'How we work')}</span><h2>{t('من الطلب إلى التسليم', 'From request to delivery')}</h2></div>
+              <p>{t('نفس الخطوات في كل التخصصات، والمدة تختلف حسب حجم المشروع.', 'The same steps in every speciality; the timeline depends on the size of the project.')}</p>
             </div>
-            <div className="plans">
-              {PLANS.map((p0, pi) => {
-                const p = PL[pi]
-                const on = p0.name === (PLANS.some((x) => x.name === plan) ? plan : 'النمو')
-                return (
-                  <div
-                    className={on ? 'plan feat' : 'plan'}
-                    key={p0.name}
-                    role="button"
-                    tabIndex={0}
-                    aria-pressed={on}
-                    aria-label={en ? `Choose the ${p.name} plan` : `اختيار باقة ${p.name}`}
-                    onClick={() => pickPlan(p0.name)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickPlan(p0.name) } }}
-                  >
-                    {p.feat && <span className="badge">{t('الأكثر طلباً', 'Most popular')}</span>}
-                    <h3>{p.name}</h3>
-                    <div className="price">{p.price}<small>{p.small}</small></div>
-                    <ul>{p.items.map((it) => <li key={it}>{it}</li>)}</ul>
-                    {'note' in p && p.note && <p className="plan-note">{p.note}</p>}
-                    <a className={on ? 'btn' : 'btn ghost'} href="#contact" onClick={(e) => { e.stopPropagation(); pickPlan(p0.name) }}>{p.cta}</a>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="plan-timeline" id="process" aria-live="polite">
-              <div className="pt-head">
-                <div>
-                  <span className="kicker">{t('طريقة العمل', 'How we work')}</span>
-                  <h3>{en ? `${planName(track.plan, lang)} plan: delivery stages` : `مراحل تنفيذ باقة ${track.plan}`}</h3>
+            <div className="process" style={{ ['--n' as string]: STEPS.length }}>
+              {STEPS.map((st, i) => (
+                <div className="step" key={st.t[0]}>
+                  <div className="dot">{i + 1}</div>
+                  <h3>{en ? st.t[1] : st.t[0]}</h3>
+                  <p>{en ? st.p[1] : st.p[0]}</p>
                 </div>
-                <p>{track.note} <b>{t('المدة المتوقعة', 'Expected timeline')}: {track.range}</b> <a className="pt-calc" href="#estimate">{en ? `Price the ${planName(track.plan, lang)} plan in the calculator ↓` : `احسب تفاصيل باقة ${track.plan} في الحاسبة ↓`}</a></p>
-              </div>
-              <div className="process" style={{ ['--n' as string]: track.steps.length }}>
-                {track.steps.map((st, i) => (
-                  <div className="step" key={track.key + st.t}>
-                    <div className="dot">{i + 1}</div>
-                    <h3>{st.t}</h3>
-                    <span className="wk">{st.w}</span>
-                    <p>{st.p}</p>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
-          </section>
-
-          <section className="section" id="estimate">
-            <div className="sec-head">
-              <div><span className="kicker">{t('حاسبة الأسعار', 'Price calculator')}</span><h2>{t('احسب تكلفة تطبيقك أو موقعك', 'Work out the cost of your app or website')}</h2></div>
-              <p>{t('اختر الخدمة ونطاقها والإضافات، وتشوف السعر بنداً بنداً مع الإجمالي والمدة والدفعة الأولى، ثم أرسله لنا بضغطة.', 'Choose the service, its scope and add-ons to see the price line by line with the total, timeline and first payment, then send it to us in one tap.')}</p>
-            </div>
-            <Estimator service={estSvc} onService={setEstSvc} onUse={useEstimate} preset={preset} onPlan={setPlan} />
           </section>
 
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FQ.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }) }} />
@@ -288,7 +220,7 @@ export default function Home() {
               <div>
                 <span className="kicker">{t('الأسئلة الشائعة', 'FAQ')}</span>
                 <h2 className="h2">{t('قبل أن تبدأ', 'Before you start')}</h2>
-                <p className="muted" style={{ marginTop: 12 }}>{t('لم تجد جوابك؟ اسألنا مباشرة من نموذج التواصل.', 'Didn’t find your answer? Ask us directly through the contact form.')}</p>
+                <p className="muted" style={{ marginTop: 12 }}>{t('لم تجد جوابك؟ اسألنا مباشرة من نموذج الطلب.', 'Didn’t find your answer? Ask us directly through the request form.')}</p>
               </div>
               <div>
                 {FQ.map((f, i) => (
@@ -304,11 +236,11 @@ export default function Home() {
           <section className="section" id="contact">
             <div className="contact">
               <div className="info">
-                <div><span className="kicker">{t('تواصل معنا', 'Contact us')}</span><h2 className="h2">{t('لنتحدث عن مشروعك', 'Let’s talk about your project')}</h2></div>
-                <p className="muted">{t('أرسل لنا فكرتك ونرد عليك خلال يوم عمل واحد بموعد لجلسة اكتشاف مجانية.', 'Send us your idea and we reply within one working day with a time for a free discovery session.')}</p>
-<ContactInfo />
+                <div><span className="kicker">{t('أرسل طلبك', 'Send your request')}</span><h2 className="h2">{t('لنتحدث عن مشروعك', 'Let’s talk about your project')}</h2></div>
+                <p className="muted">{t('اختر التخصص والخدمات وأرسل فكرتك، ونرد عليك خلال يوم عمل واحد بموعد لجلسة اكتشاف مجانية ثم عرض سعر مفصل.', 'Pick the speciality and services and send your idea; we reply within one working day with a time for a free discovery session, then a detailed quote.')}</p>
+                <ContactInfo />
               </div>
-              <ContactForm en={en} plan={plan} setPlan={setPlan} types={types} setTypes={setTypes} message={message} setMessage={(m) => { setMessage(m); if (!m) setAmount(undefined) }} amount={amount} coupon={coupon} serviceTypes={[...new Set(catalog.map((c) => c.type || c.label))]} />
+              <RequestForm initialTracks={picked} initialMessage={message} />
             </div>
           </section>
         </div>
@@ -319,20 +251,20 @@ export default function Home() {
           <div className="foot">
             <div>
               <Logo />
-              <p>{t('مَكْوَد: حيث تُصنع التطبيقات. نبني تطبيقات الجوال والويب للشركات في المملكة والخليج.', 'Makwad: where apps are made. We build mobile and web apps for businesses in Saudi Arabia and the Gulf.')}</p>
+              <p>{t('مَكْوَد: حيث تُصنع التطبيقات. نبني المواقع والتطبيقات والهويات والمتاجر للشركات في المملكة والخليج.', 'Makwad: where apps are made. We build websites, apps, brands and stores for businesses in Saudi Arabia and the Gulf.')}</p>
               <SocialLinks />
             </div>
             <div>
-              <h4>{t('الخدمات', 'Services')}</h4>
-              <ul>{SERVICE_PAGES.filter((p) => (p.group ?? 'main') === 'main').map((p) => <li key={p.slug}><a href={L(`/services/${p.slug}`)}>{en ? SERVICE_PAGES_EN[p.slug]?.h1 ?? p.h1 : p.h1}</a></li>)}<li><a href={L('/services')}>{t('كل الخدمات والحلول ←', 'All services and solutions →')}</a></li></ul>
+              <h4>{t('التخصصات', 'Specialities')}</h4>
+              <ul>{TRACKS4.map((x) => <li key={x.key}><a href={L(`/${x.key}`)}>{tx(x.name, lang)}</a></li>)}<li><a href={L('/services')}>{t('كل الخدمات والحلول ←', 'All services and solutions →')}</a></li></ul>
             </div>
             <div>
               <h4>{t('الشركة', 'Company')}</h4>
-              <ul><li><a href="#services">{t('خدماتنا', 'Services')}</a></li><li><a href="#work">{t('أعمالنا', 'Work')}</a></li><li><a href="#process">{t('طريقة العمل', 'How we work')}</a></li></ul>
+              <ul><li><a href="#services">{t('التخصصات', 'Specialities')}</a></li><li><a href="#work">{t('أعمالنا', 'Work')}</a></li><li><a href="#process">{t('طريقة العمل', 'How we work')}</a></li></ul>
             </div>
             <div>
               <h4>{t('العملاء', 'Clients')}</h4>
-              <ul><li><a href={L('/login')}>{t('دخول العملاء', 'Client login')}</a></li><li><a href="#estimate">{t('حاسبة الأسعار', 'Price calculator')}</a></li><li><a href="#contact">{t('اطلب عرض سعر', 'Get a quote')}</a></li><li><a href="#faq">{t('الأسئلة الشائعة', 'FAQ')}</a></li></ul>
+              <ul><li><a href={L('/login')}>{t('دخول العملاء', 'Client login')}</a></li><li><a href="#contact">{t('أرسل طلبك', 'Send a request')}</a></li><li><a href="#faq">{t('الأسئلة الشائعة', 'FAQ')}</a></li></ul>
             </div>
           </div>
           <div className="legal">
@@ -374,7 +306,7 @@ function Hero({ stats }: { stats: Array<{ value: string; label: string }> }) {
             <p className="lead">{t('نصمّم ونبني تطبيقات الجوال والمواقع والأنظمة وأدوات الذكاء الاصطناعي، ونحلل مشاريعك قبل التنفيذ. فريق واحد يتولى التحليل والتصميم والبرمجة والإطلاق، ويبقى معك بعده.', 'We design and build mobile apps, websites, systems and AI tools, and analyse your project before we build. One team handles analysis, design, development and launch, and stays with you afterwards.')}</p>
             <div className="cta-row">
               <a className="btn" href="#contact">{t('احجز جلسة اكتشاف مجانية', 'Book a free discovery session')}</a>
-              <a className="btn ghost" href="#estimate">{t('احسب سعر مشروعك', 'Price your project')}</a>
+              <a className="btn ghost" href="#services">{t('تعرّف على تخصصاتنا', 'Explore our specialities')}</a>
             </div>
             {stats.length > 0 && (
               <div className="stats">
@@ -650,104 +582,5 @@ function CopyRow({ label, value }: { label: string; value: string }) {
         {done ? t('تم النسخ', 'Copied') : t('نسخ', 'Copy')}
       </button>
     </div>
-  )
-}
-
-
-type FormProps = {
-  en: boolean
-  plan: string
-  setPlan: (p: string) => void
-  types: Array<string>
-  setTypes: (f: (cur: Array<string>) => Array<string>) => void
-  message: string
-  setMessage: (m: string) => void
-  amount?: number
-  coupon?: string
-  serviceTypes: Array<string>
-}
-
-function ContactForm({ en, plan, setPlan, types, setTypes, message, setMessage, amount, coupon, serviceTypes }: FormProps) {
-  const { lang, t, L } = useLang()
-  const OTHER = t('أخرى', 'Other')
-  const TYPES = [...serviceTypes, OTHER]
-  const submit = useMutation(api.app.submitLead)
-  const [busy, setBusy] = useState(false)
-  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null)
-
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const form = e.currentTarget
-    const fd = new FormData(form)
-    if (!toWaNumber(String(fd.get('phone') ?? ''))) {
-      setResult({ ok: false, text: t('رقم الجوال مطلوب. اكتبه بصيغة 05XXXXXXXX.', 'A mobile number is required, for example 05XXXXXXXX or +9665XXXXXXXX.') })
-      form.querySelector<HTMLInputElement>('#phone')?.focus()
-      return
-    }
-    setBusy(true)
-    setResult(null)
-    try {
-      const r = await submit({
-        name: String(fd.get('name') ?? ''),
-        company: String(fd.get('company') ?? ''),
-        email: String(fd.get('email') ?? ''),
-        types,
-        plan,
-        message: en ? `[EN] ${message}` : message,
-        ...(amount ? { amount } : {}),
-        ...(coupon ? { coupon } : {}),
-        phone: String(fd.get('phone') ?? ''),
-        website: String(fd.get('website') ?? ''),
-      })
-      if (r.ok) {
-        setResult({ ok: true, text: t('وصلنا طلبك. سيتواصل معك فريقنا خلال يوم عمل واحد.', 'We have your request. Our team will contact you within one working day.') })
-        form.reset()
-        setMessage('')
-      } else {
-        setResult({ ok: false, text: r.error })
-      }
-    } catch {
-      setResult({ ok: false, text: t('تعذّر إرسال الطلب. تحقق من اتصالك وحاول مرة أخرى.', 'The request could not be sent. Check your connection and try again.') })
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <form className="form" noValidate onSubmit={onSubmit}>
-      <div className="field"><label htmlFor="name">{t('الاسم', 'Name')}</label><input id="name" name="name" autoComplete="name" placeholder={t('مثال: عبدالله السالم', 'e.g. Sarah Ahmed')} /></div>
-      <div className="field"><label htmlFor="company">{t('الشركة', 'Company')}</label><input id="company" name="company" autoComplete="organization" placeholder={t('اختياري', 'Optional')} /></div>
-      <div className="field"><label htmlFor="email">{t('البريد الإلكتروني', 'Email')}</label><input id="email" name="email" type="email" autoComplete="email" dir="ltr" placeholder="name@company.sa" /></div>
-      <div className="hp" aria-hidden="true"><label htmlFor="website">{t('الموقع', 'Website')}</label><input id="website" name="website" tabIndex={-1} autoComplete="off" /></div>
-      <div className="field"><label htmlFor="phone">{t('رقم الجوال (واتساب)', 'Mobile number (WhatsApp)')} <span aria-hidden="true" style={{ color: 'var(--accent)' }}>*</span></label><input id="phone" name="phone" required aria-required="true" type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder="05XXXXXXXX" /></div>
-      <div className="field full">
-        <span className="lbl">{t('نوع المشروع', 'Project type')}</span>
-        <div className="chips">
-          {TYPES.map((t, i) => (
-            <label key={t}>
-              <input
-                type="checkbox"
-                id={`type-${i}`}
-                checked={types.includes(t)}
-                onChange={(e) => setTypes((cur) => (e.target.checked ? [...cur, t] : cur.filter((x) => x !== t)))}
-              />
-              {t}
-            </label>
-          ))}
-        </div>
-      </div>
-      <div className="field full">
-        <label htmlFor="plan">{t('الباقة', 'Plan')}</label>
-        <select id="plan" value={plan} onChange={(e) => setPlan(e.target.value)}>
-          {['لم أحدد بعد', 'الانطلاقة', 'النمو', 'المنشآت', 'طلب خاص'].map((p) => <option key={p} value={p}>{planName(p, lang)}</option>)}
-        </select>
-      </div>
-      <div className="field full"><label htmlFor="message">{t('نبذة عن الفكرة', 'About your idea')}</label><textarea id="message" name="message" value={message} onChange={(e) => setMessage(e.target.value)} rows={message ? 9 : 4} placeholder={t('ما فكرة مشروعك، ومن سيستخدمه؟', 'What is your project, and who will use it?')} /></div>
-      <div className="field full">
-        <button className="btn" type="submit" disabled={busy}>{busy ? t('جارٍ الإرسال…', 'Sending…') : t('إرسال الطلب', 'Send request')}</button>
-        <small className="consent">{en ? <>By sending this request you agree to our <a href={L('/privacy')}>privacy policy</a> and <a href={L('/terms')}>terms</a>.</> : <>بإرسال الطلب فإنك توافق على <a href={L('/privacy')}>سياسة الخصوصية</a> و<a href={L('/terms')}>الشروط والأحكام</a>.</>}</small>
-      </div>
-      {result && <div className={result.ok ? 'sent' : 'sent err'} role="status">{result.text}</div>}
-    </form>
   )
 }

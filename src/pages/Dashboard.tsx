@@ -264,7 +264,7 @@ function AdminView() {
 }
 
 function downloadCsv(leads: Array<Doc<'leads'>>) {
-  const head = ['التاريخ', 'الاسم', 'الشركة', 'البريد', 'النوع', 'الباقة', 'الحالة', 'المصدر', 'الرسالة', 'ملاحظات']
+  const head = ['التاريخ', 'الاسم', 'الشركة', 'البريد', 'التخصص', 'الميزانية', 'الحالة', 'المصدر', 'الرسالة', 'ملاحظات']
   const esc = (v: string) => `"${v.replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`
   const rows = leads.map((l) => [
     new Date(l._creationTime).toISOString().slice(0, 10), l.name, l.company ?? '', l.email, l.types.join(' / '),
@@ -384,7 +384,7 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
           {l.phone && <span className="mono">+{l.phone}</span>}
           {l.company && <span>{l.company}</span>}
           <span>{l.types.join('، ')}</span>
-          <span>الباقة: {l.plan}</span>
+          <span>الميزانية: {l.plan}</span>
           {l.amount ? <span className="amt">القيمة التقديرية: <b className="mono">{fmtSAR(l.amount)}</b> ريال</span> : null}
           <span>{fmtDate(l._creationTime)}</span>
         </div>

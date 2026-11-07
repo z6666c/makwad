@@ -41,16 +41,24 @@ function write(path, lang, title, description) {
 }
 
 const AR = {
-  '/': ['استوديو مكود | تصميم وبرمجة تطبيقات الجوال والمواقع في الرياض', 'شركة تصميم وبرمجة تطبيقات جوال ومواقع ومتاجر إلكترونية وأنظمة إدارة في الرياض، مع تصميم الهويات وأدوات الذكاء الاصطناعي. احسب تكلفة مشروعك بالتفصيل، والباقات تبدأ من 850 ريال.'],
-  '/services': ['خدماتنا: تصميم وبرمجة التطبيقات والمواقع والأنظمة | استوديو مكود', 'خدمات استوديو مكود في الرياض: تطبيقات الجوال، المواقع والمتاجر، أنظمة الإدارة، الهويات البصرية، المواد الدعائية، وحلول الذكاء الاصطناعي، بأسعار واضحة.'],
+  '/': ['استوديو مكود | تصميم وبرمجة تطبيقات الجوال والمواقع في الرياض', 'أربعة تخصصات: مكود ويب للمواقع، مكود تطبيقات للجوال والألعاب، مكود هوية للهويات والحملات ووكلاء الذكاء، ومكود بزنس للمتاجر والدفع والأنظمة. أرسل طلبك واحصل على عرض سعر مفصل.'],
+  '/services': ['خدماتنا: تصميم وبرمجة التطبيقات والمواقع والأنظمة | استوديو مكود', 'خدمات استوديو مكود في أربعة تخصصات: مكود ويب، مكود تطبيقات، مكود هوية، ومكود بزنس، بأسعار تبدأ منها وعرض سعر مفصل لكل طلب.'],
+  '/web': ['مكود ويب: تصميم وبرمجة المواقع ومنصات الويب | استوديو مكود', 'صفحات هبوط ومواقع تعريفية ومواقع شركات ومنصات ويب بلوحة تحكم، تبدأ من 1,500 ريال. أرسل طلبك ونرسل لك عرض سعر مفصل.'],
+  '/apps': ['مكود تطبيقات: تصميم وبرمجة تطبيقات الجوال والألعاب | استوديو مكود', 'تطبيقات iOS وأندرويد، تطبيقات توصيل وحجوزات، وألعاب جوال تسويقية وتعليمية، تبدأ من 6,000 ريال. أرسل طلبك ونرسل لك عرض سعر مفصل.'],
+  '/brand': ['مكود هوية: الهويات البصرية والحملات الدعائية ووكلاء الذكاء | استوديو مكود', 'شعار وهوية بصرية، فيديو دعائي، محتوى سوشال وحملات إعلانية، ووكيل ذكاء لخدمة عملائك، تبدأ من 500 ريال. أرسل طلبك ونرسل لك عرض سعر مفصل.'],
+  '/business': ['مكود بزنس: المتاجر الإلكترونية وأنظمة الدفع والإدارة | استوديو مكود', 'متاجر إلكترونية، تجهيز متاجر سلة وزد، بوابات الدفع والاشتراكات، الفوترة الإلكترونية وأنظمة الإدارة، تبدأ من 1,200 ريال. أرسل طلبك ونرسل لك عرض سعر مفصل.'],
   '/login': ['تسجيل الدخول | استوديو مكود', 'بوابة عملاء استوديو مكود: تابع مرحلة مشروعك ونسبة الإنجاز وتواصل مع فريقك.'],
   '/privacy': ['سياسة الخصوصية | استوديو مكود', 'كيف يجمع استوديو مكود بياناتك الشخصية ويستخدمها ويحميها، وفق نظام حماية البيانات الشخصية في المملكة.'],
   '/terms': ['الشروط والأحكام | استوديو مكود', 'الشروط التي تنظم استخدام موقع استوديو مكود وبوابة العملاء.'],
   '/refund': ['سياسة الإلغاء والاسترداد | استوديو مكود', 'متى يحق لك إلغاء طلبك لدى استوديو مكود، وكيف يُحتسب المبلغ المسترد.'],
 }
 const EN = {
-  '/': ['Makwad Studio | Mobile App & Website Development in Riyadh', 'Mobile app, website, online store and management system design and development in Riyadh, plus brand identities and AI tools. Price your project in detail; plans start at SAR 850.'],
-  '/services': ['Our services: apps, websites and systems design & development | Makwad Studio', 'Makwad Studio services in Riyadh: mobile apps, websites and online stores, management systems, brand identities, promotional material and AI solutions, with clear prices.'],
+  '/': ['Makwad Studio | Mobile App & Website Development in Riyadh', 'Four specialities: Makwad Web for websites, Makwad Apps for mobile apps and games, Makwad Brand for identities, campaigns and AI agents, and Makwad Business for stores, payments and systems. Send your request for a detailed quote.'],
+  '/services': ['Our services: apps, websites and systems design & development | Makwad Studio', 'Makwad Studio services in four specialities: Makwad Web, Apps, Brand and Business, with starting prices and a detailed quote for every request.'],
+  '/web': ['Makwad Web: website and web platform design & development | Makwad Studio', 'Landing pages, business websites, company websites and web platforms with a dashboard, from SAR 1,500. Send your request and get a detailed quote.'],
+  '/apps': ['Makwad Apps: mobile app and game design & development | Makwad Studio', 'iOS and Android apps, delivery and booking apps, and marketing and educational mobile games, from SAR 6,000. Send your request and get a detailed quote.'],
+  '/brand': ['Makwad Brand: visual identities, ad campaigns and AI agents | Makwad Studio', 'Logo and visual identity, promo video, social content and ad campaigns, and an AI agent for customer service, from SAR 500. Send your request and get a detailed quote.'],
+  '/business': ['Makwad Business: online stores, payments and management systems | Makwad Studio', 'Online stores, Salla and Zid store setup, payment gateways and subscriptions, e-invoicing and management systems, from SAR 1,200. Send your request and get a detailed quote.'],
   '/login': ['Sign in | Makwad Studio', 'Makwad Studio client portal: follow your project stage and progress and talk to your team.'],
   '/privacy': ['Privacy policy | Makwad Studio', 'How Makwad Studio collects, uses and protects your personal data, under the Saudi Personal Data Protection Law.'],
   '/terms': ['Terms and conditions | Makwad Studio', 'The terms that govern use of the Makwad Studio website and client portal.'],

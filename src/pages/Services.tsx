@@ -12,6 +12,7 @@ import type { Catalog, Service } from '@/estimate'
 import { LangSwitch, pathIn, useHtmlLang, useLang } from '@/i18n'
 import PAGES from '@/service-pages.json'
 import PAGES_EN from '@/service-pages-en.json'
+import { TRACKS4, trackOfPage, tx as tt } from '@/tracks'
 
 export type ServicePageData = (typeof PAGES)[number] & { tiers?: Array<string>; addons?: Array<string>; group?: string }
 export const SERVICE_PAGES = PAGES as Array<ServicePageData>
@@ -51,19 +52,21 @@ export function useMeta(title: string, description: string, path: string) {
   }, [title, description, path, lang])
 }
 
-export function Shell({ children }: { children: ReactNode }) {
+export function Shell({ children, cta }: { children: ReactNode; cta?: string }) {
   useHtmlLang()
   const s = useSettings()
-  const { t, L } = useLang()
+  const { lang, t, L } = useLang()
   return (
     <>
       <header className="site-header">
         <nav className="nav wrap" aria-label={t('القائمة الرئيسية', 'Main menu')}>
           <Logo />
+          <div className="links">
+            {TRACKS4.map((x) => <a key={x.key} href={L(`/${x.key}`)}>{tt(x.name, lang)}</a>)}
+          </div>
           <div className="nav-end">
             <LangSwitch />
-            <a className="btn ghost small hide-sm" href={L('/services')}>{t('الخدمات', 'Services')}</a>
-            <a className="btn small" href={`${L('/')}#estimate`}>{t('احسب السعر', 'Price it')}</a>
+            <a className="btn small" href={cta ?? `${L('/')}#contact`}>{t('أرسل طلبك', 'Send a request')}</a>
           </div>
         </nav>
       </header>
@@ -71,7 +74,7 @@ export function Shell({ children }: { children: ReactNode }) {
       <footer className="site-footer">
         <div className="wrap legal">
           <span>{t('© 2026 استوديو مكود. جميع الحقوق محفوظة.', '© 2026 Makwad Studio. All rights reserved.')}{s.crNumber && <> · {t('وثيقة العمل الحر رقم', 'Freelance document no.')} <span className="mono" dir="ltr">{s.crNumber}</span></>}</span>
-          <span><a href={L('/')}>{t('الرئيسية', 'Home')}</a> · <a href={L('/services')}>{t('الخدمات', 'Services')}</a> · <a href={L('/privacy')}>{t('سياسة الخصوصية', 'Privacy policy')}</a> · <a href={L('/terms')}>{t('الشروط والأحكام', 'Terms')}</a></span>
+          <span><a href={L('/')}>{t('الرئيسية', 'Home')}</a> · {TRACKS4.map((x) => <span key={x.key}><a href={L(`/${x.key}`)}>{tt(x.name, lang)}</a> · </span>)}<a href={L('/services')}>{t('الخدمات', 'Services')}</a> · <a href={L('/privacy')}>{t('سياسة الخصوصية', 'Privacy policy')}</a> · <a href={L('/terms')}>{t('الشروط والأحكام', 'Terms')}</a></span>
         </div>
       </footer>
       <WhatsAppButton />
@@ -81,7 +84,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
 export function ServicesIndex() {
   const raw = usePricing()
-  const { en, t, L } = useLang()
+  const { lang, en, t, L } = useLang()
   useMeta(
     t('خدماتنا: تصميم وبرمجة التطبيقات والمواقع والأنظمة | استوديو مكود', 'Our services: apps, websites and systems design & development | Makwad Studio'),
     t('خدمات استوديو مكود في الرياض: تطبيقات الجوال، المواقع والمتاجر، أنظمة الإدارة، الهويات البصرية، المواد الدعائية، وحلول الذكاء الاصطناعي، بأسعار واضحة.', 'Makwad Studio services in Riyadh: mobile apps, websites and online stores, management systems, brand identities, promotional material and AI solutions, with clear prices.'),
@@ -93,13 +96,14 @@ export function ServicesIndex() {
         <nav className="crumbs" aria-label={t('مسار الصفحة', 'Breadcrumb')}><a href={L('/')}>{t('الرئيسية', 'Home')}</a> / <span>{t('الخدمات', 'Services')}</span></nav>
         <span className="kicker">{t('خدماتنا', 'Our services')}</span>
         <h1>{t('تصميم وبرمجة التطبيقات والمواقع والأنظمة', 'Design and development of apps, websites and systems')}</h1>
-        <p className="lead">{t('اختر الخدمة لتشوف تفاصيلها وأسعارها ومدة تنفيذها.', 'Pick a service to see its details, prices and timeline.')}</p>
+        <p className="lead">{t('أربعة تخصصات: مكود ويب، مكود تطبيقات، مكود هوية، ومكود بزنس. اختر الخدمة لتشوف تفاصيلها، وأرسل طلبك من صفحة التخصص.', 'Four specialities: Makwad Web, Apps, Brand and Business. Pick a service to see its details, and send your request from the speciality page.')}</p>
       </div>
-      {([['main', 'الخدمات الأساسية', 'Core services'], ['solution', 'حلول جاهزة لنشاطك', 'Ready solutions for your business']] as const).map(([g, ar, e]) => (
-      <section className="svc-sec" key={g}>
-      <h2>{en ? e : ar}</h2>
+      {TRACKS4.map((tr) => (
+      <section className="svc-sec" key={tr.key}>
+      <h2><a href={L(`/${tr.key}`)}>{tt(tr.name, lang)}</a></h2>
+      <p className="muted">{tt(tr.line, lang)}</p>
       <div className="svc-grid">
-        {SERVICE_PAGES.filter((p) => (p.group ?? 'main') === g).map((p) => {
+        {SERVICE_PAGES.filter((p) => tr.pages.includes(p.slug)).map((p) => {
           const tx = textOf(p, en)
           const svc = serviceFor(p, raw)
           const tiers = svc ? (p.tiers ? svc.tiers.filter((x) => p.tiers!.includes(x.key)) : svc.tiers) : []
@@ -115,6 +119,12 @@ export function ServicesIndex() {
             </a>
           )
         })}
+        <a className="svc-card" href={L(`/${tr.key}`)}>
+          <span className="kicker">{tr.num}</span>
+          <h2>{en ? `All ${tt(tr.name, lang)} services` : `كل خدمات ${tt(tr.name, lang)}`}</h2>
+          <p>{tr.services.map((s) => tt(s.name, lang)).join(t('، ', ', '))}</p>
+          <span className="svc-from">{t('أرسل طلبك ←', 'Send your request →')}</span>
+        </a>
       </div>
       </section>
       ))}
@@ -140,9 +150,10 @@ export function ServiceDetail() {
   const tracks = en ? TRACKS_EN : TRACKS
   const track = tracks.find((x) => x.key === page.track) ?? tracks[1]
   const home = L('/')
-  const calc = svc ? `${home}?svc=${encodeURIComponent(svc.key)}&tier=${encodeURIComponent(svc.tiers[0].key)}#estimate` : `${home}#estimate`
-  // services hidden from the calculator are sold as a custom request with a custom quote
-  const custom = `${home}?custom=${encodeURIComponent(tx.kicker)}#contact`
+  const owner = trackOfPage(page.slug)
+  // requests go to the speciality page's form, or the home form for a page outside the four specialities
+  const request = owner ? `${L(`/${owner.key}`)}#request` : `${home}#contact`
+  const from = svc ? Math.min(...svc.tiers.map((x) => x.price)) : null
   const pageUrl = `https://makwad.com${L(`/services/${page.slug}`)}`
   const ld = [
     {
@@ -167,8 +178,8 @@ export function ServiceDetail() {
         <h1>{tx.h1}</h1>
         <p className="lead">{tx.lead}</p>
         <div className="cta-row">
-          {svc ? <a className="btn" href={calc}>{t('احسب تكلفة مشروعك', 'Price your project')}</a> : <a className="btn" href={custom}>{t('اطلب عرض سعر خاص', 'Request a custom quote')}</a>}
-          <a className="btn ghost" href={`${home}#contact`}>{t('احجز جلسة اكتشاف مجانية', 'Book a free discovery session')}</a>
+          <a className="btn" href={request}>{t('أرسل طلبك', 'Send your request')}</a>
+          {owner && <a className="btn ghost" href={L(`/${owner.key}`)}>{en ? `About ${tt(owner.name, lang)}` : `عن ${tt(owner.name, lang)}`}</a>}
         </div>
       </div>
 
@@ -177,35 +188,14 @@ export function ServiceDetail() {
         <ul className="svc-includes">{tx.includes.map((x) => <li key={x}>{x}</li>)}</ul>
       </section>
 
-      {svc && (
-        <section className="svc-sec">
-          <h2>{t('الأسعار', 'Prices')}</h2>
-          <p className="muted">{t('أسعار تبدأ منها بالريال السعودي، والعرض النهائي بعد جلسة الاكتشاف المجانية.', 'Starting prices in Saudi riyals; the final quote follows the free discovery session.')}</p>
-          <div className="svc-tiers">
-            {svc.tiers.map((x) => (
-              <div className="svc-tier" key={x.key}>
-                <b>{x.label}</b>
-                {x.hint && <small>{x.hint}</small>}
-                <span className="mono">{fmtSAR(x.price)} <small>{t('ريال', 'SAR')}{svc.monthly ? t(' / شهر', ' / month') : ''}</small></span>
-              </div>
-            ))}
-          </div>
-          {svc.addons.length > 0 && (
-            <>
-              <h3>{t('إضافات حسب احتياجك', 'Add-ons as you need them')}</h3>
-              <ul className="svc-addons">{svc.addons.map((a) => <li key={a.key}><span>{a.label}</span><b className="mono">+{fmtSAR(a.price)}</b></li>)}</ul>
-            </>
-          )}
-          <a className="btn small" href={calc}>{t('احسب السعر بالتفصيل ←', 'Price it in detail →')}</a>
-        </section>
-      )}
-      {!svc && (
-        <section className="svc-sec">
-          <h2>{t('التسعير', 'Pricing')}</h2>
-          <p>{t('هذي الخدمة بطلب خاص، ونسعّرها حسب احتياجك: عدد الوحدات والمستخدمين والصلاحيات والربط مع أنظمتك. بعد جلسة الاكتشاف المجانية توصلك عرض سعر مفصل بالبنود والمدة قبل أي التزام.', 'This service is a custom request, priced to your needs: the number of modules, users, permissions and integrations with your systems. After the free discovery session you receive a detailed, itemised quote with the timeline before any commitment.')}</p>
-          <a className="btn small" href={custom}>{t('اطلب عرض سعر خاص ←', 'Request a custom quote →')}</a>
-        </section>
-      )}
+      <section className="svc-sec">
+        <h2>{t('السعر', 'Price')}</h2>
+        {from !== null
+          ? <p className="svc-start">{en ? <>From <b className="mono">{fmtSAR(from)}</b> SAR{svc?.monthly ? ' / month' : ''}</> : <>يبدأ من <b className="mono">{fmtSAR(from)}</b> ريال{svc?.monthly ? ' / شهرياً' : ''}</>}</p>
+          : <p className="svc-start">{t('تسعير حسب احتياجك', 'Priced to your needs')}</p>}
+        <p className="muted">{t('السعر النهائي يعتمد على الشاشات والمزايا اللي تحتاجها. أرسل طلبك، وبعد جلسة الاكتشاف المجانية يوصلك عرض سعر مفصل بالبنود والمدة قبل أي التزام.', 'The final price depends on the screens and features you need. Send your request, and after the free discovery session you receive an itemised quote with the timeline before any commitment.')}</p>
+        <a className="btn small" href={request}>{t('أرسل طلبك ←', 'Send your request →')}</a>
+      </section>
 
       <section className="svc-sec">
         <h2>{t('مراحل التنفيذ', 'Delivery stages')} · {track.range}</h2>

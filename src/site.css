@@ -1263,3 +1263,46 @@ html[dir="ltr"] .wa-float { left: auto; right: 20px; }
 @media (max-width: 860px) { html[dir="ltr"] .process::before { right: auto; left: 19px; } }
 .lang-sw { font-family: var(--f-body); }
 html[dir="ltr"] .lang-sw { font-family: "Readex Pro", var(--f-body); }
+
+/* ---------- the four specialities (home tiles + speciality pages) ---------- */
+.tracks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.track { --tc: var(--accent); --tk: color-mix(in srgb, var(--tc) 72%, var(--ink)); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.track-head { background: color-mix(in srgb, var(--tc) 11%, var(--surface)); padding: 22px 22px 18px; display: flex; flex-direction: column; gap: 10px; }
+.track-num { width: 42px; height: 42px; border-radius: 12px; background: var(--tc); color: #fff; display: grid; place-items: center; font-size: .9rem; }
+.track h3 { font-size: 1.35rem; }
+.track h3 a { color: var(--tk); text-decoration: none; }
+.track h3 a:hover { text-decoration: underline; }
+.track-head p { color: var(--ink); opacity: .82; font-size: .94rem; line-height: 1.8; }
+.track-list { list-style: none; margin: 0; padding: 18px 22px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+.track-list li { position: relative; padding-inline-start: 16px; font-size: .93rem; line-height: 1.6; }
+.track-list li::before { content: ""; position: absolute; inset-inline-start: 0; top: .62em; width: 6px; height: 6px; border-radius: 3px; background: var(--tc); }
+.track-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 14px 22px 20px; border-top: 1px dashed var(--line); }
+.track-foot .svc-price b { color: var(--tk); }
+.track-links { display: flex; align-items: center; gap: 12px; }
+.track-links .linkish { font-size: .86rem; font-weight: 600; }
+.trk-btn { background: var(--tc, var(--accent)); border-color: var(--tc, var(--accent)); color: #fff; }
+.trk-btn:hover { filter: brightness(1.08); }
+.trk-new { display: inline-block; margin-inline-start: 8px; font-size: .68rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--tc, var(--accent)); color: #fff; vertical-align: middle; }
+.track-extra { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+.track-extra > div { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px 22px; display: flex; flex-direction: column; gap: 6px; }
+.track-extra span { color: var(--muted); font-size: .93rem; line-height: 1.8; }
+@media (max-width: 1100px) { .tracks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .tracks, .track-extra { grid-template-columns: 1fr; } }
+
+.trk-hero { --tk: color-mix(in srgb, var(--tc) 72%, var(--ink)); }
+.trk-hero h1 { color: var(--tk); }
+.trk-num { color: var(--tk); font-size: .95rem; }
+.trk-from { color: var(--muted); align-self: center; }
+.trk-from b { color: var(--ink); font-size: 1.2rem; }
+.trk-grid { --tk: color-mix(in srgb, var(--tc) 72%, var(--ink)); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.trk-card { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--tc); border-radius: var(--r); padding: 20px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.trk-card h3 { font-size: 1.08rem; }
+.trk-card p { color: var(--muted); font-size: .93rem; line-height: 1.8; flex: 1; }
+.trk-card-foot { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; border-top: 1px dashed var(--line); padding-top: 10px; font-size: .86rem; color: var(--muted); }
+.trk-card-foot b { color: var(--tk); font-size: 1.1rem; }
+@media (max-width: 900px) { .trk-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .trk-grid { grid-template-columns: 1fr; } }
+.svc-start { font-size: 1.05rem; }
+.svc-start b { font-size: 1.5rem; color: var(--accent); }
+#request .form { margin-top: 16px; }
+.svc-sec > .btn { align-self: flex-start; width: auto; }

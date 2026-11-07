@@ -10,6 +10,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'))
 const DashboardRoute = () => <Suspense fallback={<div className="center-screen">جارٍ التحميل…</div>}><Dashboard /></Suspense>
 import { Privacy, Refund, Terms } from './pages/Legal'
 import { ServiceDetail, ServicesIndex } from './pages/Services'
+import { TrackPage } from './pages/TrackPage'
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string)
 
@@ -23,6 +24,10 @@ const routeTree = rootRoute.addChildren([
   createRoute({ getParentRoute: () => rootRoute, path: '/refund', component: Refund }),
   createRoute({ getParentRoute: () => rootRoute, path: '/services', component: ServicesIndex }),
   createRoute({ getParentRoute: () => rootRoute, path: '/services/$slug', component: ServiceDetail }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/web', component: TrackPage }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/apps', component: TrackPage }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/brand', component: TrackPage }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/business', component: TrackPage }),
   // English: the same pages under /en (the dashboard stays Arabic)
   createRoute({ getParentRoute: () => rootRoute, path: '/en', component: Home }),
   createRoute({ getParentRoute: () => rootRoute, path: '/en/login', component: Login }),
@@ -31,6 +36,10 @@ const routeTree = rootRoute.addChildren([
   createRoute({ getParentRoute: () => rootRoute, path: '/en/refund', component: Refund }),
   createRoute({ getParentRoute: () => rootRoute, path: '/en/services', component: ServicesIndex }),
   createRoute({ getParentRoute: () => rootRoute, path: '/en/services/$slug', component: ServiceDetail }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/web', component: TrackPage }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/apps', component: TrackPage }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/brand', component: TrackPage }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/business', component: TrackPage }),
 ])
 
 const router = createRouter({
