@@ -1123,9 +1123,9 @@ function ProjectExtras({ p }: { p: Doc<'projects'> }) {
 type WorkDraft = {
   id?: Id<'works'>
   title: string; label: string; text: string; kind: 'mobile' | 'web' | 'both'
-  art: string; color: string; metrics: Array<{ value: string; label: string }>; url: string; visible: boolean
+  art: string; color: string; metrics: Array<{ value: string; label: string }>; url: string; store: string; visible: boolean
 }
-const emptyWork: WorkDraft = { title: '', label: '', text: '', kind: 'mobile', art: 'coffee', color: 'accent', metrics: [{ value: '', label: '' }], url: '', visible: true }
+const emptyWork: WorkDraft = { title: '', label: '', text: '', kind: 'mobile', art: 'coffee', color: 'accent', metrics: [{ value: '', label: '' }], url: '', store: '', visible: true }
 
 function ContentPanel() {
   const res = useQuery(api.content.adminContent) as
@@ -1184,7 +1184,7 @@ function WorksEditor({ works }: { works: Array<Doc<'works'>> }) {
               <span className="content-actions">
                 <button className="btn ghost small" type="button" onClick={() => setEditing({
                   id: w._id, title: w.title, label: w.label, text: w.text, kind: w.kind, art: w.art, color: w.color,
-                  metrics: w.metrics.length ? w.metrics : [{ value: '', label: '' }], url: w.url ?? '', visible: w.visible,
+                  metrics: w.metrics.length ? w.metrics : [{ value: '', label: '' }], url: w.url ?? '', store: w.store ?? '', visible: w.visible,
                 })}>تعديل</button>
                 {confirm === w._id ? (
                   <><button className="btn danger small" type="button" onClick={() => void del({ id: w._id })}>تأكيد</button><button className="btn ghost small" type="button" onClick={() => setConfirm(null)}>إلغاء</button></>
@@ -1212,7 +1212,7 @@ function WorkForm({ draft, onClose }: { draft: WorkDraft; onClose: () => void })
         setBusy(true)
         setErr(null)
         const r = await save({ ...(w.id ? { id: w.id } : {}), title: w.title, label: w.label, text: w.text, kind: w.kind, art: w.art, color: w.color,
-          metrics: w.metrics.filter((m) => m.value && m.label), url: w.url, visible: w.visible })
+          metrics: w.metrics.filter((m) => m.value && m.label), url: w.url, store: w.store, visible: w.visible })
         setBusy(false)
         if (r.ok) onClose()
         else setErr(r.error)
@@ -1248,7 +1248,8 @@ function WorkForm({ draft, onClose }: { draft: WorkDraft; onClose: () => void })
           ))}
           {w.metrics.length < 3 && <button className="linkish" type="button" onClick={() => set('metrics', [...w.metrics, { value: '', label: '' }])}>+ إضافة رقم</button>}
         </div>
-        <div className="field full"><label htmlFor="w-url">رابط المشروع (اختياري)</label><input id="w-url" dir="ltr" value={w.url} onChange={(e) => set('url', e.target.value)} placeholder="https://apps.apple.com/..." /></div>
+        <div className="field full"><label htmlFor="w-url">رابط المشروع (اختياري)</label><input id="w-url" dir="ltr" value={w.url} onChange={(e) => set('url', e.target.value)} placeholder="https://..." /></div>
+        <div className="field full"><label htmlFor="w-store">رابط التحميل من App Store (اختياري)</label><input id="w-store" dir="ltr" value={w.store} onChange={(e) => set('store', e.target.value)} placeholder="https://apps.apple.com/sa/app/..." /></div>
         <label className="field full check-line"><input type="checkbox" checked={w.visible} onChange={(e) => set('visible', e.target.checked)} /> يظهر في الموقع</label>
         <div className="field full settings-actions">
           <button className="btn" type="submit" disabled={busy}>{busy ? 'جارٍ الحفظ…' : 'حفظ'}</button>

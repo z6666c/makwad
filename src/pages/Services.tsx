@@ -64,6 +64,7 @@ export function Shell({ children, cta }: { children: ReactNode; cta?: string }) 
           <div className="links">
             {TRACKS4.map((x) => <a key={x.key} href={L(`/${x.key}`)}>{tt(x.name, lang)}</a>)}
             <a href={L('/work')}>{t('أعمالنا', 'Our work')}</a>
+            <a href="https://play.makwad.com">{t('ألعاب مكود', 'Makwad Games')}</a>
           </div>
           <div className="nav-end">
             <LangSwitch />

@@ -1309,3 +1309,14 @@ html[dir="ltr"] .lang-sw { font-family: "Readex Pro", var(--f-body); }
 .work-cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 24px 28px; margin-block: 8px 24px; }
 .work-cta h2 { font-size: 1.35rem; margin-top: 4px; }
 .svc-page #work, .svc-page #promos { padding-block: 24px; }
+/* real project screenshots in portfolio cards */
+.shot-frame { position: relative; z-index: 1; width: 88%; border-radius: 10px; overflow: hidden; background: var(--surface); box-shadow: 0 14px 34px -14px rgba(14, 23, 48, .35); border: 1px solid var(--line); }
+.shot-bar { display: flex; align-items: center; gap: 5px; padding: 6px 10px; background: color-mix(in srgb, var(--ink) 6%, var(--surface)); }
+.shot-bar i { width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 22%, transparent); }
+.shot-bar span { margin-inline-start: 8px; font-size: .62rem; color: var(--muted); font-family: var(--f-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shot-frame img { display: block; width: 100%; height: auto; aspect-ratio: 16/10; object-fit: cover; object-position: top; }
+.case-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin-top: 8px; }
+.case-links .case-link { margin-top: 0; }
+.case-link.store { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--ink); color: var(--bg); }
+.case-link.store:hover { opacity: .88; }
+.links a { white-space: nowrap; }

@@ -17,7 +17,7 @@ type Tables = {
   updates: Base & { projectId: string; text: string; author: "admin" | "client"; authorName: string };
   works: Base & {
     title: string; label: string; text: string; kind: "mobile" | "web" | "both"; art: string; color: string;
-    metrics: Metric[]; url?: string; order: number; visible: boolean;
+    metrics: Metric[]; url?: string; store?: string; order: number; visible: boolean;
   };
   quotes: Base & {
     number: string; clientName: string; clientEmail: string; company?: string; title: string; leadId?: string;

@@ -47,6 +47,18 @@ export const ARTS: Record<string, { label: string; html: string }> = {
       <div class="ms-cta">احجز · 250 ر.س</div></div></div>` },
 }
 
+
+// Real screenshots of Makwad's own projects (files in public/works).
+const shot = (file: string, host: string) => `<div class="shot-frame"><div class="shot-bar"><i></i><i></i><i></i><span dir="ltr">${host}</span></div><img src="/works/${file}.webp" alt="" loading="lazy" decoding="async" width="960" height="600"></div>`
+Object.assign(ARTS, {
+  haseef: { label: 'حصيف (صورة حقيقية)', html: shot('haseef', 'haseef360.com') },
+  sufra: { label: 'سُفرة (صورة حقيقية)', html: shot('sufra', 'sufra') },
+  mohaqqiq: { label: 'ملفات المحقق (صورة حقيقية)', html: shot('mohaqqiq', 'mohaqqiq.makwad.com') },
+  brandforge: { label: 'BrandForge (صورة حقيقية)', html: shot('brandforge', 'brandforge-ai.vercel.app') },
+  english: { label: 'English Step (صورة حقيقية)', html: shot('english', 'z6666c.github.io') },
+  market: { label: 'دراسة السوق (صورة حقيقية)', html: shot('market', 'z6666c.github.io') },
+})
+
 export const COLORS: Record<string, { label: string; css: string }> = {
   accent: { label: 'أخضر', css: 'var(--accent)' },
   clay: { label: 'طيني', css: 'var(--clay)' },

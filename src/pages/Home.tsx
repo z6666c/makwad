@@ -20,7 +20,7 @@ const NAV = [
   ['#services', 'التخصصات', 'Specialities'],
   ['#process', 'طريقة العمل', 'How we work'],
   ['/work', 'أعمالنا', 'Our work'],
-  ['#contact', 'أرسل طلبك', 'Send a request'],
+  ['https://play.makwad.com', 'ألعاب مكود', 'Makwad Games'],
 ] as const
 
 const STEPS = [
@@ -111,7 +111,7 @@ export default function Home() {
         {menuOpen && (
           <div className="mobile-menu wrap" id="mMenu">
             {TRACKS4.map((x) => <a key={x.key} href={L(`/${x.key}`)}>{tx(x.name, lang)}</a>)}
-            {NAV.slice(1).map(([h, ar, e]) => (
+            {[...NAV.slice(1), ['#contact', 'أرسل طلبك', 'Send a request'] as const].map(([h, ar, e]) => (
               <a key={h} href={h.startsWith('/') ? L(h) : h} onClick={() => setMenuOpen(false)}>{en ? e : ar}</a>
             ))}
             <a href={L('/login')}>{t('دخول العملاء', 'Client login')}</a>
@@ -241,7 +241,7 @@ export default function Home() {
             </div>
             <div>
               <h4>{t('الشركة', 'Company')}</h4>
-              <ul><li><a href="#services">{t('التخصصات', 'Specialities')}</a></li><li><a href={L('/work')}>{t('أعمالنا', 'Our work')}</a></li><li><a href="#process">{t('طريقة العمل', 'How we work')}</a></li></ul>
+              <ul><li><a href="#services">{t('التخصصات', 'Specialities')}</a></li><li><a href={L('/work')}>{t('أعمالنا', 'Our work')}</a></li><li><a href="https://play.makwad.com">{t('ألعاب مكود', 'Makwad Games')}</a></li><li><a href="#process">{t('طريقة العمل', 'How we work')}</a></li></ul>
             </div>
             <div>
               <h4>{t('العملاء', 'Clients')}</h4>
@@ -396,7 +396,7 @@ function Testimonials({ items }: { items: Array<Doc<'testimonials'>> }) {
   )
 }
 
-export function WorkCard({ w: raw }: { w: Pick<Doc<'works'>, 'title' | 'label' | 'text' | 'art' | 'color' | 'metrics' | 'url'> }) {
+export function WorkCard({ w: raw }: { w: Pick<Doc<'works'>, 'title' | 'label' | 'text' | 'art' | 'color' | 'metrics' | 'url' | 'store'> }) {
   const { en, t } = useLang()
   const tr = en ? WORKS_EN[raw.title] : undefined
   const w = tr ? { ...raw, title: tr.title, label: tr.label, text: tr.text, metrics: raw.metrics.map((m, i) => ({ ...m, label: tr.metrics[i] ?? m.label })) } : raw
@@ -413,7 +413,12 @@ export function WorkCard({ w: raw }: { w: Pick<Doc<'works'>, 'title' | 'label' |
             {w.metrics.map((m) => <div key={m.label}><b>{m.value}</b>{m.label}</div>)}
           </div>
         )}
-        {w.url && <a className="case-link" href={w.url} target="_blank" rel="noopener noreferrer">{t('زيارة المشروع ←', 'Visit the project →')}</a>}
+        {(w.url || w.store) && (
+          <div className="case-links">
+            {w.url && <a className="case-link" href={w.url} target="_blank" rel="noopener noreferrer">{t('زيارة المشروع ←', 'Visit the project →')}</a>}
+            {w.store && <a className="case-link store" href={w.store} target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.5 2-3.7 2.1-3.8-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6s1.8-.8 3.3-.8 2 .8 3.3.8c1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.8-1.1-2.8-4.1zM14 5.2c.7-.8 1.2-2 1-3.2-1 .1-2.2.7-2.9 1.5-.6.7-1.2 1.9-1.1 3 1.1.1 2.3-.6 3-1.3z"/></svg>{t('حمّلها من App Store', 'Download on the App Store')}</a>}
+          </div>
+        )}
       </div>
     </article>
   )
