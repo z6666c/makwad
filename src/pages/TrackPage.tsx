@@ -21,7 +21,7 @@ export function TrackPage() {
       '@context': 'https://schema.org', '@type': 'Service', name: tx(tr.name, lang), description: tx(tr.description, lang), inLanguage: lang,
       provider: { '@id': 'https://makwad.com/#studio' }, areaServed: { '@type': 'Country', name: t('المملكة العربية السعودية', 'Saudi Arabia') }, url,
       offers: { '@type': 'AggregateOffer', priceCurrency: 'SAR', lowPrice: from },
-      hasOfferCatalog: { '@type': 'OfferCatalog', name: tx(tr.name, lang), itemListElement: tr.services.map((s) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: tx(s.name, lang) }, priceSpecification: { '@type': 'PriceSpecification', minPrice: s.from, priceCurrency: 'SAR' } })) },
+      hasOfferCatalog: { '@type': 'OfferCatalog', name: tx(tr.name, lang), itemListElement: tr.services.map((s) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: tx(s.name, lang) } })) },
     },
     { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: tr.faq.map((f) => ({ '@type': 'Question', name: tx(f.q, lang), acceptedAnswer: { '@type': 'Answer', text: tx(f.a, lang) } })) },
     { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
@@ -45,15 +45,14 @@ export function TrackPage() {
 
       <section className="svc-sec">
         <h2>{t('خدمات التخصص', 'Services')}</h2>
-        <p className="muted">{t('أسعار تبدأ منها بالريال السعودي، والعرض النهائي مفصل بالبنود بعد جلسة الاكتشاف المجانية.', 'Starting prices in Saudi riyals; the itemised final quote follows the free discovery session.')}</p>
+        <p className="muted">{t('اختر الخدمات اللي تحتاجها في نموذج الطلب، ويوصلك عرض سعر مفصل بالبنود بعد جلسة الاكتشاف المجانية.', 'Pick the services you need in the request form; an itemised quote follows the free discovery session.')}</p>
         <div className="trk-grid" style={{ ['--tc' as string]: tr.color } as CSSProperties}>
           {tr.services.map((s) => (
             <article className="trk-card" key={s.key}>
               <h3>{tx(s.name, lang)}{s.isNew && <span className="trk-new">{t('جديد', 'New')}</span>}</h3>
               <p>{tx(s.text, lang)}</p>
               <div className="trk-card-foot">
-                <span>{en ? <>From <b className="mono">{fmtSAR(s.from)}</b> SAR{s.monthly ? ' / month' : ''}</> : <>يبدأ من <b className="mono">{fmtSAR(s.from)}</b> ريال{s.monthly ? ' / شهرياً' : ''}</>}</span>
-                <span className="muted">{tx(s.time, lang)}</span>
+                <span className="muted">{t('المدة المتوقعة', 'Expected timeline')}: {tx(s.time, lang)}</span>
               </div>
             </article>
           ))}

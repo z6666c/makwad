@@ -4,7 +4,7 @@ import { ConvexAuthProvider } from '@convex-dev/auth/react'
 import { ConvexReactClient } from 'convex/react'
 import { RouterProvider, createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router'
 import './site.css'
-import Home from './pages/Home'
+import Home, { WorkPage } from './pages/Home'
 import Login from './pages/Login'
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const DashboardRoute = () => <Suspense fallback={<div className="center-screen">جارٍ التحميل…</div>}><Dashboard /></Suspense>
@@ -24,6 +24,7 @@ const routeTree = rootRoute.addChildren([
   createRoute({ getParentRoute: () => rootRoute, path: '/refund', component: Refund }),
   createRoute({ getParentRoute: () => rootRoute, path: '/services', component: ServicesIndex }),
   createRoute({ getParentRoute: () => rootRoute, path: '/services/$slug', component: ServiceDetail }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/work', component: WorkPage }),
   createRoute({ getParentRoute: () => rootRoute, path: '/web', component: TrackPage }),
   createRoute({ getParentRoute: () => rootRoute, path: '/apps', component: TrackPage }),
   createRoute({ getParentRoute: () => rootRoute, path: '/brand', component: TrackPage }),
@@ -36,6 +37,7 @@ const routeTree = rootRoute.addChildren([
   createRoute({ getParentRoute: () => rootRoute, path: '/en/refund', component: Refund }),
   createRoute({ getParentRoute: () => rootRoute, path: '/en/services', component: ServicesIndex }),
   createRoute({ getParentRoute: () => rootRoute, path: '/en/services/$slug', component: ServiceDetail }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/en/work', component: WorkPage }),
   createRoute({ getParentRoute: () => rootRoute, path: '/en/web', component: TrackPage }),
   createRoute({ getParentRoute: () => rootRoute, path: '/en/apps', component: TrackPage }),
   createRoute({ getParentRoute: () => rootRoute, path: '/en/brand', component: TrackPage }),

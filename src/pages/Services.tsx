@@ -63,6 +63,7 @@ export function Shell({ children, cta }: { children: ReactNode; cta?: string }) 
           <Logo />
           <div className="links">
             {TRACKS4.map((x) => <a key={x.key} href={L(`/${x.key}`)}>{tt(x.name, lang)}</a>)}
+            <a href={L('/work')}>{t('أعمالنا', 'Our work')}</a>
           </div>
           <div className="nav-end">
             <LangSwitch />
@@ -101,21 +102,16 @@ export function ServicesIndex() {
       {TRACKS4.map((tr) => (
       <section className="svc-sec" key={tr.key}>
       <h2><a href={L(`/${tr.key}`)}>{tt(tr.name, lang)}</a></h2>
-      <p className="muted">{tt(tr.line, lang)}</p>
+      <p className="muted">{tt(tr.line, lang)} {en ? <b>From SAR {fmtSAR(tr.from)}.</b> : <b>يبدأ من {fmtSAR(tr.from)} ريال.</b>}</p>
       <div className="svc-grid">
         {SERVICE_PAGES.filter((p) => tr.pages.includes(p.slug)).map((p) => {
           const tx = textOf(p, en)
-          const svc = serviceFor(p, raw)
-          const tiers = svc ? (p.tiers ? svc.tiers.filter((x) => p.tiers!.includes(x.key)) : svc.tiers) : []
-          const from = tiers.length ? Math.min(...tiers.map((x) => x.price)) : svc ? Math.min(...svc.tiers.map((x) => x.price)) : null
           return (
             <a key={p.slug} className="svc-card" href={L(`/services/${p.slug}`)}>
               <span className="kicker">{tx.kicker}</span>
               <h2>{tx.h1}</h2>
               <p>{tx.lead}</p>
-              {from !== null
-                ? <span className="svc-from">{en ? <>From <b className="mono">{fmtSAR(from)}</b> SAR</> : <>يبدأ من <b className="mono">{fmtSAR(from)}</b> ريال</>}</span>
-                : <span className="svc-from">{en ? <>Custom request · <b>quoted to your needs</b></> : <>طلب خاص · <b>تسعير حسب احتياجك</b></>}</span>}
+              <span className="svc-from">{t('التفاصيل ←', 'Details →')}</span>
             </a>
           )
         })}
@@ -153,14 +149,12 @@ export function ServiceDetail() {
   const owner = trackOfPage(page.slug)
   // requests go to the speciality page's form, or the home form for a page outside the four specialities
   const request = owner ? `${L(`/${owner.key}`)}#request` : `${home}#contact`
-  const from = svc ? Math.min(...svc.tiers.map((x) => x.price)) : null
   const pageUrl = `https://makwad.com${L(`/services/${page.slug}`)}`
   const ld = [
     {
       '@context': 'https://schema.org', '@type': 'Service', name: tx.h1, description: tx.description, serviceType: tx.kicker, inLanguage: lang,
       provider: { '@id': 'https://makwad.com/#studio' }, areaServed: { '@type': 'Country', name: t('المملكة العربية السعودية', 'Saudi Arabia') },
       url: pageUrl,
-      ...(svc ? { offers: { '@type': 'AggregateOffer', priceCurrency: 'SAR', lowPrice: Math.min(...svc.tiers.map((x) => x.price)), highPrice: Math.max(...svc.tiers.map((x) => x.price)) } } : {}),
     },
     { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: tx.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
     { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
@@ -190,10 +184,8 @@ export function ServiceDetail() {
 
       <section className="svc-sec">
         <h2>{t('السعر', 'Price')}</h2>
-        {from !== null
-          ? <p className="svc-start">{en ? <>From <b className="mono">{fmtSAR(from)}</b> SAR{svc?.monthly ? ' / month' : ''}</> : <>يبدأ من <b className="mono">{fmtSAR(from)}</b> ريال{svc?.monthly ? ' / شهرياً' : ''}</>}</p>
-          : <p className="svc-start">{t('تسعير حسب احتياجك', 'Priced to your needs')}</p>}
-        <p className="muted">{t('السعر النهائي يعتمد على الشاشات والمزايا اللي تحتاجها. أرسل طلبك، وبعد جلسة الاكتشاف المجانية يوصلك عرض سعر مفصل بالبنود والمدة قبل أي التزام.', 'The final price depends on the screens and features you need. Send your request, and after the free discovery session you receive an itemised quote with the timeline before any commitment.')}</p>
+        {owner && <p className="svc-start">{en ? <>{tt(owner.name, lang)} services start from <b className="mono">{fmtSAR(owner.from)}</b> SAR</> : <>تبدأ خدمات {tt(owner.name, lang)} من <b className="mono">{fmtSAR(owner.from)}</b> ريال</>}</p>}
+        <p className="muted">{t('السعر النهائي يعتمد على حجم مشروعك والمزايا اللي تحتاجها. أرسل طلبك، وبعد جلسة الاكتشاف المجانية يوصلك عرض سعر مفصل بالبنود والمدة قبل أي التزام.', 'The final price depends on the size of your project and the features you need. Send your request, and after the free discovery session you receive an itemised quote with the timeline before any commitment.')}</p>
         <a className="btn small" href={request}>{t('أرسل طلبك ←', 'Send your request →')}</a>
       </section>
 

@@ -5,26 +5,64 @@
     "kicker": "Mobile apps",
     "h1": "Mobile app design and development",
     "lead": "We design and build iOS and Android apps with full Arabic support, from an idea on paper to an app live on the App Store and Google Play, and we stay with you after launch.",
-    "includes": ["Idea analysis and the screens for version one", "Interface and UX design tested before development", "One app that runs on iOS and Android", "Admin dashboard for orders and content", "Online payments: mada, Apple Pay and STC Pay", "Published in your name, and the source code is yours"],
+    "includes": [
+      "Idea analysis and the screens for version one",
+      "Interface and UX design tested before development",
+      "One app that runs on iOS and Android",
+      "Admin dashboard for orders and content",
+      "Online payments: mada, Apple Pay and STC Pay",
+      "Published in your name, and the source code is yours"
+    ],
     "faq": [
-      { "q": "How much does a mobile app cost?", "a": "A first version on one platform starts at SAR 9,000, an iOS and Android app at SAR 16,000, a mid-size app of up to 25 screens at SAR 28,000, and a complete platform (customer, courier and admin) at SAR 48,000. Add-ons such as payments, maps and notifications are priced in the detailed quote." },
-      { "q": "How long does it take to build the app?", "a": "8 to 12 weeks depending on its size. We split big projects into releases so version one launches early, with a test build for you to review every two weeks." },
-      { "q": "Do you publish the app on the App Store and Google Play?", "a": "Yes. We prepare and submit the app and follow the store review until it is live, on a developer account in your or your company's name so the app stays yours." },
-      { "q": "Does the app fully support Arabic?", "a": "Yes. We build the app right-to-left from the start with suitable fonts, and English can be added as a second language." }
+      {
+        "q": "How much does a mobile app cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Apps services start from SAR 1,500. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "How long does it take to build the app?",
+        "a": "8 to 12 weeks depending on its size. We split big projects into releases so version one launches early, with a test build for you to review every two weeks."
+      },
+      {
+        "q": "Do you publish the app on the App Store and Google Play?",
+        "a": "Yes. We prepare and submit the app and follow the store review until it is live, on a developer account in your or your company's name so the app stays yours."
+      },
+      {
+        "q": "Does the app fully support Arabic?",
+        "a": "Yes. We build the app right-to-left from the start with suitable fonts, and English can be added as a second language."
+      }
     ]
   },
   "websites": {
     "title": "Website & Online Store Design in Riyadh | Makwad Studio",
-    "description": "Company websites, landing pages and online stores designed and built in Riyadh, with a content dashboard, online payments and search engine optimisation. Prices from SAR 1,500.",
+    "description": "Company websites, landing pages and online stores designed and built in Riyadh, with a content dashboard, online payments and search engine optimisation. Send your request for a detailed quote.",
     "kicker": "Websites & stores",
     "h1": "Website and online store design",
     "lead": "From a landing page for your business to a full company website or an online store with cart, orders and payments: we design it, build it and launch it on your domain.",
-    "includes": ["Responsive design for phone and desktop", "A dashboard to edit texts, images and products", "Store with cart, orders and online payments", "Search engine optimisation and Google setup", "Fast hosting with an SSL certificate", "Arabic and English when you need both"],
+    "includes": [
+      "Responsive design for phone and desktop",
+      "A dashboard to edit texts, images and products",
+      "Store with cart, orders and online payments",
+      "Search engine optimisation and Google setup",
+      "Fast hosting with an SSL certificate",
+      "Arabic and English when you need both"
+    ],
     "faq": [
-      { "q": "How much does a website cost?", "a": "A landing page from SAR 1,500, a business website of up to 5 pages from SAR 3,500, a full company website of up to 12 pages from SAR 6,500, and a custom platform from SAR 18,000." },
-      { "q": "How much does an online store cost?", "a": "An online store with cart and orders starts at SAR 1,500. You can add online payments, a content dashboard, two languages and SEO as you need them; their prices come in the detailed quote." },
-      { "q": "How long does a website take?", "a": "A landing page takes days; websites and stores take 3 to 6 weeks depending on size, with a test version for you to review before launch." },
-      { "q": "Can I edit the website myself?", "a": "Yes. With the content dashboard you edit texts, images and products yourself, no technical experience needed." }
+      {
+        "q": "How much does a website cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Web services start from SAR 2,000. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "How much does an online store cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Business services start from SAR 800. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "How long does a website take?",
+        "a": "A landing page takes days; websites and stores take 3 to 6 weeks depending on size, with a test version for you to review before launch."
+      },
+      {
+        "q": "Can I edit the website myself?",
+        "a": "Yes. With the content dashboard you edit texts, images and products yourself, no technical experience needed."
+      }
     ]
   },
   "systems": {
@@ -33,64 +71,147 @@
     "kicker": "Systems & software",
     "h1": "Custom management systems",
     "lead": "We build systems that fit exactly how you work: customers, inventory, staff or invoicing, instead of off-the-shelf software that doesn't fit.",
-    "includes": ["Your current processes analysed and turned into a clear system", "Roles and permissions for manager, staff and accountant", "Reports and a KPI dashboard with Excel and PDF export", "E-invoicing compliant with ZATCA requirements", "Your old data moved from Excel or a previous system", "A companion mobile app for staff or customers"],
+    "includes": [
+      "Your current processes analysed and turned into a clear system",
+      "Roles and permissions for manager, staff and accountant",
+      "Reports and a KPI dashboard with Excel and PDF export",
+      "E-invoicing compliant with ZATCA requirements",
+      "Your old data moved from Excel or a previous system",
+      "A companion mobile app for staff or customers"
+    ],
     "faq": [
-      { "q": "How much does a management system cost?", "a": "Systems are quoted on request, based on what you need: the number of modules, users, permissions and integrations. After the free discovery session we send a detailed, itemised quote with the timeline before any commitment." },
-      { "q": "Can the system connect to our existing systems?", "a": "Yes. We connect to any existing system through an API or its database, and move your old data across." },
-      { "q": "How long does it take to build?", "a": "3 to 6 weeks for small and mid-size systems; larger systems are split into modules delivered one after another." }
+      {
+        "q": "How much does a management system cost?",
+        "a": "Systems are quoted on request, based on what you need: the number of modules, users, permissions and integrations. After the free discovery session we send a detailed, itemised quote with the timeline before any commitment."
+      },
+      {
+        "q": "Can the system connect to our existing systems?",
+        "a": "Yes. We connect to any existing system through an API or its database, and move your old data across."
+      },
+      {
+        "q": "How long does it take to build?",
+        "a": "3 to 6 weeks for small and mid-size systems; larger systems are split into modules delivered one after another."
+      }
     ]
   },
   "brand-identity": {
-    "title": "Logo & Brand Identity Design in Riyadh | From SAR 500 | Makwad Studio",
-    "description": "Personal or business logo and visual identity design: logo concepts, colours, type and applications on print and social media. From SAR 500, delivered in one to two weeks.",
+    "title": "Logo & Brand Identity Design in Riyadh | Makwad Studio",
+    "description": "Personal or business logo and visual identity design: logo concepts, colours, type and applications on print and social media. Delivered in one to two weeks.",
     "kicker": "Brand identity",
     "h1": "Logo and brand identity design",
     "lead": "An identity that looks like your business: we start by understanding your audience and taste, present logo concepts for you to choose from, then build the colours, type and everything you need.",
-    "includes": ["First logo concepts to choose from", "A matching colour palette and typefaces", "Applied to business cards and print", "Social media templates", "Two revision rounds on the chosen concept", "Final files ready for print and digital"],
+    "includes": [
+      "First logo concepts to choose from",
+      "A matching colour palette and typefaces",
+      "Applied to business cards and print",
+      "Social media templates",
+      "Two revision rounds on the chosen concept",
+      "Final files ready for print and digital"
+    ],
     "faq": [
-      { "q": "How much does a logo and identity cost?", "a": "A personal identity starts at SAR 500 and a business identity at SAR 900. Add-ons such as stationery and social templates are priced in the quote as you need them." },
-      { "q": "How long does identity design take?", "a": "One to two weeks: first concepts within days, then two revision rounds, then the final files." },
-      { "q": "Do I get the original logo files?", "a": "Yes. You receive the logo files in print and digital formats, and the identity is fully yours." }
+      {
+        "q": "How much does a logo and identity cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Brand services start from SAR 500. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "How long does identity design take?",
+        "a": "One to two weeks: first concepts within days, then two revision rounds, then the final files."
+      },
+      {
+        "q": "Do I get the original logo files?",
+        "a": "Yes. You receive the logo files in print and digital formats, and the identity is fully yours."
+      }
     ]
   },
   "promo-materials": {
     "title": "Promo Video & Digital Brochure Design | Makwad Studio",
-    "description": "Motion-graphics promo videos for social media and digital or printed brochures for your business, in one identity with a clear message. From SAR 500.",
+    "description": "Motion-graphics promo videos for social media and digital or printed brochures for your business, in one identity with a clear message. Send your request for a detailed quote.",
     "kicker": "Promotional material",
     "h1": "Promo video and brochure design",
     "lead": "A short video that stops the scroll in the first two seconds and delivers your message, and a brochure that introduces your services, all in your brand.",
-    "includes": ["A distinct concept and script for each video", "Motion-graphics video in Reels and Story sizes", "Royalty-free music", "Digital brochure plus a print version", "A campaign pack combining video and brochure", "Revision rounds before delivery"],
+    "includes": [
+      "A distinct concept and script for each video",
+      "Motion-graphics video in Reels and Story sizes",
+      "Royalty-free music",
+      "Digital brochure plus a print version",
+      "A campaign pack combining video and brochure",
+      "Revision rounds before delivery"
+    ],
     "faq": [
-      { "q": "How much does a promo video cost?", "a": "A promo video starts at SAR 500, a digital brochure at SAR 500, and the full campaign pack at SAR 1,500." },
-      { "q": "What sizes are the videos?", "a": "We design in vertical format for Reels, Stories and TikTok, and can add square and landscape versions for other platforms." },
-      { "q": "Can I see examples?", "a": "Yes. You'll find videos we made on the home page and on our Instagram account." }
+      {
+        "q": "How much does a promo video cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Brand services start from SAR 500. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "What sizes are the videos?",
+        "a": "We design in vertical format for Reels, Stories and TikTok, and can add square and landscape versions for other platforms."
+      },
+      {
+        "q": "Can I see examples?",
+        "a": "Yes. You'll find videos we made on the home page and on our Instagram account."
+      }
     ]
   },
   "ai-solutions": {
     "title": "AI Solutions for Businesses | Chat Assistants & WhatsApp Bots | Makwad Studio",
-    "description": "Website chat assistants, smart WhatsApp bots, document analysis and task automation that run on your company's data and understand local dialects. Prices from SAR 3,500.",
+    "description": "Website chat assistants, smart WhatsApp bots, document analysis and task automation that run on your company's data and understand local dialects. Send your request for a detailed quote.",
     "kicker": "Artificial intelligence",
     "h1": "AI solutions for businesses",
     "lead": "AI tools that run on your company's data: they answer your customers, analyse your documents and cut repetitive work.",
-    "includes": ["A website chat assistant that answers from your company's information", "A smart WhatsApp bot that serves your customers", "Document and contract analysis with data extraction", "Automation of repetitive tasks between your systems", "Support for local Arabic dialects", "Control over your data and its privacy"],
+    "includes": [
+      "A website chat assistant that answers from your company's information",
+      "A smart WhatsApp bot that serves your customers",
+      "Document and contract analysis with data extraction",
+      "Automation of repetitive tasks between your systems",
+      "Support for local Arabic dialects",
+      "Control over your data and its privacy"
+    ],
     "faq": [
-      { "q": "How much does an AI assistant cost?", "a": "AI tools start at SAR 3,500 depending on the type of tool and the amount of data; the details come in the quote after the discovery session." },
-      { "q": "Does it understand the Saudi dialect?", "a": "Yes. Understanding Saudi and Gulf dialects is included in every assistant at no extra cost, and we tune the reply style to suit your customers." },
-      { "q": "Is our company data safe?", "a": "We build the tool so your data is used only to serve you, and we explain where it is stored and how it is processed before we start." }
+      {
+        "q": "How much does an AI assistant cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Brand services start from SAR 500. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "Does it understand the Saudi dialect?",
+        "a": "Yes. Understanding Saudi and Gulf dialects is included in every assistant at no extra cost, and we tune the reply style to suit your customers."
+      },
+      {
+        "q": "Is our company data safe?",
+        "a": "We build the tool so your data is used only to serve you, and we explain where it is stored and how it is processed before we start."
+      }
     ]
   },
   "ecommerce-store": {
-    "title": "Online Store Design in Saudi Arabia | From SAR 1,500 | Makwad Studio",
-    "description": "An online store built for your brand: products, cart, orders and payment by mada and Apple Pay, with a dashboard and search engine optimisation. From SAR 1,500.",
+    "title": "Online Store Design in Saudi Arabia | Makwad Studio",
+    "description": "An online store built for your brand: products, cart, orders and payment by mada and Apple Pay, with a dashboard and search engine optimisation. Send your request for a detailed quote.",
     "kicker": "Online stores",
     "h1": "Online store design",
     "lead": "A store under your name and domain, not a repeated template: your products, cart and orders, online payments, and a dashboard where you run everything yourself.",
-    "includes": ["Product pages, categories and search", "Shopping cart, orders and order statuses", "Payment by mada, Apple Pay and STC Pay", "Dashboard for products, orders and offers", "Customer accounts and order tracking", "Search engine optimisation and fast loading"],
+    "includes": [
+      "Product pages, categories and search",
+      "Shopping cart, orders and order statuses",
+      "Payment by mada, Apple Pay and STC Pay",
+      "Dashboard for products, orders and offers",
+      "Customer accounts and order tracking",
+      "Search engine optimisation and fast loading"
+    ],
     "faq": [
-      { "q": "How much does an online store cost?", "a": "An online store with products, cart and orders starts at SAR 1,500. Add-ons such as online payments, a content dashboard and two languages are priced in the quote as you need them." },
-      { "q": "How is your store different from ready-made platforms?", "a": "The store carries your name and domain and its design is made for your brand, with no commission on sales; the code is yours, and we add any feature your business needs." },
-      { "q": "How long does the store take?", "a": "3 to 6 weeks depending on the number of products and features, with a test version for you to review before launch." },
-      { "q": "Can I add a mobile app to the store?", "a": "Yes. We can build an iOS and Android app connected to the same store and dashboard." }
+      {
+        "q": "How much does an online store cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Business services start from SAR 800. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "How is your store different from ready-made platforms?",
+        "a": "The store carries your name and domain and its design is made for your brand, with no commission on sales; the code is yours, and we add any feature your business needs."
+      },
+      {
+        "q": "How long does the store take?",
+        "a": "3 to 6 weeks depending on the number of products and features, with a test version for you to review before launch."
+      },
+      {
+        "q": "Can I add a mobile app to the store?",
+        "a": "Yes. We can build an iOS and Android app connected to the same store and dashboard."
+      }
     ]
   },
   "delivery-app": {
@@ -99,11 +220,27 @@
     "kicker": "Delivery apps",
     "h1": "Delivery app development",
     "lead": "A complete delivery platform under your name: customers order and follow the courier on the map, couriers receive orders, and you run everything from one dashboard.",
-    "includes": ["Customer app: ordering, payment and live tracking", "Courier app: receiving orders and the route", "Admin dashboard for orders, couriers and reports", "Maps and live courier tracking", "Instant notifications on order status", "Published on the App Store and Google Play in your name"],
+    "includes": [
+      "Customer app: ordering, payment and live tracking",
+      "Courier app: receiving orders and the route",
+      "Admin dashboard for orders, couriers and reports",
+      "Maps and live courier tracking",
+      "Instant notifications on order status",
+      "Published on the App Store and Google Play in your name"
+    ],
     "faq": [
-      { "q": "How much does a delivery app cost?", "a": "The complete platform (customer app, courier app and admin dashboard) starts at SAR 48,000. We can also start smaller, from SAR 16,000 for an iOS and Android app, and add maps (SAR 4,000), payments (SAR 2,000) and the admin dashboard (SAR 5,000) as you need them." },
-      { "q": "Is there live courier tracking?", "a": "Yes. Customers see the courier's location on the map in real time and get a notification at every change in order status." },
-      { "q": "How long does a delivery app take?", "a": "8 to 12 weeks for the complete platform. We can launch a first version faster and complete the rest in later releases." }
+      {
+        "q": "How much does a delivery app cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Apps services start from SAR 1,500. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "Is there live courier tracking?",
+        "a": "Yes. Customers see the courier's location on the map in real time and get a notification at every change in order status."
+      },
+      {
+        "q": "How long does a delivery app take?",
+        "a": "8 to 12 weeks for the complete platform. We can launch a first version faster and complete the rest in later releases."
+      }
     ]
   },
   "booking-app": {
@@ -112,37 +249,85 @@
     "kicker": "Booking systems",
     "h1": "Online booking and appointment system",
     "lead": "Your customers book themselves at any time from your website or app, and you see every appointment in one calendar with fewer missed bookings.",
-    "includes": ["A calendar of available slots per staff member or service", "Booking confirmation and a reminder before the appointment", "Pay a deposit or the full amount online", "Customer accounts and booking history", "Dashboard for appointments, services and staff", "An optional companion mobile app"],
+    "includes": [
+      "A calendar of available slots per staff member or service",
+      "Booking confirmation and a reminder before the appointment",
+      "Pay a deposit or the full amount online",
+      "Customer accounts and booking history",
+      "Dashboard for appointments, services and staff",
+      "An optional companion mobile app"
+    ],
     "faq": [
-      { "q": "How much does a booking system cost?", "a": "A business website with bookings and appointments starts at SAR 5,500, and you can add online payments and customer accounts. The exact cost comes in the quote after the discovery session." },
-      { "q": "Is it suitable for clinics and salons?", "a": "Yes. We set the system up for your business: services and their duration, staff and their hours, deposits and the cancellation policy." },
-      { "q": "Can I add a mobile app?", "a": "Yes. We can build an iOS and Android app connected to the same booking system." }
+      {
+        "q": "How much does a booking system cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Apps services start from SAR 1,500. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "Is it suitable for clinics and salons?",
+        "a": "Yes. We set the system up for your business: services and their duration, staff and their hours, deposits and the cancellation policy."
+      },
+      {
+        "q": "Can I add a mobile app?",
+        "a": "Yes. We can build an iOS and Android app connected to the same booking system."
+      }
     ]
   },
   "company-website": {
-    "title": "Professional Company Website Design in Riyadh | From SAR 3,500 | Makwad Studio",
-    "description": "A professional company website that presents your services and work and brings you clients: modern responsive design, a dashboard, two languages and SEO. From SAR 3,500.",
+    "title": "Professional Company Website Design in Riyadh | Makwad Studio",
+    "description": "A professional company website that presents your services and work and brings you clients: modern responsive design, a dashboard, two languages and SEO. Send your request for a detailed quote.",
     "kicker": "Company websites",
     "h1": "Professional company website design",
     "lead": "A website that reflects your company's standard and convinces visitors to get in touch: your services, work and team, in a modern design built for phones first.",
-    "includes": ["A design made for your company's brand", "Services, work and contact pages", "A dashboard to update the content yourself", "Arabic and English", "Search engine optimisation and Google setup", "A request form and a direct WhatsApp link"],
+    "includes": [
+      "A design made for your company's brand",
+      "Services, work and contact pages",
+      "A dashboard to update the content yourself",
+      "Arabic and English",
+      "Search engine optimisation and Google setup",
+      "A request form and a direct WhatsApp link"
+    ],
     "faq": [
-      { "q": "How much does a company website cost?", "a": "A business website of up to 5 pages from SAR 3,500 and a full company website of up to 12 pages from SAR 6,500; add-ons such as the dashboard, two languages and SEO are priced as you need them." },
-      { "q": "Will my website show up on Google?", "a": "Yes. We optimise the site for search engines, add it to Google Search Console and submit the sitemap." },
-      { "q": "How long does a company website take?", "a": "Usually 3 to 4 weeks, depending on the number of pages and how ready the content is." }
+      {
+        "q": "How much does a company website cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Web services start from SAR 2,000. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "Will my website show up on Google?",
+        "a": "Yes. We optimise the site for search engines, add it to Google Search Console and submit the sitemap."
+      },
+      {
+        "q": "How long does a company website take?",
+        "a": "Usually 3 to 4 weeks, depending on the number of pages and how ready the content is."
+      }
     ]
   },
   "landing-page": {
-    "title": "Landing Page Design for Your Ad Campaign | From SAR 1,500 | Makwad Studio",
-    "description": "A fast landing page for your campaign, product or business: a clear message with contact and WhatsApp buttons, ready for ads and conversion tracking. From SAR 1,500.",
+    "title": "Landing Page Design for Your Ad Campaign | Makwad Studio",
+    "description": "A fast landing page for your campaign, product or business: a clear message with contact and WhatsApp buttons, ready for ads and conversion tracking. Send your request for a detailed quote.",
     "kicker": "Landing pages",
     "h1": "Landing page design",
     "lead": "One focused page that turns your ad visitors into customers: a clear message, images and benefits, an order or WhatsApp button, live within days.",
-    "includes": ["One page focused on a single goal", "A request form and a direct WhatsApp button", "Fast loading on phones", "Ready for Snapchat, Instagram and Google ads", "Hosting and domain if you need them", "Revisions before launch"],
+    "includes": [
+      "One page focused on a single goal",
+      "A request form and a direct WhatsApp button",
+      "Fast loading on phones",
+      "Ready for Snapchat, Instagram and Google ads",
+      "Hosting and domain if you need them",
+      "Revisions before launch"
+    ],
     "faq": [
-      { "q": "How much does a landing page cost?", "a": "A landing page starts at SAR 1,500, and you can add a year of hosting and a domain, and SEO, as you need them." },
-      { "q": "How long does it take?", "a": "Usually within a week, from agreeing the content to going live." },
-      { "q": "Is it suitable for paid ads?", "a": "Yes. We design it around one goal with fast loading, which raises the conversion rate from your ads." }
+      {
+        "q": "How much does a landing page cost?",
+        "a": "The price depends on the size of the project and the features you need; Makwad Web services start from SAR 2,000. Send your request, and after the free discovery session you receive an itemised quote with the timeline."
+      },
+      {
+        "q": "How long does it take?",
+        "a": "Usually within a week, from agreeing the content to going live."
+      },
+      {
+        "q": "Is it suitable for paid ads?",
+        "a": "Yes. We design it around one goal with fast loading, which raises the conversion rate from your ads."
+      }
     ]
   }
 }

@@ -3,24 +3,24 @@ import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { api } from '@/convex/_generated/api'
 import { Logo } from '@/components/Logo'
-import { FAQ, SOCIALS, WHY } from '@/site-content'
+import { SOCIALS, WHY } from '@/site-content'
 import { ARTS, COLORS } from '@/mockups'
 import { fmtSAR } from '@/estimate'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { WhatsAppButton } from '@/components/WhatsAppButton'
 import { RequestForm } from '@/components/RequestForm'
-import { useMeta } from '@/pages/Services'
+import { Shell, useMeta } from '@/pages/Services'
 import { useSettings } from '@/site-config'
 import { LangSwitch, useHtmlLang, useLang } from '@/i18n'
-import { FAQ_EN, SOCIAL_LABEL_EN, WHY_EN, WORKS_EN, settingEn } from '@/content-en'
+import { SOCIAL_LABEL_EN, WHY_EN, WORKS_EN, settingEn } from '@/content-en'
 import { TRACKS4, trackFrom, trackOf, tx } from '@/tracks'
 import type { TrackKey } from '@/tracks'
 
 const NAV = [
   ['#services', 'التخصصات', 'Specialities'],
   ['#process', 'طريقة العمل', 'How we work'],
-  ['#work', 'أعمالنا', 'Work'],
-  ['#faq', 'الأسئلة الشائعة', 'FAQ'],
+  ['/work', 'أعمالنا', 'Our work'],
+  ['#contact', 'أرسل طلبك', 'Send a request'],
 ] as const
 
 const STEPS = [
@@ -61,7 +61,6 @@ export default function Home() {
     t('أربعة تخصصات: مكود ويب للمواقع، مكود تطبيقات للجوال والألعاب، مكود هوية للهويات والحملات ووكلاء الذكاء، ومكود بزنس للمتاجر والدفع والأنظمة. أرسل طلبك واحصل على عرض سعر مفصل.', 'Four specialities: Makwad Web for websites, Makwad Apps for mobile apps and games, Makwad Brand for identities, campaigns and AI agents, and Makwad Business for stores, payments and systems. Send your request for a detailed quote.'),
     '/',
   )
-  const FQ = en ? FAQ_EN : FAQ
   const [menuOpen, setMenuOpen] = useState(false)
   const [picked, setPicked] = useState<Array<TrackKey>>([])
   const [message, setMessage] = useState('')
@@ -90,7 +89,7 @@ export default function Home() {
           <div className="brand-col"><Logo /><SealSlot /></div>
           <div className="links">
             {NAV.map(([h, ar, e]) => (
-              <a key={h} href={h}>{en ? e : ar}</a>
+              <a key={h} href={h.startsWith('/') ? L(h) : h}>{en ? e : ar}</a>
             ))}
           </div>
           <div className="nav-end">
@@ -112,8 +111,8 @@ export default function Home() {
         {menuOpen && (
           <div className="mobile-menu wrap" id="mMenu">
             {TRACKS4.map((x) => <a key={x.key} href={L(`/${x.key}`)}>{tx(x.name, lang)}</a>)}
-            {[...NAV.slice(1), ['#contact', 'أرسل طلبك', 'Send a request'] as const].map(([h, ar, e]) => (
-              <a key={h} href={h} onClick={() => setMenuOpen(false)}>{en ? e : ar}</a>
+            {NAV.slice(1).map(([h, ar, e]) => (
+              <a key={h} href={h.startsWith('/') ? L(h) : h} onClick={() => setMenuOpen(false)}>{en ? e : ar}</a>
             ))}
             <a href={L('/login')}>{t('دخول العملاء', 'Client login')}</a>
           </div>
@@ -165,11 +164,11 @@ export default function Home() {
             <div className="track-extra">
               <div>
                 <b>{t('قبل أي تخصص: الاستشارة والتحليل', 'Before any speciality: consulting and analysis')}</b>
-                <span>{t('تحليل فكرة، وثيقة متطلبات، دراسة جدوى تقنية، أو تدقيق نظام قائم. يبدأ من 1,500 ريال.', 'Idea analysis, a requirements document, a technical feasibility study or an audit of an existing system. From SAR 1,500.')}</span>
+                <span>{t('تحليل فكرة، وثيقة متطلبات، دراسة جدوى تقنية، أو تدقيق نظام قائم، مع تقرير مكتوب بخطة وتكلفة.', 'Idea analysis, a requirements document, a technical feasibility study or an audit of an existing system, with a written report, plan and budget.')}</span>
               </div>
               <div>
                 <b>{t('بعد الإطلاق: الاستضافة والصيانة', 'After launch: hosting and maintenance')}</b>
-                <span>{t('إطلاق على دومينك مع حماية Cloudflare، نسخ احتياطي ومراقبة، وصيانة شهرية تبدأ من 1,500 ريال.', 'Launch on your domain with Cloudflare protection, backups and monitoring, and monthly maintenance from SAR 1,500.')}</span>
+                <span>{t('إطلاق على دومينك مع حماية Cloudflare، نسخ احتياطي ومراقبة، وصيانة شهرية للتحديثات والإضافات.', 'Launch on your domain with Cloudflare protection, backups and monitoring, and monthly maintenance for updates and additions.')}</span>
               </div>
             </div>
           </section>
@@ -194,9 +193,10 @@ export default function Home() {
             </div>
           </section>
 
-          <Work works={content?.works} showNote={settings.showExampleNote !== false} />
-
-          <PromoVideos />
+          <div className="work-cta">
+            <div><span className="kicker">{t('أعمالنا', 'Our work')}</span><h2>{t('مشاريع أطلقناها وفيديوهات دعائية من صنعنا', 'Projects we launched and promo videos we made')}</h2></div>
+            <a className="btn ghost" href={L('/work')}>{t('شاهد أعمالنا ←', 'See our work →')}</a>
+          </div>
 
           <section className="section" id="process">
             <div className="sec-head">
@@ -211,25 +211,6 @@ export default function Home() {
                   <p>{en ? st.p[1] : st.p[0]}</p>
                 </div>
               ))}
-            </div>
-          </section>
-
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FQ.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }) }} />
-          <section className="section" id="faq">
-            <div className="faq">
-              <div>
-                <span className="kicker">{t('الأسئلة الشائعة', 'FAQ')}</span>
-                <h2 className="h2">{t('قبل أن تبدأ', 'Before you start')}</h2>
-                <p className="muted" style={{ marginTop: 12 }}>{t('لم تجد جوابك؟ اسألنا مباشرة من نموذج الطلب.', 'Didn’t find your answer? Ask us directly through the request form.')}</p>
-              </div>
-              <div>
-                {FQ.map((f, i) => (
-                  <details key={f.q} open={i === 0}>
-                    <summary>{f.q}</summary>
-                    <p>{f.a}</p>
-                  </details>
-                ))}
-              </div>
             </div>
           </section>
 
@@ -260,11 +241,11 @@ export default function Home() {
             </div>
             <div>
               <h4>{t('الشركة', 'Company')}</h4>
-              <ul><li><a href="#services">{t('التخصصات', 'Specialities')}</a></li><li><a href="#work">{t('أعمالنا', 'Work')}</a></li><li><a href="#process">{t('طريقة العمل', 'How we work')}</a></li></ul>
+              <ul><li><a href="#services">{t('التخصصات', 'Specialities')}</a></li><li><a href={L('/work')}>{t('أعمالنا', 'Our work')}</a></li><li><a href="#process">{t('طريقة العمل', 'How we work')}</a></li></ul>
             </div>
             <div>
               <h4>{t('العملاء', 'Clients')}</h4>
-              <ul><li><a href={L('/login')}>{t('دخول العملاء', 'Client login')}</a></li><li><a href="#contact">{t('أرسل طلبك', 'Send a request')}</a></li><li><a href="#faq">{t('الأسئلة الشائعة', 'FAQ')}</a></li></ul>
+              <ul><li><a href={L('/login')}>{t('دخول العملاء', 'Client login')}</a></li><li><a href="#contact">{t('أرسل طلبك', 'Send a request')}</a></li></ul>
             </div>
           </div>
           <div className="legal">
@@ -452,7 +433,7 @@ function PromoVideos() {
     <section className="section" id="promos">
       <div className="sec-head">
         <div><span className="kicker">{t('المواد الدعائية', 'Promotional material')}</span><h2>{t('فيديوهات دعائية من صنعنا', 'Promo videos we made')}</h2></div>
-        <p>{t('نماذج موشن جرافيك صممناها لاستوديو مكود بموسيقى أصلية، ونسوي مثلها لنشاطك ابتداءً من 500 ريال.', 'Motion-graphics samples we made for Makwad Studio with original music. We make the same for your business from SAR 500.')}</p>
+        <p>{t('نماذج موشن جرافيك صممناها لاستوديو مكود بموسيقى أصلية، ونسوي مثلها لنشاطك ضمن مكود هوية.', 'Motion-graphics samples we made for Makwad Studio with original music. We make the same for your business through Makwad Brand.')}</p>
       </div>
       <div className="promo-grid">
         {PROMOS.map((v) => (
@@ -582,5 +563,36 @@ function CopyRow({ label, value }: { label: string; value: string }) {
         {done ? t('تم النسخ', 'Copied') : t('نسخ', 'Copy')}
       </button>
     </div>
+  )
+}
+
+/** /work and /en/work: the portfolio and the promo videos, moved off the home page. */
+export function WorkPage() {
+  const { lang, t, L } = useLang()
+  useMeta(
+    t('أعمالنا: مشاريع وفيديوهات دعائية | استوديو مكود', 'Our work: projects and promo videos | Makwad Studio'),
+    t('نماذج من التطبيقات والأنظمة والمواقع اللي بنيناها، وفيديوهات موشن جرافيك دعائية من صنع استوديو مكود.', 'Examples of the apps, systems and websites we built, and motion-graphics promo videos made by Makwad Studio.'),
+    '/work',
+  )
+  const settings = useSettings()
+  const content = useQuery(api.content.publicContent) as
+    | { works: Array<Doc<'works'>>; testimonials: Array<Doc<'testimonials'>> }
+    | undefined
+  return (
+    <Shell>
+      <div className="svc-hero">
+        <nav className="crumbs" aria-label={t('مسار الصفحة', 'Breadcrumb')}><a href={L('/')}>{t('الرئيسية', 'Home')}</a> / <span>{t('أعمالنا', 'Our work')}</span></nav>
+        <h1>{t('أعمالنا', 'Our work')}</h1>
+        <p className="lead">{t('مشاريع أطلقناها لعملائنا، وفيديوهات دعائية من صنعنا.', 'Projects we launched for our clients, and promo videos we made.')}</p>
+      </div>
+      <Work works={content?.works} showNote={settings.showExampleNote !== false} />
+      <PromoVideos />
+      <section className="svc-sec">
+        <h2>{t('عندك مشروع؟', 'Have a project in mind?')}</h2>
+        <div className="svc-related">
+          {TRACKS4.map((x) => <a key={x.key} href={`${L(`/${x.key}`)}#request`}>{tx(x.name, lang)} {t('←', '→')}</a>)}
+        </div>
+      </section>
+    </Shell>
   )
 }
