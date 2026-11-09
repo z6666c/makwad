@@ -1320,3 +1320,9 @@ html[dir="ltr"] .lang-sw { font-family: "Readex Pro", var(--f-body); }
 .case-link.store { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--ink); color: var(--bg); }
 .case-link.store:hover { opacity: .88; }
 .links a { white-space: nowrap; }
+.sheet-totals .after-disc, .q-totals .after-disc { font-weight: 700; border-top: 1px dashed var(--line); padding-top: 6px; }
+.sheet-totals .after-disc span, .q-totals .after-disc span { color: var(--ink); }
+.sheet-ask { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 10px; font-size: .85rem; color: var(--muted); }
+.sheet-ask > b { color: var(--ink); font-size: .9rem; }
+.sheet-ask .mono { color: var(--ink); }
+.sheet-ask [dir="ltr"] { unicode-bidi: isolate; }
