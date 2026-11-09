@@ -398,8 +398,8 @@ function QuoteForm({ draft, leads, catalog, onClose }: { draft: Draft; leads: Ar
         <aside className="q-totals">
           <span className="kicker">ملخص العرض</span>
           <div className="est-row"><span>المجموع</span><b className="mono">{fmtSAR(t.subtotal)}</b></div>
-          {d.discount > 0 && <div className="est-row"><span>الخصم</span><b className="mono">−{fmtSAR(d.discount)}</b></div>}
-          {d.discount > 0 && <div className="est-row after-disc"><span>الإجمالي بعد الخصم</span><b className="mono">{fmtSAR(t.afterDiscount)}</b></div>}
+          <div className="est-row"><span>الخصم</span><b className="mono">{d.discount > 0 ? `−${fmtSAR(d.discount)}` : '0'}</b></div>
+          <div className="est-row after-disc"><span>الإجمالي بعد الخصم</span><b className="mono">{fmtSAR(t.afterDiscount)}</b></div>
           {d.vat && <div className="est-row"><span>الضريبة 15%</span><b className="mono">{fmtSAR(t.vat)}</b></div>}
           <div className="est-price"><span>الإجمالي</span><b className="mono">{fmtSAR(t.total)} <small>ريال</small></b></div>
           <div className="est-row"><span>دفعة أولى 40%</span><b className="mono">{fmtSAR(Math.round(t.total * 0.4))}</b></div>
@@ -448,8 +448,8 @@ export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => v
         <ItemsTable items={q.items} />
         <div className="sheet-totals">
           <div><span>المجموع</span><b className="mono">{fmtSAR(t.subtotal)}</b></div>
-          {q.discount > 0 && <div><span>الخصم</span><b className="mono">−{fmtSAR(q.discount)}</b></div>}
-          {q.discount > 0 && <div className="after-disc"><span>الإجمالي بعد الخصم</span><b className="mono">{fmtSAR(t.afterDiscount)}</b></div>}
+          <div><span>الخصم</span><b className="mono">{q.discount > 0 ? `−${fmtSAR(q.discount)}` : '0'}</b></div>
+          <div className="after-disc"><span>الإجمالي بعد الخصم</span><b className="mono">{fmtSAR(t.afterDiscount)}</b></div>
           {q.vat && <div><span>ضريبة القيمة المضافة 15%</span><b className="mono">{fmtSAR(t.vat)}</b></div>}
           <div className="grand"><span>الإجمالي (ريال سعودي)</span><b className="mono">{fmtSAR(t.total)}</b></div>
         </div>
@@ -475,6 +475,7 @@ export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => v
         </div>
         <PayMethodsBox s={s} />
         <StampBlock s={s} kind="quote" no={q.number} />
+        <AskBox s={s} label="هذا العرض" no={q.number} />
         <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">makwad.com · {s.email}</span></footer>
       </article>
     </div>
@@ -701,6 +702,18 @@ function groupItems(items: Array<SheetItem>): Array<{ group?: string; items: Arr
     else acc.push(b)
     return acc
   }, [])
+}
+
+/** Bottom of every quote and invoice: quote this number when you contact us. */
+function AskBox({ s, label, no }: { s: SiteSettings; label: string; no: string }) {
+  const kind = label.includes('الفاتورة') ? 'الفاتورة' : 'العرض'
+  return (
+    <div className="sheet-ask">
+      <b>للاستفسار عن {label}</b>
+      <span>اذكر رقم {kind} <b className="mono" dir="ltr">{no}</b> عند التواصل معنا.</span>
+      <span>واتساب: <span className="mono" dir="ltr">+{s.whatsapp}</span> · البريد: <span className="mono" dir="ltr">{s.email}</span></span>
+    </div>
+  )
 }
 
 function ItemsTable({ items, caption }: { items: Array<SheetItem>; caption?: string }) {
@@ -1092,13 +1105,9 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
             </table>
           )}
         <div className="sheet-totals">
-          {discLine
-            ? <>
-                <div><span>المجموع</span><b className="mono">{fmtSAR(net - discLine)}</b></div>
-                <div><span>الخصم</span><b className="mono">−{fmtSAR(-discLine)}</b></div>
-                <div className="after-disc"><span>الإجمالي بعد الخصم</span><b className="mono">{fmtSAR(net)}</b></div>
-              </>
-            : <div><span>المبلغ قبل الضريبة</span><b className="mono">{fmtSAR(net)}</b></div>}
+          <div><span>المجموع</span><b className="mono">{fmtSAR(net - discLine)}</b></div>
+          <div><span>الخصم</span><b className="mono">{discLine ? `−${fmtSAR(-discLine)}` : '0'}</b></div>
+          <div className="after-disc"><span>الإجمالي بعد الخصم</span><b className="mono">{fmtSAR(net)}</b></div>
           {vatOn && <div><span>ضريبة القيمة المضافة 15%</span><b className="mono">{fmtSAR(vat)}</b></div>}
           <div className="grand"><span>{pay.status === 'paid' ? 'المبلغ المدفوع (ريال)' : 'الإجمالي المستحق (ريال)'}</span><b className="mono">{fmtSAR(pay.amount)}</b></div>
         </div>
@@ -1115,11 +1124,7 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
         {pay.status !== 'paid' && <PayMethodsBox s={s} />}
         {!vatOn && <p className="sheet-note">المنشأة غير مسجلة في ضريبة القيمة المضافة، ولا تُحتسب ضريبة على هذه الفاتورة.</p>}
         <StampBlock s={s} kind="invoice" no={no} at={stampAt} />
-        <div className="sheet-ask">
-          <b>للاستفسار عن هذه الفاتورة</b>
-          <span>اذكر رقم الفاتورة <b className="mono" dir="ltr">{no}</b> عند التواصل معنا.</span>
-          <span>واتساب: <span className="mono" dir="ltr">+{s.whatsapp}</span> · البريد: <span className="mono" dir="ltr">{s.email}</span></span>
-        </div>
+        <AskBox s={s} label="هذه الفاتورة" no={no} />
         <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">makwad.com · {s.email}</span></footer>
       </article>
     </div>
