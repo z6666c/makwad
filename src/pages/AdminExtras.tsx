@@ -8,6 +8,7 @@ import { LogoMark } from '@/components/Logo'
 import { toWaNumber } from '@/phone'
 import { PayMethodsBox } from '@/components/PayMethods'
 import { SERVICE_PRICING, fmtSAR } from '@/estimate'
+import { APPROVED_PRICING } from '@/pricing-default'
 import type { Catalog, Option, Service } from '@/estimate'
 import { COMPANY, DEFAULT_SETTINGS } from '@/site-config'
 import SVC_PAGES from '@/service-pages.json'
@@ -499,9 +500,9 @@ export function PricingPanel() {
   const [busy, setBusy] = useState(false)
   useEffect(() => {
     if (current && list === null) {
-      const src = Array.isArray(current.pricing) && current.pricing.length ? current.pricing : SERVICE_PRICING
+      const src = Array.isArray(current.pricing) && current.pricing.length ? current.pricing : APPROVED_PRICING
       // keep built-in services the saved catalog does not know about yet
-      const merged = [...src, ...SERVICE_PRICING.filter((d) => !src.some((x) => x.key === d.key))]
+      const merged = src
       setList(clone(merged)); setBase(JSON.stringify(merged))
     }
   }, [current, list])
@@ -526,13 +527,13 @@ export function PricingPanel() {
       <div className="panel panel-pad pr-head">
         <div>
           <h3>الأسعار والخدمات</h3>
-          <p className="muted">أي تعديل هنا يظهر مباشرة في بطاقات الخدمات وحاسبة الأسعار وعروض الأسعار. أقل سعر حالياً: <b className="mono">{fmtSAR(minPrice)}</b> ريال.</p>
+          <p className="muted">قائمة الأسعار الداخلية لعروض الأسعار في لوحة التحكم، ولا تظهر في الموقع. أقل سعر حالياً: <b className="mono">{fmtSAR(minPrice)}</b> ريال.</p>
         </div>
         <div className="pr-actions">
           {dirty && <span className="badge-s st-contacted">تغييرات غير محفوظة</span>}
           <button className="btn ghost small" type="button" onClick={async () => {
             setBusy(true); const r = await save({ pricing: null }); setBusy(false)
-            if (r.ok) { setList(clone(SERVICE_PRICING)); setBase(JSON.stringify(SERVICE_PRICING)); setState({ ok: true, text: 'رجعت الأسعار الافتراضية.' }) }
+            if (r.ok) { setList(clone(APPROVED_PRICING)); setBase(JSON.stringify(APPROVED_PRICING)); setState({ ok: true, text: 'رجعت الأسعار الافتراضية.' }) }
           }}>استرجاع الافتراضي</button>
           <button className="btn small" type="button" disabled={!dirty || busy} onClick={async () => {
             setBusy(true); setState(null)

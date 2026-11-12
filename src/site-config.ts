@@ -1,6 +1,6 @@
 import { useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
-import { SERVICE_PRICING } from '@/estimate'
+import { APPROVED_PRICING } from '@/pricing-default'
 import type { Catalog } from '@/estimate'
 import { useLang } from '@/i18n'
 import { localizeCatalog } from '@/content-en'
@@ -54,7 +54,7 @@ export const LEGAL_UPDATED = '17 أكتوبر 2026'
 // Price catalog: the one saved from the dashboard, or the built-in prices.
 export function usePricing(): Catalog {
   const s = useSettings()
-  const list = Array.isArray(s.pricing) && s.pricing.length ? s.pricing : SERVICE_PRICING
+  const list = Array.isArray(s.pricing) && s.pricing.length ? s.pricing : APPROVED_PRICING
   return list.filter((x) => !x.hidden)
 }
 
