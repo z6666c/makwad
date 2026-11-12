@@ -51,23 +51,23 @@ export const VAT_RATE = 0.15
 export type TaxMode = 'vat' | 'unregistered' | 'zero_export' | 'exempt'
 export const TAX_MODES: Array<{ key: TaxMode; label: string; hint: string; note: string }> = [
   {
-    key: 'vat', label: 'خاضع لضريبة القيمة المضافة 15%',
-    hint: 'للمنشأة المسجلة في الضريبة. تُضاف 15% على الإجمالي بعد الخصم.',
+    key: 'vat', label: 'خاضع للضريبة 15%',
+    hint: 'تُضاف 15% على الإجمالي بعد الخصم. للمنشأة المسجلة.',
     note: 'تشمل المبالغ أعلاه ضريبة القيمة المضافة بنسبة 15% وفقاً لنظام ضريبة القيمة المضافة في المملكة العربية السعودية ولائحته التنفيذية.',
   },
   {
-    key: 'unregistered', label: 'غير خاضع: المنشأة غير مسجلة في الضريبة',
-    hint: 'إذا لم تسجّل في ضريبة القيمة المضافة (الإيرادات دون حد التسجيل الإلزامي 375,000 ريال سنوياً).',
+    key: 'unregistered', label: 'غير مسجّل في الضريبة',
+    hint: 'لا تُحتسب ضريبة. للمنشأة غير المسجلة (إيرادات دون 375,000 ريال سنوياً).',
     note: 'المنشأة غير مسجلة في ضريبة القيمة المضافة، ولذلك لا تُحتسب ضريبة القيمة المضافة على هذا المستند.',
   },
   {
-    key: 'zero_export', label: 'نسبة الصفر: تصدير خدمات لعميل خارج دول الخليج',
-    hint: 'لعميل غير مقيم في دول مجلس التعاون ولا يستفيد من الخدمة داخلها. يتطلب أن تكون المنشأة مسجلة.',
+    key: 'zero_export', label: 'نسبة الصفر 0% (عميل خارج الخليج)',
+    hint: 'تصدير خدمات لعميل غير مقيم في دول الخليج. للمنشأة المسجلة.',
     note: 'توريد خاضع لضريبة القيمة المضافة بنسبة الصفر بالمائة (0%) بصفته تصديراً لخدمات لعميل غير مقيم في دول مجلس التعاون لدول الخليج العربية، وفقاً للمادة الثالثة والثلاثين من اللائحة التنفيذية لنظام ضريبة القيمة المضافة.',
   },
   {
-    key: 'exempt', label: 'معفى من ضريبة القيمة المضافة',
-    hint: 'للتوريدات المعفاة نظاماً فقط (مثل بعض الخدمات المالية). خدمات التصميم والبرمجة عادةً غير معفاة.',
+    key: 'exempt', label: 'معفى من الضريبة',
+    hint: 'للتوريدات المعفاة نظاماً فقط. التصميم والبرمجة عادةً غير معفاة.',
     note: 'توريد معفى من ضريبة القيمة المضافة وفقاً لأحكام نظام ضريبة القيمة المضافة ولائحته التنفيذية في المملكة العربية السعودية.',
   },
 ]
@@ -441,14 +441,15 @@ function QuoteForm({ draft, quotes, leads, catalog, onClose }: { draft: Draft; q
           <div className="field"><label htmlFor="q-disc">خصم (ريال)</label><input id="q-disc" className="mono" type="number" min={0} step={100} value={d.discount} onChange={(e) => set('discount', Number(e.target.value) || 0)} /></div>
           <div className="field"><label htmlFor="q-valid">صلاحية العرض (يوم)</label><input id="q-valid" className="mono" type="number" min={1} max={180} value={d.validDays} onChange={(e) => set('validDays', Number(e.target.value) || 14)} /></div>
           <fieldset className="field full tax-modes">
-            <legend>المعاملة الضريبية</legend>
+            <legend>الضريبة</legend>
             {TAX_MODES.map((m) => (
-              <label key={m.key} className={`tax-opt${d.taxMode === m.key ? ' on' : ''}`}>
+              <label key={m.key} className="tax-opt">
                 <input type="radio" name="q-tax" checked={d.taxMode === m.key} onChange={() => setD((x) => ({ ...x, taxMode: m.key, vat: m.key === 'vat' }))} />
-                <span><b>{m.label}</b><small>{m.hint}</small></span>
+                <span className="tax-dot" aria-hidden="true" />
+                <span className="tax-txt"><b>{m.label}</b><small>{m.hint}</small></span>
               </label>
             ))}
-            <p className="tax-note"><small>النص الذي يظهر في العرض والفاتورة:</small>{tm.note}</p>
+            <p className="tax-note"><small>يظهر في العرض والفاتورة بهذه الصيغة:</small>{tm.note}</p>
             {!s.vatNumber && (d.taxMode === 'vat' || d.taxMode === 'zero_export') && <p className="dup-warn soft">⚠ لا يوجد رقم ضريبي في الإعدادات. هذا الخيار للمنشأة المسجلة فقط، أضف رقمك الضريبي أولاً.</p>}
             {!!s.vatNumber && d.taxMode === 'unregistered' && <p className="dup-warn soft">⚠ عندك رقم ضريبي مسجل في الإعدادات، فهذا الخيار لا ينطبق على منشأتك.</p>}
           </fieldset>
