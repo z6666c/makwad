@@ -47,6 +47,35 @@ const DAY = 86400000
 export const QUOTE_STATUS: Record<Quote['status'], string> = { draft: 'مسودة', sent: 'أُرسل للعميل', accepted: 'مقبول', rejected: 'مرفوض' }
 export const VAT_RATE = 0.15
 
+/** Tax treatment of a quote, with the statement printed on the quote and its invoices. */
+export type TaxMode = 'vat' | 'unregistered' | 'zero_export' | 'exempt'
+export const TAX_MODES: Array<{ key: TaxMode; label: string; hint: string; note: string }> = [
+  {
+    key: 'vat', label: 'خاضع لضريبة القيمة المضافة 15%',
+    hint: 'للمنشأة المسجلة في الضريبة. تُضاف 15% على الإجمالي بعد الخصم.',
+    note: 'تشمل المبالغ أعلاه ضريبة القيمة المضافة بنسبة 15% وفقاً لنظام ضريبة القيمة المضافة في المملكة العربية السعودية ولائحته التنفيذية.',
+  },
+  {
+    key: 'unregistered', label: 'غير خاضع: المنشأة غير مسجلة في الضريبة',
+    hint: 'إذا لم تسجّل في ضريبة القيمة المضافة (الإيرادات دون حد التسجيل الإلزامي 375,000 ريال سنوياً).',
+    note: 'المنشأة غير مسجلة في ضريبة القيمة المضافة، ولذلك لا تُحتسب ضريبة القيمة المضافة على هذا المستند.',
+  },
+  {
+    key: 'zero_export', label: 'نسبة الصفر: تصدير خدمات لعميل خارج دول الخليج',
+    hint: 'لعميل غير مقيم في دول مجلس التعاون ولا يستفيد من الخدمة داخلها. يتطلب أن تكون المنشأة مسجلة.',
+    note: 'توريد خاضع لضريبة القيمة المضافة بنسبة الصفر بالمائة (0%) بصفته تصديراً لخدمات لعميل غير مقيم في دول مجلس التعاون لدول الخليج العربية، وفقاً للمادة الثالثة والثلاثين من اللائحة التنفيذية لنظام ضريبة القيمة المضافة.',
+  },
+  {
+    key: 'exempt', label: 'معفى من ضريبة القيمة المضافة',
+    hint: 'للتوريدات المعفاة نظاماً فقط (مثل بعض الخدمات المالية). خدمات التصميم والبرمجة عادةً غير معفاة.',
+    note: 'توريد معفى من ضريبة القيمة المضافة وفقاً لأحكام نظام ضريبة القيمة المضافة ولائحته التنفيذية في المملكة العربية السعودية.',
+  },
+]
+export const taxModeOf = (q: { vat: boolean; taxMode?: string }): TaxMode =>
+  (TAX_MODES.some((m) => m.key === q.taxMode) ? q.taxMode : q.vat ? 'vat' : 'unregistered') as TaxMode
+export const taxInfo = (k: TaxMode) => TAX_MODES.find((m) => m.key === k) ?? TAX_MODES[1]
+const normLabel = (x: string) => x.replace(/\s+/g, ' ').trim()
+
 export function quoteTotals(q: { items: Array<{ qty: number; price: number }>; discount: number; vat: boolean }) {
   const subtotal = q.items.reduce((n, i) => n + i.qty * i.price, 0)
   const afterDiscount = Math.max(0, subtotal - q.discount)
@@ -194,10 +223,10 @@ type Draft = {
   id?: Id<'quotes'>
   clientName: string; clientEmail: string; company: string; title: string; leadId?: Id<'leads'>
   items: Array<{ label: string; qty: number; price: number }>
-  discount: number; vat: boolean; validDays: number; notes: string
+  discount: number; vat: boolean; taxMode: TaxMode; validDays: number; notes: string
 }
 
-const emptyDraft = (): Draft => ({ clientName: '', clientEmail: '', company: '', title: '', items: [], discount: 0, vat: false, validDays: 14, notes: '' })
+const emptyDraft = (): Draft => ({ clientName: '', clientEmail: '', company: '', title: '', items: [], discount: 0, vat: false, taxMode: 'unregistered', validDays: 14, notes: '' })
 
 export function draftFromLead(l: Lead): Draft {
   return {
@@ -244,7 +273,7 @@ export function QuotesPanel({ quotes, leads, catalog, seed, onSeedUsed, canAdmin
   const shown = quotes.filter((q) => filter === 'all' || q.status === filter)
   const sum = (st: Quote['status']) => quotes.filter((q) => q.status === st).reduce((n, q) => n + quoteTotals(q).total, 0)
 
-  if (editing) return <QuoteForm draft={editing} leads={leads} catalog={catalog} onClose={() => setEditing(null)} />
+  if (editing) return <QuoteForm draft={editing} quotes={quotes} leads={leads} catalog={catalog} onClose={() => setEditing(null)} />
   return (
     <div className="stack">
       <div className="q-sum">
@@ -266,7 +295,8 @@ export function QuotesPanel({ quotes, leads, catalog, seed, onSeedUsed, canAdmin
         ) : (
           <div className="q-table" role="table">
             <div className="q-row q-th" role="row"><span>الرقم</span><span>العميل والمشروع</span><span>الإجمالي</span><span>الحالة</span><span /></div>
-            {shown.map((q) => <QuoteRow key={q._id} q={q} canAdmin={canAdmin} onEdit={() => setEditing({ ...q, id: q._id, company: q.company ?? '', notes: q.notes ?? '' })} onPrint={() => setPrinting(q)} />)}
+            {shown.map((q) => <QuoteRow key={q._id} q={q} canAdmin={canAdmin} dupWith={quotes.filter((o) => o._id !== q._id && o.status !== 'rejected' && o.clientEmail === q.clientEmail && o.items.some((a) => q.items.some((b) => normLabel(a.label) === normLabel(b.label))))}
+              onEdit={() => setEditing({ ...q, id: q._id, company: q.company ?? '', notes: q.notes ?? '', taxMode: taxModeOf(q) })} onPrint={() => setPrinting(q)} />)}
           </div>
         )}
       </div>
@@ -275,7 +305,7 @@ export function QuotesPanel({ quotes, leads, catalog, seed, onSeedUsed, canAdmin
   )
 }
 
-function QuoteRow({ q, canAdmin, onEdit, onPrint }: { q: Quote; canAdmin: boolean; onEdit: () => void; onPrint: () => void }) {
+function QuoteRow({ q, canAdmin, onEdit, onPrint, dupWith }: { q: Quote; canAdmin: boolean; onEdit: () => void; onPrint: () => void; dupWith: Array<Quote> }) {
   const setStatus = useMutation(api.quotes.setStatus)
   const toProject = useMutation(api.quotes.toProject)
   const remove = useMutation(api.quotes.remove)
@@ -286,7 +316,8 @@ function QuoteRow({ q, canAdmin, onEdit, onPrint }: { q: Quote; canAdmin: boolea
   return (
     <div className="q-row" role="row">
       <span className="mono q-num">{q.number}<small className="muted">{fmtShort(q._creationTime)}</small></span>
-      <span className="q-who"><b>{q.title}</b><small className="muted">{q.clientName}{q.company ? ` · ${q.company}` : ''}</small></span>
+      <span className="q-who"><b>{q.title}</b><small className="muted">{q.clientName}{q.company ? ` · ${q.company}` : ''}</small>
+        {dupWith.length > 0 && <small className="dup-flag" title="نفس العميل ونفس الخدمة في عرض آخر">⚠ مكرر مع {dupWith.map((o) => o.number).join('، ')}</small>}</span>
       <span className="mono q-total">{fmtSAR(t.total)} <small>ريال</small></span>
       <span>
         <select className={`q-status q-${q.status}`} aria-label="حالة العرض" value={q.status} onChange={(e) => void setStatus({ id: q._id, status: e.target.value as Quote['status'] })}>
@@ -317,7 +348,7 @@ function QuoteRow({ q, canAdmin, onEdit, onPrint }: { q: Quote; canAdmin: boolea
   )
 }
 
-function QuoteForm({ draft, leads, catalog, onClose }: { draft: Draft; leads: Array<Lead>; catalog: Catalog; onClose: () => void }) {
+function QuoteForm({ draft, quotes, leads, catalog, onClose }: { draft: Draft; quotes: Array<Quote>; leads: Array<Lead>; catalog: Catalog; onClose: () => void }) {
   const save = useMutation(api.quotes.save)
   const [d, setD] = useState<Draft>(draft)
   const [err, setErr] = useState<string | null>(null)
@@ -326,6 +357,13 @@ function QuoteForm({ draft, leads, catalog, onClose }: { draft: Draft; leads: Ar
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((x) => ({ ...x, [k]: v }))
   const setItem = (i: number, patch: Partial<Draft['items'][number]>) => set('items', d.items.map((it, k) => (k === i ? { ...it, ...patch } : it)))
   const options = catalog.flatMap((s) => [...s.tiers, ...s.addons].map((o) => ({ s, o })))
+  const [warn, setWarn] = useState<string | null>(null)
+  const s = (useQuery(api.settings.get) as SiteSettings | undefined) ?? DEFAULT_SETTINGS
+  const email = d.clientEmail.trim().toLowerCase()
+  const inOther = (label: string) => email ? quotes.find((o) => o._id !== d.id && o.status !== 'rejected' && o.clientEmail === email && o.items.some((x) => normLabel(x.label) === normLabel(label))) : undefined
+  const dupInside = d.items.map((it, i) => d.items.findIndex((x) => normLabel(x.label) === normLabel(it.label)) !== i)
+  const otherHits = d.items.map((it) => inOther(it.label)).filter((x): x is Quote => !!x)
+  const tm = taxInfo(d.taxMode)
 
   return (
     <div className="panel q-form">
@@ -363,7 +401,7 @@ function QuoteForm({ draft, leads, catalog, onClose }: { draft: Draft; leads: Ar
             })()}
             <div className="q-items">
               {d.items.map((it, i) => (
-                <div className="q-item" key={i}>
+                <div className={`q-item${dupInside[i] ? ' dup' : ''}`} key={i}>
                   <input className="input" value={it.label} onChange={(e) => setItem(i, { label: e.target.value })} aria-label="البند" />
                   <input className="input mono" type="number" min={1} value={it.qty} onChange={(e) => setItem(i, { qty: Number(e.target.value) || 1 })} aria-label="الكمية" />
                   <input className="input mono" type="number" min={0} step={100} value={it.price} onChange={(e) => setItem(i, { price: Number(e.target.value) || 0 })} aria-label="السعر" />
@@ -372,11 +410,19 @@ function QuoteForm({ draft, leads, catalog, onClose }: { draft: Draft; leads: Ar
                 </div>
               ))}
               {d.items.length === 0 && <p className="muted q-hint">أضف بنوداً من قائمة الأسعار أو بنداً مخصصاً.</p>}
+              {dupInside.some(Boolean) && <p className="dup-warn" role="alert">⚠ فيه بند مكرر في هذا العرض (مظلل). احذف أحدهما أو زِد الكمية، لن يُحفظ العرض وفيه تكرار.</p>}
+              {otherHits.length > 0 && <p className="dup-warn soft" role="status">⚠ تنبيه للإدارة: نفس العميل عنده هذه الخدمة في {[...new Set(otherHits.map((o) => `${o.number} (${QUOTE_STATUS[o.status]})`))].join('، ')}. تأكد أنه ليس عرضاً مكرراً.</p>}
+              {warn && <p className="dup-warn" role="alert">{warn}</p>}
             </div>
             <div className="q-add">
               <select aria-label="إضافة من قائمة الأسعار" value="" onChange={(e) => {
                 const hit = options[Number(e.target.value)]
-                if (hit) set('items', [...d.items, { label: `${hit.s.label} — ${hit.o.label}`, qty: 1, price: hit.o.price }])
+                if (!hit) return
+                const label = `${hit.s.label} — ${hit.o.label}`
+                if (d.items.some((x) => normLabel(x.label) === normLabel(label))) { setWarn(`⚠ «${label}» مضافة مسبقاً في هذا العرض، ولا يمكن إضافة نفس الخدمة مرتين. زِد الكمية إن احتجت.`); return }
+                const other = inOther(label)
+                setWarn(other ? `⚠ أُضيفت «${label}»، لكنها موجودة لنفس العميل في العرض ${other.number}. تأكد أنها ليست مكررة.` : null)
+                set('items', [...d.items, { label, qty: 1, price: hit.o.price }])
               }}>
                 <option value="">+ إضافة من قائمة الأسعار…</option>
                 {catalog.map((s) => (
@@ -394,7 +440,18 @@ function QuoteForm({ draft, leads, catalog, onClose }: { draft: Draft; leads: Ar
 
           <div className="field"><label htmlFor="q-disc">خصم (ريال)</label><input id="q-disc" className="mono" type="number" min={0} step={100} value={d.discount} onChange={(e) => set('discount', Number(e.target.value) || 0)} /></div>
           <div className="field"><label htmlFor="q-valid">صلاحية العرض (يوم)</label><input id="q-valid" className="mono" type="number" min={1} max={180} value={d.validDays} onChange={(e) => set('validDays', Number(e.target.value) || 14)} /></div>
-          <label className="field full check-line"><input type="checkbox" checked={d.vat} onChange={(e) => set('vat', e.target.checked)} /> إضافة ضريبة القيمة المضافة 15%</label>
+          <fieldset className="field full tax-modes">
+            <legend>المعاملة الضريبية</legend>
+            {TAX_MODES.map((m) => (
+              <label key={m.key} className={`tax-opt${d.taxMode === m.key ? ' on' : ''}`}>
+                <input type="radio" name="q-tax" checked={d.taxMode === m.key} onChange={() => setD((x) => ({ ...x, taxMode: m.key, vat: m.key === 'vat' }))} />
+                <span><b>{m.label}</b><small>{m.hint}</small></span>
+              </label>
+            ))}
+            <p className="tax-note"><small>النص الذي يظهر في العرض والفاتورة:</small>{tm.note}</p>
+            {!s.vatNumber && (d.taxMode === 'vat' || d.taxMode === 'zero_export') && <p className="dup-warn soft">⚠ لا يوجد رقم ضريبي في الإعدادات. هذا الخيار للمنشأة المسجلة فقط، أضف رقمك الضريبي أولاً.</p>}
+            {!!s.vatNumber && d.taxMode === 'unregistered' && <p className="dup-warn soft">⚠ عندك رقم ضريبي مسجل في الإعدادات، فهذا الخيار لا ينطبق على منشأتك.</p>}
+          </fieldset>
           <div className="field full"><label htmlFor="q-notes">ملاحظات وشروط تظهر في العرض</label><textarea id="q-notes" rows={3} value={d.notes} onChange={(e) => set('notes', e.target.value)} placeholder="مثال: يشمل العرض 3 جولات تعديل على التصميم، ودعماً فنياً لمدة 3 أشهر." /></div>
         </div>
 
@@ -403,15 +460,17 @@ function QuoteForm({ draft, leads, catalog, onClose }: { draft: Draft; leads: Ar
           <div className="est-row"><span>المجموع</span><b className="mono">{fmtSAR(t.subtotal)}</b></div>
           <div className="est-row"><span>الخصم</span><b className="mono">{d.discount > 0 ? `−${fmtSAR(d.discount)}` : '0'}</b></div>
           <div className="est-row after-disc"><span>الإجمالي بعد الخصم</span><b className="mono">{fmtSAR(t.afterDiscount)}</b></div>
-          {d.vat && <div className="est-row"><span>الضريبة 15%</span><b className="mono">{fmtSAR(t.vat)}</b></div>}
+          {d.taxMode === 'vat' && <div className="est-row"><span>الضريبة 15%</span><b className="mono">{fmtSAR(t.vat)}</b></div>}
+          {d.taxMode === 'zero_export' && <div className="est-row"><span>الضريبة 0%</span><b className="mono">0</b></div>}
+          {(d.taxMode === 'unregistered' || d.taxMode === 'exempt') && <div className="est-row"><span>الضريبة</span><b>{d.taxMode === 'exempt' ? 'معفى' : 'لا تُحتسب'}</b></div>}
           <div className="est-price"><span>الإجمالي</span><b className="mono">{fmtSAR(t.total)} <small>ريال</small></b></div>
           <div className="est-row"><span>دفعة أولى 40%</span><b className="mono">{fmtSAR(Math.round(t.total * 0.4))}</b></div>
           {err && <div className="sent err">{err}</div>}
-          <button className="btn" type="button" disabled={busy} onClick={async () => {
+          <button className="btn" type="button" disabled={busy || dupInside.some(Boolean)} onClick={async () => {
             setBusy(true); setErr(null)
             const r = await save({
               ...(d.id ? { id: d.id } : {}), clientName: d.clientName, clientEmail: d.clientEmail, company: d.company, title: d.title,
-              ...(d.leadId ? { leadId: d.leadId } : {}), items: d.items, discount: d.discount, vat: d.vat, validDays: d.validDays, notes: d.notes,
+              ...(d.leadId ? { leadId: d.leadId } : {}), items: d.items, discount: d.discount, vat: d.taxMode === 'vat', taxMode: d.taxMode, validDays: d.validDays, notes: d.notes,
             })
             setBusy(false)
             if (r.ok) onClose(); else setErr(r.error)
@@ -454,6 +513,7 @@ export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => v
           <div><span>الخصم</span><b className="mono">{q.discount > 0 ? `−${fmtSAR(q.discount)}` : '0'}</b></div>
           <div className="after-disc"><span>الإجمالي بعد الخصم</span><b className="mono">{fmtSAR(t.afterDiscount)}</b></div>
           {q.vat && <div><span>ضريبة القيمة المضافة 15%</span><b className="mono">{fmtSAR(t.vat)}</b></div>}
+          {taxModeOf(q) === 'zero_export' && <div><span>ضريبة القيمة المضافة 0%</span><b className="mono">0</b></div>}
           <div className="grand"><span>الإجمالي (ريال سعودي)</span><b className="mono">{fmtSAR(t.total)}</b></div>
         </div>
         <div className="sheet-cols">
@@ -469,7 +529,8 @@ export function QuotePrint({ q, onClose, actions }: { q: Quote; onClose: () => v
           <div className="sheet-terms">
             <h3>الشروط</h3>
             <ul>
-              <li>العرض صالح لمدة {q.validDays} يوماً من تاريخه{q.vat ? '' : '، والأسعار لا تشمل ضريبة القيمة المضافة إن وُجدت'}.</li>
+              <li>العرض صالح لمدة {q.validDays} يوماً من تاريخه.</li>
+              <li>{taxInfo(taxModeOf(q)).note}</li>
               <li>تنتقل ملكية الشيفرة المصدرية والتصاميم للعميل بعد سداد كامل المبلغ.</li>
               <li>تُطبَّق سياسة الإلغاء والاسترداد المنشورة في <span className="mono">makwad.com/refund</span>.</li>
               {q.notes && <li>{q.notes}</li>}
@@ -1040,10 +1101,13 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
     return () => { document.title = prev }
   }, [no])
   if (!pay) return null
-  const vatOn = !!s.vatNumber
+  const taxMode: TaxMode = srcQuote ? taxModeOf(srcQuote) : s.vatNumber ? 'vat' : 'unregistered'
+  const vatOn = !!s.vatNumber && taxMode === 'vat'
+  const taxDoc = !!s.vatNumber && (taxMode === 'vat' || taxMode === 'zero_export')
+  const taxNote = taxInfo(!s.vatNumber && (taxMode === 'vat' || taxMode === 'zero_export') ? 'unregistered' : taxMode).note
   const cv = clientVat.replace(/\D/g, '')
   const clientVatOk = /^3\d{13}3$/.test(cv)
-  const docTitle = vatOn ? (clientVatOk ? 'فاتورة ضريبية' : 'فاتورة ضريبية مبسطة') : 'فاتورة'
+  const docTitle = taxDoc ? (clientVatOk ? 'فاتورة ضريبية' : 'فاتورة ضريبية مبسطة') : 'فاتورة'
   const net = vatOn ? Math.round(pay.amount / (1 + VAT_RATE)) : pay.amount
   const vat = pay.amount - net
   const lines = invoiceLines(srcQuote, net, pay.amount)
@@ -1112,6 +1176,7 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
           <div><span>الخصم</span><b className="mono">{discLine ? `−${fmtSAR(-discLine)}` : '0'}</b></div>
           <div className="after-disc"><span>الإجمالي بعد الخصم</span><b className="mono">{fmtSAR(net)}</b></div>
           {vatOn && <div><span>ضريبة القيمة المضافة 15%</span><b className="mono">{fmtSAR(vat)}</b></div>}
+          {taxDoc && taxMode === 'zero_export' && <div><span>ضريبة القيمة المضافة 0%</span><b className="mono">0</b></div>}
           <div className="grand"><span>{pay.status === 'paid' ? 'المبلغ المدفوع (ريال)' : 'الإجمالي المستحق (ريال)'}</span><b className="mono">{fmtSAR(pay.amount)}</b></div>
         </div>
         {(p.payments ?? []).length > 1 && (
@@ -1125,7 +1190,7 @@ export function InvoicePrint({ p, index, onClose }: { p: Project; index: number;
           </div>
         )}
         {pay.status !== 'paid' && <PayMethodsBox s={s} />}
-        {!vatOn && <p className="sheet-note">المنشأة غير مسجلة في ضريبة القيمة المضافة، ولا تُحتسب ضريبة على هذه الفاتورة.</p>}
+        {!vatOn && <p className="sheet-note">{taxNote}</p>}
         <StampBlock s={s} kind="invoice" no={no} at={stampAt} />
         <AskBox s={s} label="هذه الفاتورة" no={no} />
         <footer className="sheet-foot"><span>{COMPANY.name} · {COMPANY.city}</span><span className="mono">makwad.com · {s.email}</span></footer>

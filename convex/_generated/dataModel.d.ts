@@ -23,7 +23,7 @@ type Tables = {
   };
   quotes: Base & {
     number: string; clientName: string; clientEmail: string; company?: string; title: string; leadId?: string;
-    items: Array<{ label: string; qty: number; price: number }>; discount: number; vat: boolean; validDays: number;
+    items: Array<{ label: string; qty: number; price: number }>; discount: number; vat: boolean; taxMode?: string; validDays: number;
     notes?: string; status: "draft" | "sent" | "accepted" | "rejected"; projectId?: string; createdBy: string;
   };
   transactions: Base & { kind: 'income' | 'expense'; date: string; category: string; description: string; amount: number; vat?: number; projectId?: string; method?: string; recurring?: 'monthly' | 'yearly' };

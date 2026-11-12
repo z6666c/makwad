@@ -1400,3 +1400,19 @@ html[dir="ltr"] .lang-sw { font-family: "Readex Pro", var(--f-body); }
 .jb-toggles legend { font-size: .8rem; color: var(--muted); padding: 0 6px; }
 .jb-vars { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .82rem; }
 .jb-vars code { background: color-mix(in srgb, var(--ink) 5%, var(--surface)); border: 1px solid var(--line); border-radius: 8px; padding: 2px 8px; font-family: var(--f-mono); }
+
+/* duplicate service flags + tax modes */
+.dup-flag{display:inline-flex;align-items:center;gap:4px;background:#FFF1E8;color:#9A3F12;border:1px solid #F3C9AE;border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:600}
+.q-who .dup-flag{margin-top:4px;align-self:flex-start}
+.dup-warn{margin:8px 0 0;background:#FFF1E8;color:#8A3A10;border:1px solid #F3C9AE;border-radius:10px;padding:8px 12px;font-size:.88rem;line-height:1.7}
+.dup-warn.soft{background:#FFF8E6;color:#7A5A00;border-color:#EBD9A0}
+.q-item.dup .input{border-color:#E08A5A;background:#FFF6F0}
+.tax-modes{border:1px solid var(--line,#DCE1EA);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;margin:0}
+.tax-modes legend{font-weight:600;padding:0 6px}
+.tax-opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:10px;border:1px solid transparent;cursor:pointer}
+.tax-opt.on{border-color:#1F6F8B;background:#F2F8FA}
+.tax-opt input{margin-top:5px;width:18px;height:18px;flex-shrink:0}
+.tax-opt span{display:flex;flex-direction:column;gap:2px}
+.tax-opt small{color:#5A6478;font-size:.82rem;line-height:1.6}
+.tax-note{margin:4px 0 0;font-size:.86rem;line-height:1.8;background:#F6F7F9;border-radius:10px;padding:8px 12px}
+.tax-note small{display:block;color:#5A6478}

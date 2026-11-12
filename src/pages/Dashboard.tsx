@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { Authenticated, AuthLoading, Unauthenticated, useMutation, useQuery } from 'convex/react'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import { api } from '@/convex/_generated/api'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
@@ -319,23 +319,45 @@ function LeadsChart({ leads }: { leads: Array<Doc<'leads'>> }) {
   )
 }
 
+const normSvc = (x: string) => x.replace(/\s+/g, ' ').trim()
+/** Services a lead asks for: the list at the top of the message, otherwise its specialities (same rule as the backend). */
+function leadServices(l: Doc<'leads'>): Array<string> {
+  const m = l.message.replace(/^\[EN\]\s*/, '').match(/^الخدمات المطلوبة:\s*(.+)$/m)
+  return [...new Set((m ? m[1].split(/[،,]/) : l.types).map(normSvc).filter(Boolean))]
+}
+/** For each lead, the services that the same client (email or phone) already asked for in an earlier lead. */
+function duplicateMap(leads: Array<Doc<'leads'>>): Map<string, Array<string>> {
+  const out = new Map<string, Array<string>>()
+  const real = leads.filter((l) => !l.isExample).sort((a, b) => a._creationTime - b._creationTime)
+  real.forEach((l, i) => {
+    const mine = leadServices(l)
+    const prev = real.slice(0, i).filter((o) => o.email === l.email || (!!l.phone && o.phone === l.phone))
+    const had = new Set(prev.flatMap(leadServices))
+    const rep = mine.filter((x) => had.has(x))
+    if (rep.length) out.set(l._id, rep)
+  })
+  return out
+}
+const DupCtx = createContext<Map<string, Array<string>>>(new Map())
+
 function LeadsPanel({ leads }: { leads: Array<Doc<'leads'>> }) {
-  const [filter, setFilter] = useState<'all' | LeadStatus | 'mine' | 'follow'>('all')
+  const [filter, setFilter] = useState<'all' | LeadStatus | 'mine' | 'follow' | 'dup'>('all')
+  const dups = useMemo(() => duplicateMap(leads), [leads])
   const [q, setQ] = useState('')
   const team = useContext(Team)
   const t = q.trim().toLowerCase()
   const todayStr = new Date().toISOString().slice(0, 10)
   const match = (l: Doc<'leads'>, f: typeof filter) =>
-    f === 'all' || (f === 'mine' ? l.assignee === team.me : f === 'follow' ? !!l.followUp && l.followUp <= todayStr && l.status !== 'won' && l.status !== 'lost' : l.status === f)
+    f === 'all' || (f === 'dup' ? dups.has(l._id) : f === 'mine' ? l.assignee === team.me : f === 'follow' ? !!l.followUp && l.followUp <= todayStr && l.status !== 'won' && l.status !== 'lost' : l.status === f)
   const shown = leads.filter((l) => match(l, filter) &&
     (!t || [l.name, l.email, l.company ?? '', l.message, l.notes ?? '', l.phone ?? '', l.coupon ?? ''].some((x) => x.toLowerCase().includes(t))))
   return (
     <div className="panel">
       <div className="panel-pad toolbar">
         <div className="filters" style={{ margin: 0 }}>
-          {(['all', 'new', 'contacted', 'won', 'lost', 'mine', 'follow'] as const).map((k) => (
+          {(['all', 'new', 'contacted', 'won', 'lost', 'mine', 'follow', ...(dups.size ? ['dup' as const] : [])] as const).map((k) => (
             <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}>
-              {k === 'all' ? 'الكل' : k === 'mine' ? 'المسندة لي' : k === 'follow' ? 'متابعات اليوم' : STATUS[k]} <span className="count">{leads.filter((l) => match(l, k)).length}</span>
+              {k === 'all' ? 'الكل' : k === 'dup' ? '⚠ مكررة' : k === 'mine' ? 'المسندة لي' : k === 'follow' ? 'متابعات اليوم' : STATUS[k]} <span className="count">{leads.filter((l) => match(l, k)).length}</span>
             </button>
           ))}
         </div>
@@ -348,7 +370,7 @@ function LeadsPanel({ leads }: { leads: Array<Doc<'leads'>> }) {
         <div className="empty"><h3>لا توجد طلبات هنا</h3><p>تصل الطلبات من نموذج التواصل وحاسبة الأسعار في الموقع ومن حسابات العملاء.</p></div>
       ) : (
         <div className="lead-list">
-          {shown.map((l) => <LeadRow key={l._id} l={l} />)}
+          <DupCtx.Provider value={dups}>{shown.map((l) => <LeadRow key={l._id} l={l} />)}</DupCtx.Provider>
         </div>
       )}
     </div>
@@ -365,6 +387,7 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
   const team = useContext(Team)
   const setMeta = useMutation(api.app.setLeadMeta)
   const [phone, setPhone] = useState(l.phone ?? '')
+  const dup = useContext(DupCtx).get(l._id)
   const [confirm, setConfirm] = useState(false)
   const [open, setOpen] = useState(false)
   const [notes, setNotes] = useState(l.notes ?? '')
@@ -384,6 +407,7 @@ function LeadRow({ l }: { l: Doc<'leads'> }) {
           {l.assignee && <span className="src">مسند: {team.rows.find((r) => r.email === l.assignee)?.name ?? l.assignee.split('@')[0]}</span>}
           {l.followUp && <span className="src">متابعة {l.followUp}</span>}
           {l.isExample && <span className="ex">مثال</span>}
+          {dup && <span className="dup-flag" title="نفس العميل طلب هذه الخدمة في طلب سابق">⚠ مكرر: {dup.join('، ')}</span>}
         </div>
         <div className="lead-meta">
           <span className="mono">{l.email}</span>
