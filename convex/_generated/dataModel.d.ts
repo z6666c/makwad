@@ -13,7 +13,9 @@ type Tables = {
     links?: Array<{ label: string; url: string }>;
     payments?: Array<{ title: string; amount: number; status: "pending" | "due" | "paid"; paidAt?: string; method?: string }>;
     isExample?: boolean;
+    stageAt?: number; lastNotice?: { stage: number; at: number; emailed: boolean };
   };
+  stageNotices: Base & { stage: number; subject: string; body: string; need: string; toClient: boolean; toPortal: boolean; toTeam: boolean; withPayment: boolean };
   updates: Base & { projectId: string; text: string; author: "admin" | "client"; authorName: string };
   works: Base & {
     title: string; label: string; text: string; kind: "mobile" | "web" | "both"; art: string; color: string;

@@ -13,7 +13,7 @@ import { COMPANY, DEFAULT_SETTINGS } from '@/site-config'
 import SVC_PAGES from '@/service-pages.json'
 import type { SiteSettings } from '@/site-config'
 
-export type Section = 'overview' | 'leads' | 'projects' | 'quotes' | 'finance' | 'channels' | 'pricing' | 'asclient' | 'content' | 'visitors' | 'users' | 'settings'
+export type Section = 'overview' | 'leads' | 'projects' | 'journey' | 'notices' | 'quotes' | 'finance' | 'channels' | 'pricing' | 'asclient' | 'content' | 'visitors' | 'users' | 'settings'
 export type Quote = Doc<'quotes'>
 type Lead = Doc<'leads'>
 type Project = Doc<'projects'>
@@ -28,6 +28,8 @@ export const ICONS: Record<Section, string> = {
   leads: '<path d="M4 4h16v12H5.2L4 17.2z"/><path d="M8 9h8M8 12h5"/>',
   projects: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   quotes: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h4"/>',
+  journey: '<rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/>',
+  notices: '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
   finance: '<path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/><circle cx="18" cy="8" r="1.2"/>',
   channels: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
   pricing: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="8" r="1.5"/>',

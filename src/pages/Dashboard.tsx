@@ -17,6 +17,7 @@ import { fmtSAR } from '@/estimate'
 import { FinancePanel, PaymentChannelsPanel } from '@/pages/Finance'
 import { PayMethodsBox, activeMethods } from '@/components/PayMethods'
 import { usePricing } from '@/site-config'
+import { ClientNeed, JourneyBoard, NoticesPanel } from '@/pages/Journey'
 import { ARTS, COLORS } from '@/mockups'
 
 const CanAdmin = createContext(false)
@@ -118,6 +119,8 @@ const SECTIONS: Array<{ key: Section; label: string; admin?: boolean }> = [
   { key: 'leads', label: 'الطلبات' },
   { key: 'projects', label: 'المشاريع' },
   { key: 'quotes', label: 'عروض الأسعار' },
+  { key: 'journey', label: 'متابعة المشاريع' },
+  { key: 'notices', label: 'تنبيهات المراحل', admin: true },
   { key: 'finance', label: 'المالية والمحاسبة', admin: true },
   { key: 'channels', label: 'قنوات الدفع', admin: true },
   { key: 'pricing', label: 'الخدمات والأسعار والخصومات', admin: true },
@@ -130,10 +133,10 @@ const SECTIONS: Array<{ key: Section; label: string; admin?: boolean }> = [
 
 const GROUPS: Array<{ key: string; label: string; items: Array<Section> }> = [
   { key: 'home', label: '', items: ['overview'] },
-  { key: 'sales', label: 'المبيعات والعملاء', items: ['leads', 'quotes', 'projects'] },
+  { key: 'sales', label: 'المبيعات والعملاء', items: ['leads', 'quotes', 'journey', 'projects'] },
   { key: 'money', label: 'المالية', items: ['finance', 'channels'] },
   { key: 'site', label: 'الموقع', items: ['visitors', 'pricing', 'content', 'asclient'] },
-  { key: 'admin', label: 'الإدارة', items: ['users', 'settings'] },
+  { key: 'admin', label: 'الإدارة', items: ['users', 'notices', 'settings'] },
 ]
 
 function SideNav({ sections, cur, counts, go }: { sections: Array<{ key: Section; label: string }>; cur: Section; counts: Partial<Record<Section, number>>; go: (s: Section) => void }) {
@@ -223,6 +226,7 @@ function AdminView() {
   const counts: Partial<Record<Section, number>> = {
     leads: leads.filter((l) => l.status === 'new').length,
     projects: projects.filter((p) => p.stage < 4).length,
+    journey: quotes.filter((q) => q.status === 'accepted' && !q.projectId).length,
     quotes: quotes.filter((q) => q.status === 'draft' || q.status === 'sent').length,
   }
   const sections = SECTIONS.filter((x) => !x.admin || canAdmin)
@@ -248,6 +252,8 @@ function AdminView() {
           {cur.key === 'overview' && <>{canAdmin && <LaunchChecklist leads={leads} projects={projects} go={go} />}<Overview leads={leads} projects={projects} quotes={quotes} go={go} /><LeadsChart leads={leads} /></>}
           {cur.key === 'leads' && <LeadsPanel leads={leads} />}
           {cur.key === 'projects' && <ProjectsPanel projects={projects} />}
+          {cur.key === 'journey' && <JourneyBoard projects={projects} quotes={quotes} canAdmin={canAdmin} openNotices={() => go('notices')} />}
+          {cur.key === 'notices' && canAdmin && <NoticesPanel />}
           {cur.key === 'quotes' && <QuotesPanel quotes={quotes} leads={leads} catalog={catalog} seed={seed} onSeedUsed={() => setSeed(null)} canAdmin={canAdmin} />}
           {cur.key === 'finance' && canAdmin && <FinancePanel projects={projects} />}
           {cur.key === 'channels' && canAdmin && <PaymentChannelsPanel />}
@@ -708,6 +714,7 @@ function ClientProject({ p }: { p: Doc<'projects'> }) {
           {p.links.map((l) => <a key={l.url + l.label} href={l.url} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}
         </div>
       )}
+      <ClientNeed projectId={p._id} />
       <PaymentsSummary payments={p.payments} detailed />
       <PayNow p={p} />
       <Feed projectId={p._id} placeholder="اكتب ملاحظة أو سؤالاً لفريق استوديو مكود…" />
